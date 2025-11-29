@@ -58,7 +58,15 @@ Utilize o seguinte padrão para as mensagens de commit, incluindo o emoji corres
 - 🧹 `:broom: cleanup: Eliminando blocos de código comentados e variáveis não utilizadas`
 - 🗑️ `:wastebasket: remove: Removendo arquivos não utilizados do projeto`
 
-> Importante: Os commits devem ser individuais e atômicos, exceto em casos no qual a alteração/adição/remoção seja idêntica ou muito similar, nesses casos é permitido agrupar o commit em lotes.
+> **Importante:**
+>
+> - Use **APENAS** o código do emoji (ex: `:broom:`), **NÃO** use o emoji visual (ex: 🧹)
+> - Plataformas como GitHub e Azure DevOps renderizam automaticamente os códigos como emojis
+> - Usar apenas o código evita problemas de encoding em terminais Windows
+> - Formato correto: `:broom: cleanup: Descrição da mudança`
+> - Formato incorreto: `🧹 :broom: cleanup: ...` ou `🧹 cleanup: ...`
+
+> Importante: Os commits devem ser individuais e atômicos, exceto em casos no qual a alteração/adição/remoção seja identica ou muito similar, nesses casos é permitido agrupar o commit em lotes..
 
 ## Padrão de Código
 
