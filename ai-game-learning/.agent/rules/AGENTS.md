@@ -1,77 +1,131 @@
 ---
-description: Regras para aprendizado
+trigger: always_on
 ---
 
-## Gemini Added Memories
+# Diretrizes do Agente e Padrões de Projeto
 
-- Não crie commits git a menos que seja explicitamente solicitado pelo usuário.
-- O usuário é falante de português do Brasil (pt-br).
+## 1. Perfil e Abordagem Pedagógica
+Você é um programador excepcional e um educador. O usuário é falante de português do Brasil (pt-BR).
 
-## Abordagem Pedagógica e Qualidade de Código
+- **Pragmatismo**: Evite bajulações e vá direto ao ponto.
+- **Ensino**: Priorize o aprendizado. Inclua comentários explicativos nos pontos onde haja maior probabilidade de dúvida.
+- **Git**: Não crie commits a menos que explicitamente solicitado.
 
-Você é um programador excepcional bom para ensinar:
+## 2. Padrão de Idioma e Código
+Todo o código e comunicação devem seguir estritamente:
 
-- **Códigos didáticos e legíveis**: independentemente da linguagem, evite abreviações e use nomes claros. Escreva comentários e documentação esclarecedora.
+1.  **Idioma**: Português do Brasil (pt-BR) para variáveis, funções, classes, métodos, comentários e docstrings.
+    *   *Exceções*: Palavras-chave da linguagem (if, for), bibliotecas, termos técnicos consolidados (agent, reward) ou quando o termo em inglês for padrão de mercado.
+2.  **Legibilidade**:
+    *   **ZERO Abreviações**: O código deve ser explícito. Use `usuario_id` e não `uid`.
+    *   Nomes claros e descritivos.
 
-- **Uso de português (pt-BR)**: em todo o código e nos comentários, exceto quando:
+## 3. Ambiente Virtual e Execução (Windows/Git Bash)
+O projeto roda em Windows utilizando Git Bash. Você deve usar **exclusivamente** os executáveis do ambiente virtual `.venv`.
 
-  1. O termo não fizer sentido em português, ou
-  2. For uma expressão consolidada em inglês
+**Regras de Caminho e Execução:**
+*   Use barras normais (`/`) nos caminhos.
+*   **Python**: Use sempre `.venv/Scripts/python.exe`
+*   **Pip**: Use sempre `.venv/Scripts/pip.exe`
+*   **Pytest**: Use sempre `.venv/Scripts/pytest.exe`
 
-  Nesses casos, mantenha o termo original em inglês.
+**Gerenciamento de Dependências:**
+*   Nunca use apenas `pip install`.
+*   Bibliotecas de Produção: Instale e adicione ao `requirements.txt`.
+*   Bibliotecas de Desenvolvimento: Instale e adicione ao `requirements-dev.txt`.
+*   *Atenção*: Comandos de instalação (`pip install`) devem ter `SafeToAutoRun: false`.
 
-- **Priorize o aprendizado do leitor**: além de seguir as convenções e produzir documentação adequada, inclua linhas comentadas nos pontos onde haja maior probabilidade de dúvida.
+**Exemplos de Comandos Corretos:**
+```bash
+# Executar script
+.venv/Scripts/python.exe main.py
 
-- **Seja pragmático**: evite bajulações e vá direto ao ponto.
+# Instalar dependência
+.venv/Scripts/pip.exe install psutil
 
-## Padrão de Idioma
+# Rodar testes
+.venv/Scripts/pytest.exe tests/ -v
+```
 
-Todo o código deve ser escrito em **Português do Brasil**:
+## 4. Padrão de Documentação (Docstrings)
+O agente deve seguir estritamente o formato **ReStructuredText (RST)** padrão Sphinx.
 
-- Nomes de variáveis, funções, classes e métodos em pt-br
-- Comentários e docstrings em pt-br
-- Sem abreviações, código deve ser legível
+**Estrutura Obrigatória:**
+1.  **Resumo**: O que o método/classe faz.
+2.  **Detalhamento (Opcional)**: Regras de negócio e validações.
+3.  **Exemplo**: Bloco de código funcional (`.. code-block:: python`).
+4.  **Notas (Opcional)**: Avisos (`.. note::`).
+5.  **Typing**: Uso obrigatório de *Type Hints* nos argumentos e retorno.
 
-Exceções permitidas:
+**Template Canônico (Referência Absoluta):**
+```python
+from typing import List, Optional, Dict
 
-- Palavras-chave do Python (class, def, if, for, etc.)
-- Nomes de bibliotecas e suas funções
-- Termos técnicos consolidados (agent, environment, reward, policy)
-- Nomes de arquivos e pastas podem ser em inglês
+class GerenciadorUsuarios:
+    """
+    Gerencia operações de usuários com validações.
 
-## Padrão de Commits
+    Uma descrição detalhada e didática pode ser escrita aqui a fim de explicar o contexto,
+    ou qualquer outros por menores que sejam necessários.
+    
+    **Exemplo:**
+    
+    .. code-block:: python
+    
+        gerenciador = GerenciadorUsuarios("MeuApp")
+        usuario = gerenciador.criar_usuario("lucas@email.com", "Lucas", 25)
+        print(usuario['nome'])  # Output: Lucas
+    
+    .. note::
+       Esta classe não persiste dados. Use pickle ou JSON para salvar o estado.
+    """
+    
+    def criar_usuario(
+        self, 
+        email: str, 
+        nome: str, 
+        idade: int,
+        tags: Optional[List[str]] = None
+    ) -> Dict[str, any]:
+        """
+        Cria e valida um novo usuário no sistema.
+        
+        O email deve conter ``@`` e a idade estar entre 18 e 120 anos.
+        
+        **Exemplo:**
+        
+        .. code-block:: python
+        
+            usuario = gerenciador.criar_usuario(
+                "joao@exemplo.com", 
+                "João Silva", 
+                30
+            )
+            print(usuario['id'])  # Output: 1
+        """
+        # ... implementação ...
+```
 
-Utilize o seguinte padrão para as mensagens de commit, incluindo o emoji correspondente para facilitar a identificação do tipo de alteração:
+## 5. Padrão de Commits
+Os commits devem ser atômicos (uma alteração por vez). Use **APENAS** o código do emoji (ex: `:tada:`), não o desenho visual.
 
+**Lista de Tipos:**
 - 🎉 `:tada: Commit inicial`
-- 📚 `:books: docs: Atualização do README`
-- 🐛 `:bug: fix: Loop infinito na linha 50`
-- ✨ `:sparkles: feat: Página de login`
-- 🧱 `:bricks: ci: Modificação no Dockerfile`
-- ♻️ `:recycle: refactor: Passando para arrow functions`
-- ⚡ `:zap: perf: Melhoria no tempo de resposta`
-- 💥 `:boom: fix: Revertendo mudanças ineficientes`
-- 💄 `:lipstick: feat: Estilização CSS do formulário`
-- 🧪 `:test_tube: test: Criando novo teste`
-- 💡 `:bulb: docs: Comentários sobre a função LoremIpsum()`
-- 🗃️ `:card_file_box: raw: RAW Data do ano aaaa`
-- 🧹 `:broom: cleanup: Eliminando blocos de código comentados e variáveis não utilizadas`
-- 🗑️ `:wastebasket: remove: Removendo arquivos não utilizados do projeto`
+- 📚 `:books: docs: Atualização de documentação`
+- 🐛 `:bug: fix: Correção de erro`
+- ✨ `:sparkles: feat: Nova funcionalidade`
+- 🧱 `:bricks: ci: Configuração de CI/Docker`
+- ♻️ `:recycle: refactor: Refatoração de código`
+- ⚡ `:zap: perf: Melhoria de performance`
+- 💥 `:boom: fix: Reversão ou mudança crítica`
+- 💄 `:lipstick: feat: Estilização/UI`
+- 🧪 `:test_tube: test: Testes`
+- 💡 `:bulb: docs: Comentários no código`
+- 🗃️ `:card_file_box: raw: Arquivos de dados`
+- 🧹 `:broom: cleanup: Limpeza de código morto`
+- 🗑️ `:wastebasket: remove: Remoção de arquivos`
 
-> **Importante:**
->
-> - Use **APENAS** o código do emoji (ex: `:broom:`), **NÃO** use o emoji visual (ex: 🧹)
-> - Plataformas como GitHub e Azure DevOps renderizam automaticamente os códigos como emojis
-> - Usar apenas o código evita problemas de encoding em terminais Windows
-> - Formato correto: `:broom: cleanup: Descrição da mudança`
-> - Formato incorreto: `🧹 :broom: cleanup: ...` ou `🧹 cleanup: ...`
+**Formato Correto:** `:broom: cleanup: Descrição da mudança`
 
-> Importante: Os commits devem ser individuais e atômicos, exceto em casos no qual a alteração/adição/remoção seja identica ou muito similar, nesses casos é permitido agrupar o commit em lotes..
-
-## Padrão de Código
-
-Todo o código (nomes de variáveis, funções, classes, métodos, etc.) deve ser escrito em **Português do Brasil (pt-br)**. A escrita deve ser clara, legível e **sem o uso de abreviações**, visando a máxima compreensibilidade do código.
-
-## Análise de Código
-
-Ao realizar a leitura e análise do projeto para obter contexto, todos os arquivos e diretórios listados no arquivo `.gitignore` devem ser ignorados.
+## 6. Análise de Código
+Ao ler o projeto, ignore estritamente todos os arquivos e diretórios listados no `.gitignore`.

@@ -1,152 +1,295 @@
-# AI & Playground — Monorepo (Aprendizado prático e experiments)
+# 🧠 AI Game Learning — Do Zero à IA Jogadora
 
-Uma única base que agrupa dois espaços de trabalho distintos: um laboratório prático de IA voltado para agentes jogadores e um playground pessoal com diversos experimentos e pequenos projetos. Este README orienta como navegar, configurar e começar a contribuir.
+## 🎯 Objetivo Final
 
----
-
-# 1. Visão geral rápida
-
-* **Objetivo principal:** Aprender construindo — do básico de IA até agentes capazes de interagir com jogos (ex.: Ragnarok Online), com ênfase em experimentos práticos e iterações rápidas.
-* **Outros conteúdos:** Vários pequenos projetos, protótipos web e exercícios que servem como caderno de laboratório para testar tecnologias (frontend, backend, scripts, etc).
-* **Formato do repositório:** Monorepo com duas pastas principais:
-
-  * `ai-game-learning/` — projetos e etapas relacionadas ao aprendizado de agentes (Python, visão computacional, RL).
-  * `personal-portfolio/` — coleções de experimentos, apps em React/Next, jogos de navegador e afins.
+Aprender **Inteligência Artificial** do zero absoluto até criar uma IA capaz de **jogar Ragnarok Online Brasil (bRO)**.
 
 ---
 
-# 2. Estrutura do repositório
+## ⚠️ Metodologia: Build to Break
 
-```
-learning-artificial-intelligence/
-├── README.md                      # (este arquivo)
-├── ai-game-learning/              # Laboratório de IA (Python, RL, visão)
-│   ├── README.md                  # README local com instruções detalhadas
-│   └── ...                        # código, notebooks, ambientes de treino
-└── personal-portfolio/            # Playground com projetos front/backend
-    ├── README.md                  # README por projeto
-    └── ...                        # apps, protótipos, assets
-```
-
-> Cada subdiretório contém seu próprio `README.md` com instruções específicas (instalação, execução e notas técnicas). Comece por eles ao trabalhar em um projeto específico.
+| ✅ Fazer                                 | ❌ Evitar                      |
+| ---------------------------------------- | ------------------------------ |
+| Implementar eu mesmo antes de consultar  | Pedir código completo para LLM |
+| Usar LLM para explicar conceitos/erros   | Aceitar código sem entender    |
+| Quebrar o código para ver o que acontece | Seguir tutoriais cegamente     |
 
 ---
 
-# 3. Começando (setup geral)
+## 🧭 Roadmap Completo
 
-## Requisitos (mínimos)
+### Fase 0: Setup Profissional ⬜
 
-* Git
-* Python 3.10+ (recomendado para os módulos de IA)
-* Node.js 18+ (para projetos frontend/backend que usem JS/TS)
-* `pip` / `npm` / `yarn`
+#### 0.1 Limpeza do Repositório
 
-## Passos básicos
+- [ ] Criar branch `legacy` com código antigo
+- [ ] Deletar pastas `ai-game-learning/` e `personal-portfolio/`
+- [ ] Fazer commit limpo no `main`
 
-1. Clone o repositório:
+#### 0.2 Estrutura de Pastas
 
-```bash
-git clone https://github.com/SEU_USUARIO/learning-artificial-intelligence.git
-cd learning-artificial-intelligence
-```
+- [ ] Criar `src/ai_game_learning/` (pacote principal)
+- [ ] Criar `tests/` (testes unitários)
+- [ ] Criar `docs/` (documentação das fases)
+- [ ] Criar `notebooks/` (experimentos Jupyter)
 
-2. Para trabalhar com os exemplos de IA (Python):
+#### 0.3 Tooling Python Moderno
 
-```bash
-cd ai-game-learning
-# criar e ativar venv (Unix/macOS)
-python -m venv .venv
-source .venv/bin/activate
-# Windows (PowerShell)
-# python -m venv .venv
-# .\.venv\Scripts\Activate.ps1
+- [ ] Criar `pyproject.toml` com metadados do projeto
+- [ ] Configurar **Ruff** (linter + formatter)
+- [ ] Configurar **MyPy** (type checking)
+- [ ] Configurar **Pytest** (testes)
+- [ ] Criar `.venv` e instalar dependências
 
-pip install -r requirements.txt
-```
+#### 0.4 Verificação
 
-3. Para rodar projetos em `personal-portfolio` (quando aplicável):
-
-```bash
-cd ../personal-portfolio/<nome-do-projeto>
-# exemplo com Node
-npm install
-npm run dev
-```
-
-> Observação: cada subprojeto pode ter dependências e comandos diferentes — consulte o `README.md` local.
+- [ ] Rodar `ruff check .` sem erros
+- [ ] Rodar `ruff format .`
+- [ ] Rodar `mypy src/` sem erros
 
 ---
 
-# 4. Como os projetos estão organizados (resumo funcional)
+### Fase 1: Fundamentos Teóricos ⬜
 
-### `ai-game-learning/`
+#### 1.1 Conceitos Base
 
-* Conteúdo incremental: desde experimentos simples (ex.: Q-learning em Jogo da Velha) até projetos com visão computacional e integração com automação (AutoHotkey/PyAutoGUI).
-* Ideal para: experimentar algoritmos de RL, treinar agentes em ambientes simplificados, estudar captura/interpretação de tela e automação de entrada.
+- [ ] Estudar: O que é Inteligência Artificial?
+- [ ] Estudar: Diferença entre IA, ML, DL
+- [ ] Documentar em `docs/fase_1_fundamentos.md`
 
-### `personal-portfolio/`
+#### 1.2 Reinforcement Learning (Teoria)
 
-* Repositório de estudos e protótipos (React, Next.js, pequenos jogos em canvas, utilitários).
-* Ideal para: experimentar front-end moderno, publicar demos e manter um catálogo dos aprendizados.
+- [ ] Estudar os 5 componentes: Agente, Ambiente, Estado, Ação, Recompensa
+- [ ] Entender o ciclo de interação Agente ↔ Ambiente
+- [ ] Estudar: O que é uma Política (Policy)?
 
----
+#### 1.3 Matemática Essencial
 
-# 5. Fluxo de trabalho sugerido
+- [ ] Estudar: Equação de Bellman (intuição, não decorar fórmula)
+- [ ] Estudar: O que é Valor Q (Quality)?
+- [ ] Estudar: Exploração vs Exploração (Epsilon-Greedy)
 
-* Trabalhe em branches por feature:
+#### 1.4 Recursos Recomendados
 
-```bash
-git checkout -b feat/nome-da-fase
-```
-
-* Faça commits pequenos e descritivos.
-* Atualize o `README.md` do subprojeto quando alterar instruções ou dependências.
-* Abra PRs para revisão antes de mesclar em `main`.
-
----
-
-# 6. Boas práticas e convenções
-
-* Código Python: use virtualenv e `requirements.txt`. Prefira tipagem e docstrings.
-* JavaScript/TypeScript: siga as configurações locais de ESLint/Prettier quando houver.
-* Documente experimentos: objetivo, hyperparâmetros, resultados e observações no README local ou notebooks.
-* Versionamento e grandes arquivos: evite commitar dados de treino pesados; use storage externo se necessário.
+- [ ] Assistir: David Silver RL Lecture 1-2
+- [ ] Ler: Sutton & Barto Capítulo 1-3
 
 ---
 
-# 7. Roadmap & prioridades (curto prazo)
+### Fase 2: Q-Learning Básico (Jogo da Velha) ⬜
 
-* Consolidar exemplos didáticos na etapa inicial de IA (Q-Learning e ambiente de grade).
-* Implementar pipeline mínimo de treino/replay para DQN em ambiente controlado.
-* Prototipar pipeline de captura de tela + detecção básica (OpenCV) para jogos simples.
-* Reescrever exemplos-chaves em JavaScript como exercício de aprendizagem.
+#### 2.1 Ambiente do Jogo
+
+- [ ] Criar `ambiente.py` do zero
+- [ ] Implementar representação do tabuleiro (lista/array)
+- [ ] Implementar verificação de vitória
+- [ ] Implementar lista de ações válidas
+- [ ] Escrever testes para o ambiente
+
+#### 2.2 Agente Q-Learning
+
+- [ ] Criar `agente.py` do zero
+- [ ] Implementar Q-Table (dicionário)
+- [ ] Implementar `obter_valor_q(estado, acao)`
+- [ ] Implementar escolha aleatória (exploração)
+
+#### 2.3 Estratégia Epsilon-Greedy
+
+- [ ] Implementar `escolher_acao(estado, epsilon)`
+- [ ] Testar: epsilon=1.0 (100% aleatório)
+- [ ] Testar: epsilon=0.0 (100% guloso)
+
+#### 2.4 Equação de Bellman
+
+- [ ] Implementar `atualizar_q(estado, acao, recompensa, proximo_estado)`
+- [ ] **Experimento**: `gamma = 0` (míope) - O que acontece?
+- [ ] **Experimento**: `gamma = 1` (visionário) - O que muda?
+- [ ] **Experimento**: `alpha = 1.0` - Por que é ruim?
+
+#### 2.5 Treinamento
+
+- [ ] Criar `treinador.py`
+- [ ] Implementar loop de episódios
+- [ ] Implementar self-play (agente vs agente)
+- [ ] Implementar decaimento de epsilon
+
+#### 2.6 Visualização e Análise
+
+- [ ] Plotar evolução da taxa de vitória
+- [ ] Visualizar Q-Table para estados específicos
+- [ ] Documentar resultados em `docs/fase_2_resultados.md`
 
 ---
 
-# 8. Como contribuir
+### Fase 3: Generalização (Labirinto) ⬜
 
-1. Escolha uma issue ou abra uma descrevendo a proposta.
-2. Abra uma branch com nome claro (`fix/`, `feat/`, `doc/`).
-3. Inclua testes quando fizer alterações de lógica.
-4. Atualize documentação e exemplos.
-5. Faça o pull request com descrição das mudanças e como testar localmente.
+#### 3.1 Novo Ambiente
+
+- [ ] Criar ambiente de grade (Grid World)
+- [ ] Implementar movimentos: cima, baixo, esquerda, direita
+- [ ] Implementar paredes e objetivo
+- [ ] Implementar sistema de recompensas (-0.1 por passo, +10 objetivo)
+
+#### 3.2 Reutilização do Agente
+
+- [ ] Adaptar agente Q-Learning para o labirinto
+- [ ] Verificar: O algoritmo funciona sem mudanças?
+- [ ] Se não, entender o porquê
+
+#### 3.3 Experimentos
+
+- [ ] Testar com labirinto 5x5
+- [ ] Testar com labirinto 10x10
+- [ ] **Experimento**: Labirinto sem saída - O que acontece?
 
 ---
 
-# 9. Notas sobre execução de experimentos com jogos
+### Fase 4: Visão Computacional Básica ⬜
 
-* Integração com jogos reais (ex.: Ragnarok) envolve automação de entradas e leitura de tela — cuidado com políticas do jogo. Use esses experimentos apenas em ambientes de teste e aprenda sobre ética e regras da plataforma antes de automatizar interações em servidores públicos.
-* Para automação local, prefira trabalhar em servidores privados ou instâncias de teste.
+#### 4.1 OpenCV Fundamentos
+
+- [ ] Instalar e configurar OpenCV
+- [ ] Capturar screenshot da tela
+- [ ] Converter para escala de cinza
+- [ ] Detectar bordas (Canny)
+
+#### 4.2 Detecção de Objetos Simples
+
+- [ ] Detectar retângulos/formas
+- [ ] Template matching (encontrar imagem dentro de imagem)
+- [ ] Detectar cores específicas (HSV)
+
+#### 4.3 Projeto: Dino do Chrome
+
+- [ ] Capturar tela do jogo
+- [ ] Detectar cactos (obstáculos)
+- [ ] Implementar lógica: "Se cacto próximo → pular"
+- [ ] Integrar com PyAutoGUI para controle
 
 ---
 
-# 10. Licença & autor
+### Fase 5: IA Reativa (Flappy Bird) ⬜
 
-* Licença: MIT — salvo indicação contrária nos READMEs dos subprojetos.
-* Autor: Lucas Ferreira (LKS)
+#### 5.1 Ambiente
+
+- [ ] Encontrar/criar clone de Flappy Bird jogável
+- [ ] Capturar tela e identificar elementos
+- [ ] Detectar: posição do pássaro, posição dos canos
+
+#### 5.2 Agente Reativo
+
+- [ ] Implementar lógica baseada em regras
+- [ ] Testar diferentes heurísticas
+- [ ] Documentar qual funciona melhor
+
+#### 5.3 Agente Aprendiz (Opcional)
+
+- [ ] Aplicar Q-Learning ao Flappy Bird
+- [ ] Comparar com agente reativo
 
 ---
 
-# 11. Contato e onde seguir
+### Fase 6: Deep Q-Network (DQN) ⬜
 
-* GitHub: [https://github.com/LKSFerreira](https://github.com/LKSFerreira)
+#### 6.1 PyTorch Fundamentos
+
+- [ ] Instalar PyTorch
+- [ ] Criar tensores e operações básicas
+- [ ] Entender autograd (gradientes automáticos)
+
+#### 6.2 Rede Neural Simples
+
+- [ ] Criar rede com 1 camada oculta
+- [ ] Treinar para função XOR (sanity check)
+- [ ] Entender forward pass e backpropagation
+
+#### 6.3 DQN Teoria
+
+- [ ] Estudar: Por que substituir Q-Table por rede neural?
+- [ ] Estudar: Experience Replay
+- [ ] Estudar: Target Network
+
+#### 6.4 Gymnasium
+
+- [ ] Instalar Gymnasium
+- [ ] Explorar ambiente CartPole
+- [ ] Explorar ambiente LunarLander
+
+#### 6.5 Implementar DQN
+
+- [ ] Criar rede neural para aproximar Q
+- [ ] Implementar Experience Replay
+- [ ] Treinar em CartPole
+- [ ] Treinar em LunarLander
+
+---
+
+### Fase 7: Ragnarok Online (Projeto Final) ⬜
+
+#### 7.1 Análise do Jogo
+
+- [ ] Identificar elementos visuais (HP, SP, monstros, itens)
+- [ ] Mapear teclas de ação (F1-F9, cliques)
+- [ ] Definir estados possíveis do agente
+
+#### 7.2 Captura e Processamento
+
+- [ ] Capturar tela do jogo em tempo real
+- [ ] Detectar barra de HP/SP
+- [ ] Detectar monstros na tela
+- [ ] Detectar itens dropados
+
+#### 7.3 Máquina de Estados
+
+- [ ] Implementar estados: IDLE, ATACANDO, CURANDO, FUGINDO, COLETANDO
+- [ ] Definir transições entre estados
+- [ ] Integrar com visão computacional
+
+#### 7.4 Controle
+
+- [ ] Integrar PyAutoGUI ou AutoHotkey
+- [ ] Implementar movimentação
+- [ ] Implementar uso de skills
+- [ ] Implementar coleta de itens
+
+#### 7.5 Agente Inteligente
+
+- [ ] Aplicar RL para otimizar comportamento
+- [ ] Treinar em servidor privado/teste
+- [ ] Documentar resultados
+
+---
+
+## 🧰 Tecnologias por Fase
+
+| Fase | Tecnologias                                   |
+| ---- | --------------------------------------------- |
+| 0-3  | Python, NumPy, Matplotlib, Ruff, MyPy, Pytest |
+| 4-5  | + OpenCV, PyAutoGUI                           |
+| 6    | + PyTorch, Gymnasium                          |
+| 7    | + AutoHotkey, Visão em tempo real             |
+
+---
+
+## 📖 Recursos
+
+- [Sutton & Barto - RL: An Introduction](http://incompleteideas.net/book/the-book.html)
+- [David Silver - RL Course](https://www.youtube.com/playlist?list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ)
+- [Spinning Up in Deep RL](https://spinningup.openai.com/)
+- [PyTorch Tutorials](https://pytorch.org/tutorials/)
+
+---
+
+## 👤 Autor
+
+**Lucas Ferreira (LKS)**
+
+📅 Início: 26/10/2025 | 📅 Recomeço: 12/2025
+
+> "A melhor forma de aprender IA é quebrando a cabeça com ela."
+
+---
+
+## 📜 Licença
+
+MIT
