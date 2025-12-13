@@ -1,8 +1,10 @@
-# 🧠 AI Game Learning — Do Zero à IA Jogadora
+# 🧠 Aprendizado de Inteligência Artificial — Do Zero ao Domínio
 
 ## 🎯 Objetivo Final
 
-Aprender **Inteligência Artificial** do zero absoluto até criar uma IA capaz de **jogar Ragnarok Online Brasil (bRO)**.
+Dominar **Inteligência Artificial** do zero absoluto até ser capaz de **criar e treinar modelos de IA para jogar qualquer jogo ou realizar qualquer atividade**.
+
+Este não é um projeto focado em um único objetivo, mas uma **jornada de aprendizado consolidada** que passa por todos os campos da IA (Machine Learning, Deep Learning, Reinforcement Learning) usando diversos jogos e atividades práticas como veículos de ensino.
 
 ---
 
@@ -16,247 +18,24 @@ Aprender **Inteligência Artificial** do zero absoluto até criar uma IA capaz d
 
 ---
 
-## 🧭 Roadmap Completo
+## 🧭 Estrutura de Aprendizado
 
-### Fase 0: Setup Profissional ⬜
+Este projeto está organizado em **fases progressivas**, cada uma construindo sobre a anterior. O aprendizado é **prático e consolidado**, com implementações reais que demonstram cada conceito.
 
-#### 0.1 Limpeza do Repositório
+Para o **roadmap completo e detalhado** com todas as tasks, objetivos e checkpoints de progresso, consulte o **[roadmap.md](roadmap.md)**.
 
-- [ ] Criar branch `legacy` com código antigo
-- [ ] Deletar pastas `ai-game-learning/` e `personal-portfolio/`
-- [ ] Fazer commit limpo no `main`
+### Visão Geral das Fases:
 
-#### 0.2 Estrutura de Pastas
+- **Fase 0:** Setup Profissional (Ambiente, Tooling, Boas Práticas)
+- **Fase 1:** Fundamentos Teóricos (IA, ML, DL, RL)
+- **Fase 2:** Q-Learning Básico (Jogo da Velha)
+- **Fase 3:** Generalização (Labirinto/Grid World)
+- **Fase 4:** Visão Computacional (OpenCV, Detecção de Objetos)
+- **Fase 5:** IA Reativa (Jogos Simples)
+- **Fase 6:** Deep Q-Network (PyTorch, Gymnasium)
+- **Fase 7+:** Projetos Avançados (Jogos Complexos, Aplicações Reais)
 
-- [ ] Criar `src/ai_game_learning/` (pacote principal)
-- [ ] Criar `tests/` (testes unitários)
-- [ ] Criar `docs/` (documentação das fases)
-- [ ] Criar `notebooks/` (experimentos Jupyter)
-
-#### 0.3 Tooling Python Moderno
-
-- [ ] Criar `pyproject.toml` com metadados do projeto
-- [ ] Configurar **Ruff** (linter + formatter)
-- [ ] Configurar **MyPy** (type checking)
-- [ ] Configurar **Pytest** (testes)
-- [ ] Criar `.venv` e instalar dependências
-
-#### 0.4 Verificação
-
-- [ ] Rodar `ruff check .` sem erros
-- [ ] Rodar `ruff format .`
-- [ ] Rodar `mypy src/` sem erros
-
----
-
-### Fase 1: Fundamentos Teóricos ⬜
-
-#### 1.1 Conceitos Base
-
-- [ ] Estudar: O que é Inteligência Artificial?
-- [ ] Estudar: Diferença entre IA, ML, DL
-- [ ] Documentar em `docs/fase_1_fundamentos.md`
-
-#### 1.2 Reinforcement Learning (Teoria)
-
-- [ ] Estudar os 5 componentes: Agente, Ambiente, Estado, Ação, Recompensa
-- [ ] Entender o ciclo de interação Agente ↔ Ambiente
-- [ ] Estudar: O que é uma Política (Policy)?
-
-#### 1.3 Matemática Essencial
-
-- [ ] Estudar: Equação de Bellman (intuição, não decorar fórmula)
-- [ ] Estudar: O que é Valor Q (Quality)?
-- [ ] Estudar: Exploração vs Exploração (Epsilon-Greedy)
-
-#### 1.4 Recursos Recomendados
-
-- [ ] Assistir: David Silver RL Lecture 1-2
-- [ ] Ler: Sutton & Barto Capítulo 1-3
-
----
-
-### Fase 2: Q-Learning Básico (Jogo da Velha) ⬜
-
-#### 2.1 Ambiente do Jogo
-
-- [ ] Criar `ambiente.py` do zero
-- [ ] Implementar representação do tabuleiro (lista/array)
-- [ ] Implementar verificação de vitória
-- [ ] Implementar lista de ações válidas
-- [ ] Escrever testes para o ambiente
-
-#### 2.2 Agente Q-Learning
-
-- [ ] Criar `agente.py` do zero
-- [ ] Implementar Q-Table (dicionário)
-- [ ] Implementar `obter_valor_q(estado, acao)`
-- [ ] Implementar escolha aleatória (exploração)
-
-#### 2.3 Estratégia Epsilon-Greedy
-
-- [ ] Implementar `escolher_acao(estado, epsilon)`
-- [ ] Testar: epsilon=1.0 (100% aleatório)
-- [ ] Testar: epsilon=0.0 (100% guloso)
-
-#### 2.4 Equação de Bellman
-
-- [ ] Implementar `atualizar_q(estado, acao, recompensa, proximo_estado)`
-- [ ] **Experimento**: `gamma = 0` (míope) - O que acontece?
-- [ ] **Experimento**: `gamma = 1` (visionário) - O que muda?
-- [ ] **Experimento**: `alpha = 1.0` - Por que é ruim?
-
-#### 2.5 Treinamento
-
-- [ ] Criar `treinador.py`
-- [ ] Implementar loop de episódios
-- [ ] Implementar self-play (agente vs agente)
-- [ ] Implementar decaimento de epsilon
-
-#### 2.6 Visualização e Análise
-
-- [ ] Plotar evolução da taxa de vitória
-- [ ] Visualizar Q-Table para estados específicos
-- [ ] Documentar resultados em `docs/fase_2_resultados.md`
-
----
-
-### Fase 3: Generalização (Labirinto) ⬜
-
-#### 3.1 Novo Ambiente
-
-- [ ] Criar ambiente de grade (Grid World)
-- [ ] Implementar movimentos: cima, baixo, esquerda, direita
-- [ ] Implementar paredes e objetivo
-- [ ] Implementar sistema de recompensas (-0.1 por passo, +10 objetivo)
-
-#### 3.2 Reutilização do Agente
-
-- [ ] Adaptar agente Q-Learning para o labirinto
-- [ ] Verificar: O algoritmo funciona sem mudanças?
-- [ ] Se não, entender o porquê
-
-#### 3.3 Experimentos
-
-- [ ] Testar com labirinto 5x5
-- [ ] Testar com labirinto 10x10
-- [ ] **Experimento**: Labirinto sem saída - O que acontece?
-
----
-
-### Fase 4: Visão Computacional Básica ⬜
-
-#### 4.1 OpenCV Fundamentos
-
-- [ ] Instalar e configurar OpenCV
-- [ ] Capturar screenshot da tela
-- [ ] Converter para escala de cinza
-- [ ] Detectar bordas (Canny)
-
-#### 4.2 Detecção de Objetos Simples
-
-- [ ] Detectar retângulos/formas
-- [ ] Template matching (encontrar imagem dentro de imagem)
-- [ ] Detectar cores específicas (HSV)
-
-#### 4.3 Projeto: Dino do Chrome
-
-- [ ] Capturar tela do jogo
-- [ ] Detectar cactos (obstáculos)
-- [ ] Implementar lógica: "Se cacto próximo → pular"
-- [ ] Integrar com PyAutoGUI para controle
-
----
-
-### Fase 5: IA Reativa (Flappy Bird) ⬜
-
-#### 5.1 Ambiente
-
-- [ ] Encontrar/criar clone de Flappy Bird jogável
-- [ ] Capturar tela e identificar elementos
-- [ ] Detectar: posição do pássaro, posição dos canos
-
-#### 5.2 Agente Reativo
-
-- [ ] Implementar lógica baseada em regras
-- [ ] Testar diferentes heurísticas
-- [ ] Documentar qual funciona melhor
-
-#### 5.3 Agente Aprendiz (Opcional)
-
-- [ ] Aplicar Q-Learning ao Flappy Bird
-- [ ] Comparar com agente reativo
-
----
-
-### Fase 6: Deep Q-Network (DQN) ⬜
-
-#### 6.1 PyTorch Fundamentos
-
-- [ ] Instalar PyTorch
-- [ ] Criar tensores e operações básicas
-- [ ] Entender autograd (gradientes automáticos)
-
-#### 6.2 Rede Neural Simples
-
-- [ ] Criar rede com 1 camada oculta
-- [ ] Treinar para função XOR (sanity check)
-- [ ] Entender forward pass e backpropagation
-
-#### 6.3 DQN Teoria
-
-- [ ] Estudar: Por que substituir Q-Table por rede neural?
-- [ ] Estudar: Experience Replay
-- [ ] Estudar: Target Network
-
-#### 6.4 Gymnasium
-
-- [ ] Instalar Gymnasium
-- [ ] Explorar ambiente CartPole
-- [ ] Explorar ambiente LunarLander
-
-#### 6.5 Implementar DQN
-
-- [ ] Criar rede neural para aproximar Q
-- [ ] Implementar Experience Replay
-- [ ] Treinar em CartPole
-- [ ] Treinar em LunarLander
-
----
-
-### Fase 7: Ragnarok Online (Projeto Final) ⬜
-
-#### 7.1 Análise do Jogo
-
-- [ ] Identificar elementos visuais (HP, SP, monstros, itens)
-- [ ] Mapear teclas de ação (F1-F9, cliques)
-- [ ] Definir estados possíveis do agente
-
-#### 7.2 Captura e Processamento
-
-- [ ] Capturar tela do jogo em tempo real
-- [ ] Detectar barra de HP/SP
-- [ ] Detectar monstros na tela
-- [ ] Detectar itens dropados
-
-#### 7.3 Máquina de Estados
-
-- [ ] Implementar estados: IDLE, ATACANDO, CURANDO, FUGINDO, COLETANDO
-- [ ] Definir transições entre estados
-- [ ] Integrar com visão computacional
-
-#### 7.4 Controle
-
-- [ ] Integrar PyAutoGUI ou AutoHotkey
-- [ ] Implementar movimentação
-- [ ] Implementar uso de skills
-- [ ] Implementar coleta de itens
-
-#### 7.5 Agente Inteligente
-
-- [ ] Aplicar RL para otimizar comportamento
-- [ ] Treinar em servidor privado/teste
-- [ ] Documentar resultados
+Cada fase contém documentação didática detalhada em `docs/` e implementações práticas em `src/`.
 
 ---
 
@@ -273,10 +52,33 @@ Aprender **Inteligência Artificial** do zero absoluto até criar uma IA capaz d
 
 ## 📖 Recursos
 
-- [Sutton & Barto - RL: An Introduction](http://incompleteideas.net/book/the-book.html)
-- [David Silver - RL Course](https://www.youtube.com/playlist?list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ)
-- [Spinning Up in Deep RL](https://spinningup.openai.com/)
+### 🇧🇷 Em Português (PT-BR)
+
+**Canais no YouTube:**
+
+- [Mario Filho - Machine Learning](https://www.youtube.com/@MarioFilhoML) - Kaggle Grandmaster, conteúdo sobre ML, RL e Data Science
+- [Sandeco - IA Descomplicada](https://www.youtube.com/@SandecoChannel) - 59k+ inscritos, IA e ML explicado de forma acessível
+- [Programador Lhama](https://www.youtube.com/@ProgramadorLhama) - Python, boas práticas e arquitetura
+- [Código Fonte TV](https://www.youtube.com/@codigofontetv) - Fundamentos de IA e tecnologia
+
+**Materiais Acadêmicos:**
+
+- Artigos e materiais de universidades brasileiras (UFPE, UFRJ, UFSC, UFG) sobre Aprendizado por Reforço
+
+### 🇺🇸 Em Inglês (Recursos Clássicos)
+
+**Livros:**
+
+- [Sutton & Barto - RL: An Introduction](http://incompleteideas.net/book/the-book.html) - A "bíblia" do RL (PDF gratuito)
+- [Deep Learning Book](https://www.deeplearningbook.org/) - Ian Goodfellow et al. (online gratuito)
+
+**Cursos:**
+
+- [David Silver - RL Course](https://www.youtube.com/playlist?list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ) ⚠️ _Ative legendas automáticas PT-BR_
+- [Spinning Up in Deep RL](https://spinningup.openai.com/) - OpenAI
 - [PyTorch Tutorials](https://pytorch.org/tutorials/)
+
+> **Dica:** Para vídeos em inglês, ative legendas automáticas e traduza para PT-BR nas configurações do YouTube.
 
 ---
 
