@@ -30,10 +30,10 @@ Imagine que a **Inteligência Artificial (IA)** é a sua oficina inteira. Dentro
 │  INTELIGÊNCIA ARTIFICIAL (IA)           │  ← A Oficina Completa (o conceito)
 │  ┌─────────────────────────────────┐    │
 │  │  MACHINE LEARNING (ML)          │    │  ← As Ferramentas Elétricas (aprende com dados)
-│  │  ┌─────────────────────────┐     │    │
-│  │  │  DEEP LEARNING (DL)     │     │    │  ← A Cortadora a Laser (usa redes neurais)
-│  │  │                         │     │    │
-│  │  └─────────────────────────┘     │    │
+│  │  ┌─────────────────────────┐    │    │
+│  │  │  DEEP LEARNING (DL)     │    │    │  ← A Cortadora a Laser (usa redes neurais)
+│  │  │                         │    │    │
+│  │  └─────────────────────────┘    │    │
 │  └─────────────────────────────────┘    │
 └─────────────────────────────────────────┘
 ```
