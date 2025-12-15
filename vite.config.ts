@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        // Configurações para hot-reload funcionar no Docker
+        watch: {
+          usePolling: true,
+          interval: 1000,
+        },
       },
       plugins: [react()],
       define: {
