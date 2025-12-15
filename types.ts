@@ -32,6 +32,11 @@ export interface AppState {
   quizScores: Record<number, number>; // PhaseID -> Score %
   isQuizMode: boolean;
   maxStepReached: Record<number, number>; // PhaseIndex -> Max Step Index Reached
+  badgesDesbloqueados: string[]; // IDs dos badges conquistados
+  ultimoBadgeDesbloqueado: string | null; // Último badge para animação
+  circulosClicados: Set<string>; // Rastreamento de quais círculos da hierarquia foram clicados
+  contadorTutorIA: number; // Quantas vezes usou o Tutor IA
+  primeirasTentativasQuiz: Record<number, boolean>; // PhaseID -> passou de primeira?
 }
 
 export type BoardState = (string | null)[];
