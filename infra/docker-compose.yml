@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    container_name: aprendendo-ia-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Monta o código local no container para hot-reload
+      - ..:/app
+      # Usa um volume nomeado para node_modules (evita conflitos Windows/Linux)
+      - node_modules:/app/node_modules
+    environment:
+      # Carrega variáveis de ambiente do arquivo .env.local
+      - NODE_ENV=development
+    env_file:
+      - ../.env.local
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+volumes:
+  node_modules:
