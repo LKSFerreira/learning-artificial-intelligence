@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, Globe, Zap, Box, Cpu, Brain, Database, Dog, Bone, Search, Map, CheckCircle, XCircle, ChevronRight, Terminal, BarChart3, ScanFace } from 'lucide-react';
+import { Bot, Globe, Zap, Box, Cpu, Brain, Database, Dog, Bone, Search, Map, CheckCircle, XCircle, ChevronRight, Terminal, BarChart3, ScanFace, RotateCcw } from 'lucide-react';
 
 interface Props {
   visualState: string;
@@ -30,6 +30,14 @@ const Phase1Visual: React.FC<Props> = ({ visualState }) => {
   const testImage = (type: 'potion' | 'apple') => {
       if (type === 'potion') setTestResult({ label: 'Poção', conf: 99 });
       else setTestResult({ label: 'Não é Poção', conf: 5 });
+  };
+
+  // --- STATE FOR HIERARCHY TOOLBOX (Interactive Circles) ---
+  const [circuloSelecionado, setCirculoSelecionado] = useState<'ia' | 'ml' | 'dl' | null>(null);
+
+  const selecionarCirculo = (tipo: 'ia' | 'ml' | 'dl') => {
+      // Alterna seleção: se já estiver selecionado, deseleciona
+      setCirculoSelecionado(prev => prev === tipo ? null : tipo);
   };
 
   // --- STATE FOR DEEP LEARNING (Neural Net) ---
@@ -175,50 +183,260 @@ const Phase1Visual: React.FC<Props> = ({ visualState }) => {
     );
   }
 
-  // 2. HIERARCHY TOOLBOX (Interactive - RESIZED)
+  // 2. HIERARCHY TOOLBOX (Interactive - Com Modal Centralizada)
   if (visualState === 'hierarchy_toolbox') {
+    // Dados informativos de cada conceito
+    const informacoesCirculos = {
+      ia: {
+        titulo: 'Inteligência Artificial',
+        definicao: 'Sistemas computacionais capazes de realizar tarefas que normalmente requerem inteligência humana.',
+        exemplos: ['Assistentes virtuais (Alexa, Siri)', 'Carros autônomos', 'Sistemas de recomendação (Netflix, YouTube)', 'Jogos de xadrez'],
+        cor: 'slate',
+        corGradiente: 'from-slate-500 to-slate-700',
+        icone: Box
+      },
+      ml: {
+        titulo: 'Machine Learning',
+        definicao: 'Algoritmos que aprendem padrões a partir de dados, sem serem explicitamente programados para cada situação.',
+        exemplos: ['Filtro de spam de e-mail', 'Detecção de fraude bancária', 'Reconhecimento de voz', 'Previsão de vendas'],
+        cor: 'blue',
+        corGradiente: 'from-blue-500 to-blue-700',
+        icone: Database
+      },
+      dl: {
+        titulo: 'Deep Learning',
+        definicao: 'Redes neurais profundas inspiradas no cérebro humano, capazes de extrair características complexas dos dados.',
+        exemplos: ['Reconhecimento facial', 'Tradução automática (Google Translate)', 'Geração de texto (ChatGPT)', 'Diagnóstico médico por imagem'],
+        cor: 'indigo',
+        corGradiente: 'from-indigo-500 to-purple-700',
+        icone: Brain
+      }
+    };
+
+    const infoAtual = circuloSelecionado ? informacoesCirculos[circuloSelecionado] : null;
+
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 w-full relative">
+      <div className="flex flex-col items-center justify-center h-full w-full relative">
+        {/* Background Pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50"></div>
         
         <div className="relative z-10 flex flex-col items-center gap-8 scale-90 md:scale-100 transition-transform">
             <h3 className="text-xl font-bold text-slate-700">Explore a Oficina</h3>
             
-            {/* Increased Size: w-[28rem] h-[28rem] */}
-            <div className="group relative w-[28rem] h-[28rem] flex items-center justify-center">
-                {/* AI Outer Circle */}
-                <div className="absolute inset-0 rounded-full border-4 border-slate-300 bg-slate-50 flex flex-col items-center pt-8 transition-all hover:scale-105 hover:border-slate-400 cursor-pointer shadow-sm">
-                    <span className="font-bold text-slate-500 uppercase tracking-widest text-xs md:text-sm">Inteligência Artificial</span>
-                    <Box size={16} className="text-slate-400 mt-2" />
+            {/* Container dos Círculos */}
+            <div className="relative w-[28rem] h-[28rem] flex items-center justify-center">
+                {/* AI Outer Circle - Com dica visual de clique */}
+                <div 
+                    onClick={() => selecionarCirculo('ia')}
+                    className={`absolute inset-0 rounded-full border-4 flex flex-col items-center pt-8 transition-all cursor-pointer group
+                        ${circuloSelecionado === 'ia' 
+                            ? 'border-slate-500 bg-slate-100 scale-105 shadow-[0_0_40px_rgba(100,116,139,0.3)]' 
+                            : 'border-slate-300 bg-slate-50 hover:scale-105 hover:border-slate-400 shadow-sm animate-[pulse_3s_ease-in-out_infinite]'
+                        }
+                    `}
+                >
+                    <span className={`font-bold uppercase tracking-widest text-xs md:text-sm transition-colors ${circuloSelecionado === 'ia' ? 'text-slate-700' : 'text-slate-500'}`}>
+                        Inteligência Artificial
+                    </span>
+                    <Box size={16} className={`mt-2 transition-colors ${circuloSelecionado === 'ia' ? 'text-slate-600' : 'text-slate-400 group-hover:scale-110'}`} />
                 </div>
                 
-                {/* ML Middle Circle - Increased to w-[18rem] */}
-                <div className="absolute w-[18rem] h-[18rem] rounded-full border-4 border-blue-300 bg-blue-50 flex flex-col items-center pt-8 transition-all hover:scale-105 hover:bg-blue-100 cursor-pointer shadow-md z-10">
-                    <span className="font-bold text-blue-600 uppercase tracking-widest text-xs">Machine Learning</span>
-                    <Database size={16} className="text-blue-400 mt-2" />
+                {/* ML Middle Circle - Com dica visual */}
+                <div 
+                    onClick={(e) => { e.stopPropagation(); selecionarCirculo('ml'); }}
+                    className={`absolute w-[18rem] h-[18rem] rounded-full border-4 flex flex-col items-center pt-8 transition-all cursor-pointer z-10 group
+                        ${circuloSelecionado === 'ml'
+                            ? 'border-blue-500 bg-blue-100 scale-105 shadow-[0_0_40px_rgba(59,130,246,0.4)]'
+                            : 'border-blue-300 bg-blue-50 hover:scale-105 hover:bg-blue-100 shadow-md animate-[pulse_3s_ease-in-out_infinite_200ms]'
+                        }
+                    `}
+                >
+                    <span className={`font-bold uppercase tracking-widest text-xs transition-colors ${circuloSelecionado === 'ml' ? 'text-blue-700' : 'text-blue-600'}`}>
+                        Machine Learning
+                    </span>
+                    <Database size={16} className={`mt-2 transition-colors ${circuloSelecionado === 'ml' ? 'text-blue-600' : 'text-blue-400 group-hover:scale-110'}`} />
                 </div>
 
-                 {/* DL Inner Circle - Kept at w-32 */}
-                 <div className="absolute w-32 h-32 rounded-full border-4 border-indigo-500 bg-indigo-600 flex flex-col items-center justify-center transition-all hover:scale-110 hover:shadow-xl hover:shadow-indigo-300 cursor-pointer z-20 text-white shadow-lg">
-                    <Brain size={32} className="animate-pulse" />
+                {/* DL Inner Circle - Com dica visual */}
+                <div 
+                    onClick={(e) => { e.stopPropagation(); selecionarCirculo('dl'); }}
+                    className={`absolute w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center transition-all cursor-pointer z-20 text-white group
+                        ${circuloSelecionado === 'dl'
+                            ? 'border-indigo-400 bg-indigo-500 scale-125 shadow-[0_0_50px_rgba(99,102,241,0.5)]'
+                            : 'border-indigo-500 bg-indigo-600 hover:scale-110 hover:shadow-xl hover:shadow-indigo-300 shadow-lg animate-[pulse_3s_ease-in-out_infinite_400ms]'
+                        }
+                    `}
+                >
+                    <Brain size={32} className="group-hover:scale-110 transition-transform" />
                     <span className="font-bold text-xs mt-2 text-center leading-tight">Deep<br/>Learning</span>
                 </div>
             </div>
-            <p className="text-sm text-slate-500 bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-slate-200 shadow-sm mt-4">
-                Clique nos círculos para entender a relação (Matrioska)
+            
+            {/* Texto com dica visual pulsante */}
+            <p className={`text-sm bg-white/80 backdrop-blur px-4 py-2 rounded-full border shadow-sm mt-4 transition-all ${!circuloSelecionado ? 'border-indigo-300 text-indigo-700 animate-pulse' : 'border-slate-200 text-slate-500'}`}>
+                👆 {circuloSelecionado ? 'Clique novamente ou fora para fechar' : 'Clique nos círculos para explorar!'}
             </p>
         </div>
+
+        {/* Modal Centralizada (Backdrop + Card) */}
+        {circuloSelecionado && infoAtual && (
+            <div 
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+                onClick={() => setCirculoSelecionado(null)}
+            >
+                {/* Backdrop com blur */}
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+                
+                {/* Modal Card */}
+                <div 
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+                >
+                    {/* Header com Gradiente */}
+                    <div className={`bg-gradient-to-r ${infoAtual.corGradiente} text-white p-6 rounded-t-2xl relative overflow-hidden`}>
+                        {/* Pattern decorativo */}
+                        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,white_1px,transparent_1px)] [background-size:24px_24px]"></div>
+                        
+                        <div className="relative flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                {React.createElement(infoAtual.icone, { 
+                                    size: 40, 
+                                    className: 'text-white drop-shadow-lg'
+                                })}
+                                <h2 className="text-2xl font-bold drop-shadow-md">
+                                    {infoAtual.titulo}
+                                </h2>
+                            </div>
+                            <button 
+                                onClick={() => setCirculoSelecionado(null)}
+                                className="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+                            >
+                                <XCircle size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Conteúdo */}
+                    <div className="p-6">
+                        {/* Definição */}
+                        <div className="mb-6">
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span className="w-1 h-4 bg-slate-400 rounded"></span>
+                                Definição
+                            </h3>
+                            <p className="text-slate-700 leading-relaxed">
+                                {infoAtual.definicao}
+                            </p>
+                        </div>
+
+                        {/* Exemplos Práticos */}
+                        <div className="mb-6">
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <span className="w-1 h-4 bg-slate-400 rounded"></span>
+                                Exemplos Práticos
+                            </h3>
+                            <div className="space-y-2">
+                                {infoAtual.exemplos.map((exemplo, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className={`flex items-start gap-3 p-3 bg-${infoAtual.cor}-50 border border-${infoAtual.cor}-100 rounded-lg hover:shadow-md transition-shadow`}
+                                    >
+                                        <CheckCircle size={16} className={`text-${infoAtual.cor}-600 mt-0.5 shrink-0`} />
+                                        <span className="text-sm text-slate-700">{exemplo}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Relação Hierárquica */}
+                        <div className={`p-4 bg-gradient-to-r from-${infoAtual.cor}-50 to-${infoAtual.cor}-100 border-l-4 border-${infoAtual.cor}-500 rounded-lg`}>
+                            <p className="text-sm text-slate-700 italic leading-relaxed flex items-start gap-2">
+                                <span className="text-lg">💡</span>
+                                <span>
+                                    {circuloSelecionado === 'ia' && 'IA é o conceito mais amplo, que engloba Machine Learning e Deep Learning.'}
+                                    {circuloSelecionado === 'ml' && 'Machine Learning está dentro de IA e inclui Deep Learning.'}
+                                    {circuloSelecionado === 'dl' && 'Deep Learning é um tipo específico de Machine Learning, usando redes neurais profundas.'}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
       </div>
     );
   }
 
-  // 3. ML EXAMPLES (Interactive Simulator)
+  // 3. ML EXAMPLES (Interactive Simulator - EXPANDIDO COM MAIS EXEMPLOS)
   if (visualState === 'ml_examples') {
+    // Dataset expandido com 12 tipos de itens variados
+    const datasetItens = [
+      { emoji: '🧪', nome: 'Poção Verde', tipo: 'potion', correto: true },
+      { emoji: '🍎', nome: 'Maçã', tipo: 'food', correto: false },
+      { emoji: '⚗️', nome: 'Elixir Azul', tipo: 'potion', correto: true },
+      { emoji: '🍊', nome: 'Laranja', tipo: 'food', correto: false },
+      { emoji: '🧴', nome: 'Frasco Roxo', tipo: 'potion', correto: true },
+      { emoji: '🍇', nome: 'Uvas', tipo: 'food', correto: false },
+      { emoji: '⚔️', nome: 'Espada', tipo: 'weapon', correto: false },
+      { emoji: '💎', nome: 'Gema', tipo: 'treasure', correto: false },
+      { emoji: '🍵', nome: 'Chá Verde', tipo: 'potion', correto: true },
+      { emoji: '🍓', nome: 'Morango', tipo: 'food', correto: false },
+      { emoji: '🛡️', nome: 'Escudo', tipo: 'weapon', correto: false },
+      { emoji: '🔮', nome: 'Orbe Mágico', tipo: 'potion', correto: true },
+    ];
+
+    // Função que testa um item ESPECÍFICO pelo índice
+    const testItem = (itemIndex: number) => {
+      const item = datasetItens[itemIndex];
+      if (!item) return;
+      
+      // Valores de confiança aleatórios mais realistas
+      let confianca: number;
+      if (item.correto) {
+        // Poções: 95-99% de confiança
+        confianca = Math.floor(Math.random() * 5) + 95; // 95, 96, 97, 98 ou 99
+      } else {
+        // Não-poções: 5-10% de confiança
+        confianca = Math.floor(Math.random() * 6) + 5; // 5, 6, 7, 8, 9 ou 10
+      }
+      
+      if (item.correto) {
+        setTestResult({ label: `✅ ${item.nome} - É Poção!`, conf: confianca });
+      } else {
+        setTestResult({ label: `❌ ${item.nome} - Não é Poção`, conf: confianca });
+      }
+    };
+
+    // Função para reiniciar a simulação
+    const reiniciarSimulacao = () => {
+      setMlStage('coding');
+      setMlProgress(0);
+      setTestResult(null);
+    };
+
     return (
       <div className="flex flex-col h-full w-full bg-slate-900 text-slate-200 p-6 overflow-hidden">
-        <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-4">
-             <Bot className="text-cyan-400" />
-             <h3 className="font-bold text-lg text-white">Machine Learning: Aprendendo com Exemplos</h3>
+        {/* Header com botão de reiniciar */}
+        <div className="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
+            <div className="flex items-center gap-2">
+                <Bot className="text-cyan-400" />
+                <h3 className="font-bold text-lg text-white">Machine Learning: Aprendendo com Exemplos</h3>
+            </div>
+            
+            {/* Botão Reiniciar - só aparece após iniciar */}
+            {mlStage !== 'coding' && (
+                <button
+                    onClick={reiniciarSimulacao}
+                    className="group relative px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-lg overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50"
+                >
+                    <span className="relative z-10 flex items-center gap-2">
+                        <RotateCcw size={14} className="group-hover:rotate-180 transition-transform duration-500" />
+                        Reiniciar
+                    </span>
+                    {/* Brilho sutil ao passar o mouse */}
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                </button>
+            )}
         </div>
 
         <div className="flex-1 flex gap-6">
@@ -229,18 +447,25 @@ const Phase1Visual: React.FC<Props> = ({ visualState }) => {
                     <span className="text-xs font-mono text-pink-400 font-bold">PROGRAMADOR (VOCÊ)</span>
                     <span className="text-[10px] bg-red-900/50 text-red-300 px-2 py-1 rounded">JEITO ANTIGO</span>
                 </div>
-                <div className="bg-slate-950 rounded-lg p-3 font-mono text-xs text-slate-300 shadow-inner flex-1 overflow-hidden">
+                <div className="bg-slate-950 rounded-lg p-3 font-mono text-xs text-slate-300 shadow-inner flex-1 overflow-auto">
                     <span className="text-purple-400">function</span> <span className="text-yellow-300">isPotion</span>(item) {'{'}<br/>
                     &nbsp;&nbsp;<span className="text-purple-400">if</span> (item.color === <span className="text-green-400">'red'</span>) {'{'}<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-400">return</span> <span className="text-blue-400">true</span>;<br/>
                     &nbsp;&nbsp;{'}'}<br/>
+                    &nbsp;&nbsp;<span className="text-slate-500">// E azul? Roxo? Verde?</span><br/>
+                    &nbsp;&nbsp;<span className="text-slate-500">// Impossível prever tudo!</span><br/>
                     &nbsp;&nbsp;<span className="text-purple-400">return</span> <span className="text-blue-400">false</span>;<br/>
                     {'}'}
                 </div>
                 {mlStage === 'coding' && (
-                    <div className="mt-4 flex gap-2 justify-center">
-                         <div className="bg-slate-800 p-2 rounded text-center w-20 opacity-50"><span className="text-2xl">🧪</span><br/><span className="text-[10px]">Ok</span></div>
-                         <div className="bg-slate-800 p-2 rounded text-center w-20 border border-red-500"><span className="text-2xl">🍎</span><br/><span className="text-[10px] text-red-400">Erro!</span></div>
+                    <div className="mt-4">
+                        <p className="text-xs text-center text-slate-500 mb-2">Exemplos que falham:</p>
+                        <div className="grid grid-cols-4 gap-2">
+                             <div className="bg-slate-800 p-2 rounded text-center opacity-50"><span className="text-xl">🧪</span><br/><span className="text-[9px]">Ok</span></div>
+                             <div className="bg-slate-800 p-2 rounded text-center border border-red-500"><span className="text-xl">🍎</span><br/><span className="text-[9px] text-red-400">Erro!</span></div>
+                             <div className="bg-slate-800 p-2 rounded text-center border border-red-500"><span className="text-xl">⚗️</span><br/><span className="text-[9px] text-red-400">Erro!</span></div>
+                             <div className="bg-slate-800 p-2 rounded text-center border border-red-500"><span className="text-xl">🧴</span><br/><span className="text-[9px] text-red-400">Erro!</span></div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -263,15 +488,16 @@ const Phase1Visual: React.FC<Props> = ({ visualState }) => {
                     {mlStage === 'training' && (
                          <div className="w-full px-4">
                              <div className="flex justify-between text-xs text-cyan-300 mb-1">
-                                 <span>Treinando...</span>
+                                 <span>Treinando com {datasetItens.length} exemplos...</span>
                                  <span>{mlProgress}%</span>
                              </div>
                              <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
                                  <div className="h-full bg-cyan-500 transition-all duration-75" style={{ width: `${mlProgress}%`}}></div>
                              </div>
-                             <div className="grid grid-cols-5 gap-1 mt-4 opacity-50">
-                                 {Array(10).fill(0).map((_,i) => <div key={i} className="text-lg animate-pulse">{i%2===0 ? '🧪' : '🍎'}</div>)}
+                             <div className="grid grid-cols-4 gap-2 mt-4 opacity-50">
+                                 {datasetItens.map((item, i) => <div key={i} className="text-2xl animate-pulse">{item.emoji}</div>)}
                              </div>
+                             <p className="text-center text-xs text-cyan-400 mt-3">🧠 Aprendendo padrões...</p>
                          </div>
                     )}
 
@@ -279,31 +505,74 @@ const Phase1Visual: React.FC<Props> = ({ visualState }) => {
                         <div className="flex flex-col items-center w-full animate-in fade-in zoom-in">
                             <div className="h-24 w-full flex items-center justify-center border-2 border-dashed border-slate-600 rounded-lg bg-slate-900/50 mb-4">
                                 {testResult ? (
-                                    <div className="text-center">
-                                        <div className="text-4xl mb-1">{testResult.label === 'Poção' ? '🧪' : '🍎'}</div>
-                                        <div className={`text-sm font-bold ${testResult.label === 'Poção' ? 'text-green-400' : 'text-red-400'}`}>
-                                            {testResult.label} <span className="text-xs opacity-70">({testResult.conf}%)</span>
+                                    <div className="text-center px-2">
+                                        <div className={`text-sm font-bold ${testResult.label.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
+                                            {testResult.label} 
                                         </div>
+                                        <div className="text-xs opacity-70 mt-1">Confiança: {testResult.conf}%</div>
                                     </div>
                                 ) : (
                                     <span className="text-xs text-slate-500 italic">Selecione um item abaixo</span>
                                 )}
                             </div>
-                            <div className="flex gap-4">
-                                <button onClick={() => testImage('potion')} className="px-3 py-2 bg-slate-700 rounded hover:bg-slate-600 hover:scale-105 transition-all text-2xl" title="Testar Poção">🧪</button>
-                                <button onClick={() => testImage('apple')} className="px-3 py-2 bg-slate-700 rounded hover:bg-slate-600 hover:scale-105 transition-all text-2xl" title="Testar Maçã">🍎</button>
+                            
+                            {/* Grid de testes com TODOS os itens */}
+                            <div className="w-full">
+                                <p className="text-xs text-slate-400 mb-2 text-center">Teste o modelo:</p>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {datasetItens.map((item, idx) => (
+                                        <button 
+                                            key={idx}
+                                            onClick={() => testItem(idx)} 
+                                            className="px-2 py-3 bg-slate-700 rounded hover:bg-slate-600 hover:scale-105 transition-all text-2xl flex flex-col items-center gap-1 group" 
+                                            title={item.nome}
+                                        >
+                                            <span>{item.emoji}</span>
+                                            <span className="text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">{item.nome.split(' ')[0]}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
 
                 {mlStage === 'coding' && (
-                    <button 
-                        onClick={trainModel}
-                        className="w-full mt-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg shadow-cyan-900/50 transition-all flex items-center justify-center gap-2"
-                    >
-                        <Zap size={18} /> Rodar Classificação ML
-                    </button>
+                    <div className="relative mt-4 group/btn">
+                        {/* Borda animada CIRCULANDO ao redor do botão */}
+                        <div 
+                            className="absolute -inset-0.5 rounded-lg opacity-75 blur-sm"
+                            style={{
+                                background: 'conic-gradient(from var(--angle), #06b6d4 0deg, #a855f7 120deg, #ec4899 240deg, #06b6d4 360deg)',
+                                animation: 'borderRotate 3s linear infinite'
+                            }}
+                        ></div>
+                        
+                        {/* Adicionando animação CSS inline via style tag */}
+                        <style>{`
+                            @property --angle {
+                                syntax: '<angle>';
+                                initial-value: 0deg;
+                                inherits: false;
+                            }
+                            @keyframes borderRotate {
+                                to {
+                                    --angle: 360deg;
+                                }
+                            }
+                        `}</style>
+                        
+                        {/* Botão principal */}
+                        <button 
+                            onClick={trainModel}
+                            className="relative w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <Zap size={18} className="group-hover:scale-110 transition-transform" /> 
+                            <span>Rodar Classificação ML</span>
+                            {/* Brilho interno ao hover */}
+                            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-lg transition-opacity"></div>
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
