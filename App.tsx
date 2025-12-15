@@ -5,6 +5,7 @@ import { AppState, QuizQuestion } from './types';
 import Phase1Visual from './components/visuals/Phase1Visual';
 import Phase2Visual from './components/visuals/Phase2Visual';
 import Phase3Visual from './components/visuals/Phase3Visual';
+import BadgeSystem from './components/BadgeSystem';
 import { askAiTutor } from './services/geminiService';
 import { saveProgress, loadProgress, clearProgress } from './services/storageService';
 import { ChevronRight, ChevronLeft, Lightbulb, CheckCircle2, BookOpen, Play, Lock, Award, RefreshCcw, Brain, RotateCcw, AlertTriangle, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -22,7 +23,12 @@ const App: React.FC = () => {
         completedPhases: [],
         quizScores: {},
         isQuizMode: false,
-        maxStepReached: { 0: 0 }
+        maxStepReached: { 0: 0 },
+        badgesDesbloqueados: [],
+        ultimoBadgeDesbloqueado: null,
+        circulosClicados: new Set<string>(),
+        contadorTutorIA: 0,
+        primeirasTentativasQuiz: {}
       };
   });
 
@@ -39,6 +45,63 @@ const App: React.FC = () => {
   // Efeito para salvar o progresso automaticamente sempre que o estado mudar
   useEffect(() => {
       saveProgress(state);
+  }, [state]);
+
+  // Efeito para gerenciar desbloqueio automático de badges
+  useEffect(() => {
+      const desbloquearBadge = (badgeId: string) => {
+          if (!state.badgesDesbloqueados.includes(badgeId)) {
+              setState(prev => ({
+                  ...prev,
+                  badgesDesbloqueados: [...prev.badgesDesbloqueados, badgeId],
+                  ultimoBadgeDesbloqueado: badgeId
+              }));
+          }
+      };
+
+      // Badge: Completou Fase 1
+      if (state.completedPhases.includes(1)) {
+          desbloquearBadge('primeira_fase');
+      }
+
+      // Badge: Completou Fase 2
+      if (state.completedPhases.includes(2)) {
+          desbloquearBadge('segunda_fase');
+      }
+
+      // Badge: Completou Fase 3
+      if (state.completedPhases.includes(3)) {
+          desbloquearBadge('terceira_fase');
+      }
+
+      // Badge: Perfeição (100% em algum quiz)
+      if (Object.values(state.quizScores).some(score => score === 100)) {
+          desbloquearBadge('perfeicao');
+      }
+
+      // Badge: Explorador (clicou em todos os 3 círculos)
+      if (state.circulosClicados.size >= 3) {
+          desbloquearBadge('explorador');
+      }
+
+      // Badge: Curioso (usou Tutor IA 5 vezes)
+      if (state.contadorTutorIA >= 5) {
+          desbloquearBadge('curioso');
+      }
+
+      // Badge: Mestre (completou todas as fases)
+      if (state.completedPhases.length === CURRICULUM.length) {
+          desbloquearBadge('mestre');
+      }
+
+      // Badge: Prodígio (passou em todos os quizzes de primeira)
+      const totalQuizzesPossiveis = CURRICULUM.filter(phase => 
+          phase.steps.some(step => step.type === 'quiz')
+      ).length;
+      const passouTodosDePrimeira = Object.values(state.primeirasTentativasQuiz).filter(Boolean).length === totalQuizzesPossiveis;
+      if (passouTodosDePrimeira && totalQuizzesPossiveis > 0) {
+          desbloquearBadge('prodigio');
+      }
   }, [state]);
 
   const currentPhase = CURRICULUM[state.currentPhaseIndex];
@@ -141,6 +204,12 @@ const App: React.FC = () => {
     const result = await askAiTutor(currentPhase.title, currentStep.title, currentStep.content);
     setAiExplanation(result);
     setLoadingAi(false);
+    
+    // Incrementar contador para badge "Curioso"
+    setState(prev => ({
+        ...prev,
+        contadorTutorIA: prev.contadorTutorIA + 1
+    }));
   };
 
   // Easter Egg: Unlock all phases
@@ -323,6 +392,14 @@ const App: React.FC = () => {
           })}
         </nav>
         
+        {/* Badges Section */}
+        <div className="px-4 pb-4">
+            <BadgeSystem 
+                badgesDesbloqueados={state.badgesDesbloqueados}
+                ultimoBadgeDesbloqueado={state.ultimoBadgeDesbloqueado}
+            />
+        </div>
+
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 bg-slate-50">
             <button 
