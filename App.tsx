@@ -50,10 +50,12 @@ const App: React.FC = () => {
   // Efeito para gerenciar desbloqueio automático de badges
   useEffect(() => {
       const desbloquearBadge = (badgeId: string) => {
-          if (!state.badgesDesbloqueados.includes(badgeId)) {
+          // Validação defensiva para estados legados
+          const badgesAtuais = state.badgesDesbloqueados ?? [];
+          if (!badgesAtuais.includes(badgeId)) {
               setState(prev => ({
                   ...prev,
-                  badgesDesbloqueados: [...prev.badgesDesbloqueados, badgeId],
+                  badgesDesbloqueados: [...(prev.badgesDesbloqueados ?? []), badgeId],
                   ultimoBadgeDesbloqueado: badgeId
               }));
           }
@@ -80,12 +82,12 @@ const App: React.FC = () => {
       }
 
       // Badge: Explorador (clicou em todos os 3 círculos)
-      if (state.circulosClicados.size >= 3) {
+      if ((state.circulosClicados?.size ?? 0) >= 3) {
           desbloquearBadge('explorador');
       }
 
       // Badge: Curioso (usou Tutor IA 5 vezes)
-      if (state.contadorTutorIA >= 5) {
+      if ((state.contadorTutorIA ?? 0) >= 5) {
           desbloquearBadge('curioso');
       }
 
@@ -98,7 +100,7 @@ const App: React.FC = () => {
       const totalQuizzesPossiveis = CURRICULUM.filter(phase => 
           phase.steps.some(step => step.type === 'quiz')
       ).length;
-      const passouTodosDePrimeira = Object.values(state.primeirasTentativasQuiz).filter(Boolean).length === totalQuizzesPossiveis;
+      const passouTodosDePrimeira = Object.values(state.primeirasTentativasQuiz ?? {}).filter(Boolean).length === totalQuizzesPossiveis;
       if (passouTodosDePrimeira && totalQuizzesPossiveis > 0) {
           desbloquearBadge('prodigio');
       }

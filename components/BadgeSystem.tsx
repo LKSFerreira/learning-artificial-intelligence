@@ -42,7 +42,10 @@ const BadgeSystem: React.FC<PropriedadesBadgeSystem> = ({
     prodigio: { id: 'prodigio', nome: 'Prodígio', descricao: 'Todos os quizzes de primeira', icone: '🚀', cor: 'rose' }
   };
 
-  if (badgesDesbloqueados.length === 0) {
+  // Validação defensiva para estados legados que não contêm badgesDesbloqueados
+  const badges = badgesDesbloqueados ?? [];
+
+  if (badges.length === 0) {
     return (
       <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
         <div className="flex items-center gap-2 mb-2">
@@ -62,13 +65,13 @@ const BadgeSystem: React.FC<PropriedadesBadgeSystem> = ({
       <div className="flex items-center gap-2 mb-3">
         <Award size={16} className="text-amber-600" />
         <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">
-          Conquistas ({badgesDesbloqueados.length})
+          Conquistas ({badges.length})
         </span>
       </div>
 
       {/* Grid de Badges */}
       <div className="grid grid-cols-4 gap-2">
-        {badgesDesbloqueados.map(badgeId => {
+        {badges.map(badgeId => {
           const badge = badgesInfo[badgeId];
           if (!badge) return null;
 
