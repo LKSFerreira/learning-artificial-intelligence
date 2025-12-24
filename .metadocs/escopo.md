@@ -1,64 +1,62 @@
 # Escopo do Projeto
 
-> Definição do produto e suas funcionalidades.
+> Definição do produto e seus limites.
 
 ## Visão Geral
 
-**Jornada de Aprendizado de Inteligência Artificial** — Um repositório educacional progressivo que documenta o aprendizado de IA do zero ao domínio, usando jogos e atividades práticas como veículos de ensino.
+**Aprendendo Inteligência Artificial (Plataforma)** — Mais do que um repositório, uma plataforma web interativa, gamificada e didática para ensinar IA. O foco mudou de "meu aprendizado pessoal" para "ensinar o mundo através da prática".
 
-O objetivo final é dominar **Inteligência Artificial** até ser capaz de **criar e treinar modelos de IA para jogar qualquer jogo ou realizar qualquer atividade**.
+## Identidade do Produto
 
-## Funcionalidades Principais
+- **Nome:** Learning Artificial Intelligence (Aprendendo IA)
+- **Slogan:** "Do zero ao infinito: A IA explicada, jogada e codada."
+- **Estilo:** Visualmente rico, interativo, com micro-animações e feedback imediato.
+- **Diferencial:** Rigor acadêmico + Experiência de Jogo (Gamefeel).
 
-1. **Documentação Didática** - Cada fase contém explicações do "porquê", não apenas do "como"
-2. **Implementações Práticas** - Código funcional para cada conceito estudado
-3. **Progressão Estruturada** - Fases sequenciais que constroem conhecimento incrementalmente
-4. **Experimentos e Visualizações** - Gráficos e análises dos resultados de treinamento
+## Funcionalidades Principais (In-Scope)
 
-## Público-Alvo
+### 1. Plataforma de Ensino (Core)
 
-- **Iniciantes em IA** que desejam aprender de forma prática e consolidada
-- **Desenvolvedores** interessados em Reinforcement Learning para jogos
-- **O próprio autor** como registro de aprendizado e portfólio técnico
+- Sistemas de **Navegação Guiada** por módulos.
+- **Gamificação Pesada**: XP, Níveis, Badges, Streaks (Ofensiva).
+- **Conteúdo Interativo**: Textos que reagem ao mouse, simuladores em tempo real.
+- **Tutor IA**: Chatbot contextual para tirar dúvidas na hora.
 
-## Tecnologias
+### 2. Infraestrutura de Usuário
 
-- **Linguagem Principal:** Python 3.x
-- **Tooling:** Ruff (linter), MyPy (types), Pytest (testes)
-- **ML/DL:** NumPy, Matplotlib, PyTorch, Gymnasium
-- **Visão Computacional:** OpenCV, PyAutoGUI
-- **Infraestrutura:** Docker, Vite (para visualizações web)
+- **Autenticação Integrada** (GitHub e Email).
+- **Persistência de Progresso** em banco de dados (nuvem).
+- **Sistema de Doações/Apoio** integrado.
+
+### 3. Ferramentas de Aprendizado (Sandboxes)
+
+- **Editor de Código Web**: Execução de Python no navegador (Pyodide).
+- **Visualizadores de Algoritmos**: Ver o "cérebro" da IA pensando (tabelas Q, redes neurais pulsando).
+
+## Tecnologias e Stack
+
+O projeto agora é **Fullstack** e **Cloud-Ready**.
+
+- **Frontend (A Cara):** React, TypeScript, Tailwind CSS, Framer Motion (animações).
+- **Engine (O Cérebro):** Python (via Pyodide ou Backend), NumPy, PyTorch.
+- **Infra (O Corpo):** Docker, PostgreSQL, Supabase (ou similar para Auth/DB).
+- **Qualidade:** Vitest, ESLint, Prettier, Husky.
 
 ## Fases do Projeto
 
-| Fase    | Descrição                              | Status |
-| ------- | -------------------------------------- | ------ |
-| Fase 0  | Setup Profissional (Ambiente, Tooling) | [ ]    |
-| Fase 1  | Fundamentos Teóricos (IA, ML, DL, RL)  | [ ]    |
-| Fase 2  | Q-Learning Básico (Jogo da Velha)      | [ ]    |
-| Fase 3  | Generalização (Labirinto/Grid World)   | [ ]    |
-| Fase 4  | Visão Computacional (OpenCV)           | [ ]    |
-| Fase 5  | IA Reativa (Jogos Simples)             | [ ]    |
-| Fase 6  | Deep Q-Network (PyTorch, Gymnasium)    | [ ]    |
-| Fase 7+ | Projetos Avançados (Jogos Complexos)   | [ ]    |
+Consulte o [roadmap.md](roadmap.md) para a lista detalhada e atualizada. O escopo agora cobre:
 
-## Metodologia
+- **História da IA:** De Turing ao GPT.
+- **Fundamentos Matemáticos:** Sem "magia", apenas lógica.
+- **Reinforcement Learning:** O coração do currículo.
+- **Deep Learning & Neural Networks:** O futuro.
 
-**Build to Break** — Aprender implementando primeiro, depois consultando; quebrar o código para entender o funcionamento.
+## Fora do Escopo (Out-Scope)
 
-| ✅ Fazer                                 | ❌ Evitar                      |
-| ---------------------------------------- | ------------------------------ |
-| Implementar antes de consultar           | Pedir código completo para LLM |
-| Usar LLM para explicar conceitos/erros   | Aceitar código sem entender    |
-| Quebrar o código para ver o que acontece | Seguir tutoriais cegamente     |
-
-## Fora do Escopo
-
-- Aplicações comerciais ou de produção
-- Interfaces visuais elaboradas (foco no backend/algoritmos)
-- Treinamento em cloud (foco em ambiente local)
-- Suporte a outros idiomas além de português do Brasil
+- **Cursos de IA Generativa Superficial:** Foco em "Prompt Engineering" sem base técnica. (Aqui ensinamos a CRIAR a IA, não apenas usar).
+- **Hospedagem de Modelos Gigantes:** O foco é rodar exemplos didáticos, não competir com AWS/HuggingFace.
+- **Suporte a Mobile Legacy:** Foco em navegadores modernos e Desktop/Tablet inicialmente (PWA posterior).
 
 ---
 
-> **Nota:** Este arquivo define os limites do que será e não será implementado. Consulte o [roadmap.md](roadmap.md) para o detalhamento de tasks.
+> **Nota:** Este arquivo reflete a nova ambição do projeto de ser uma plataforma "TOP dos TOPs".

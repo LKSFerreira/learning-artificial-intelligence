@@ -31,4 +31,4 @@ Com base na leitura do `.metadocs/roadmap.md` e do estado atual dos arquivos:
 
 ---
 
-**🛑 AGUARDE:** Não gere código ainda. Apenas apresente o resumo do contexto e aguarde minha confirmação ou instruções específicas para a tarefa de hoje.
+**🛑 AGUARDE:** Não gere código ainda. Apenas apresente o resumo muito pequeno do contexto e aguarde minha confirmação ou instruções específicas para a tarefa de hoje.
