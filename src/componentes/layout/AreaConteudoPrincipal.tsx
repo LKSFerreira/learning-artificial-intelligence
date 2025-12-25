@@ -27,9 +27,9 @@ import {
 import { useNavegacao, useTutorIA, useQuiz } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
 import { obterQuestoesPorFase } from "../../dados";
-import Phase1Visual from "../visuais/Phase1Visual";
-import Phase2Visual from "../visuais/Phase2Visual";
-import Phase3Visual from "../visuais/Phase3Visual";
+import { VisualizadorFase1 } from "../visuais/fase1";
+import { VisualizadorFase2 } from "../visuais/fase2";
+import { VisualizadorFase3 } from "../visuais/fase3";
 
 interface PropriedadesAreaConteudo {
   /** Se a barra lateral está aberta */
@@ -49,13 +49,14 @@ function renderizarVisual(
   faseId: number,
   estadoVisual: string | undefined
 ): React.ReactElement {
+  const estado = estadoVisual || "";
   switch (faseId) {
     case 1:
-      return <Phase1Visual visualState={estadoVisual} />;
+      return <VisualizadorFase1 estadoVisual={estado} />;
     case 2:
-      return <Phase2Visual visualState={estadoVisual} />;
+      return <VisualizadorFase2 estadoVisual={estado} />;
     case 3:
-      return <Phase3Visual visualState={estadoVisual} />;
+      return <VisualizadorFase3 estadoVisual={estado} />;
     default:
       return <div>Visual não encontrado para fase {faseId}</div>;
   }
