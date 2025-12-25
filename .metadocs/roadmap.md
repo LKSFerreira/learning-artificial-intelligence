@@ -26,10 +26,10 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
   - [x] Criar `BarraLateralFases.tsx` (sidebar de navegação).
   - [x] Criar `AreaConteudoPrincipal.tsx` (conteúdo + quiz + tutor).
   - [x] Deletar arquivos legados (`curriculoLegado.ts`, `BadgeSystemLegado.tsx`).
-- [~] **A1.3 Modularização de Visuais** _(Opcional - Adiado)_
-  - [ ] Quebrar `Phase1Visual.tsx` em sub-componentes atômicos.
-  - [ ] Quebrar `Phase2Visual.tsx` e `Phase3Visual.tsx`.
-  - _Motivo do adiamento: Visuais funcionam bem, podem ser modularizados quando editados._
+- [x] **A1.3 Modularização de Visuais** _(Completo - 2024-12-24)_
+  - [x] Quebrar `Phase1Visual.tsx` em 5 sub-componentes + orquestrador.
+  - [x] Quebrar `Phase2Visual.tsx` em 5 sub-componentes + orquestrador.
+  - [x] Quebrar `Phase3Visual.tsx` em 2 sub-componentes + orquestrador.
 
 ---
 
