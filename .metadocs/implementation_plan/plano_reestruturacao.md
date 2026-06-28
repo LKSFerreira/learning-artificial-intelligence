@@ -232,13 +232,13 @@ E será carregado dinamicamente pelo build (Vite pode importar `.md` como string
 | `SecaoTutorIA` ✅ | Reusado componente existente |
 | `BotoesNavegacao` ✅ | Reusado componente existente |
 
-#### R1.2 — Quebrar `BarraLateralFases.tsx` (262 → ~3 arquivos)
+#### R1.2 — Quebrar `BarraLateralFases.tsx` (262 → ~85 linhas) ✅
 
 | Novo componente | Responsabilidade |
 |----------------|------------------|
-| `SeletorTema.tsx` | Toggle claro/escuro/dracula |
-| `NavegacaoFases.tsx` | Lista de fases + passos |
-| `SecaoConquistas.tsx` | Badges no rodapé da sidebar |
+| `SeletorTema.tsx` ✅ | Toggle claro/escuro/dracula |
+| `NavegacaoFases.tsx` ✅ | Lista de fases + passos |
+| `SistemaBadges` ✅ | Reusado componente existente |
 
 **Entregável:** Mesma UI, mesma funcionalidade, mas cada componente com ≤100 linhas.
 
