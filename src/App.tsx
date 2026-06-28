@@ -26,6 +26,7 @@ import React, { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
 import { useContextoProgresso } from "./contextos";
+import { useSincronizacaoRota } from "./hooks";
 import { BarraLateralFases, AreaConteudoPrincipal } from "./componentes/layout";
 import { CURRICULO } from "./dados";
 
@@ -33,6 +34,8 @@ import { CURRICULO } from "./dados";
  * Componente App: Orquestrador da Interface.
  */
 const App: React.FC = () => {
+  // Sincroniza estado de navegação com a URL do browser
+  useSincronizacaoRota();
   // Estados locais de UI
   const [barraLateralAberta, setBarraLateralAberta] = useState(true);
   const [mostrarConfirmacaoReset, setMostrarConfirmacaoReset] = useState(false);

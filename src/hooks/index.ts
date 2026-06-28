@@ -5,3 +5,4 @@
 export { useTutorIA } from './useTutorIA';
 export { useNavegacao } from './useNavegacao';
 export { useQuiz } from './useQuiz';
+export { useSincronizacaoRota } from './useSincronizacaoRota';
