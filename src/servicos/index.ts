@@ -4,16 +4,12 @@
 
 export { 
   solicitarExplicacaoTutorIA, 
-  tutorIADisponivel,
-  askAiTutor 
+  tutorIADisponivel
 } from './servicoGemini';
 
 export { 
   salvarProgresso, 
   carregarProgresso, 
   limparProgresso,
-  existeProgressoSalvo,
-  saveProgress,
-  loadProgress,
-  clearProgress
+  existeProgressoSalvo
 } from './servicoArmazenamento';

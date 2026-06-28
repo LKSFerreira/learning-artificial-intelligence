@@ -2,26 +2,9 @@
  * Serviço de persistência de dados no LocalStorage.
  * 
  * Gerencia o salvamento e carregamento do progresso do usuário.
- * 
- * **Exemplo:**
- * 
- * .. code-block:: typescript
- * 
- *     import { 
- *         salvarProgresso, 
- *         carregarProgresso, 
- *         limparProgresso 
- *     } from '@/src/servicos/servicoArmazenamento';
- *     
- *     salvarProgresso(estado);
- *     const estadoSalvo = carregarProgresso();
- * 
- * .. note::
- *    O progresso é salvo automaticamente sempre que o estado muda.
- *    A migração de estados legados é feita automaticamente no carregamento.
  */
 
-import type { EstadoProgresso, EstadoProgressoLegado } from '../tipos';
+import type { EstadoProgresso } from '../tipos';
 
 /**
  * Chave usada no LocalStorage para armazenar o progresso.
@@ -44,7 +27,7 @@ const CHAVE_ARMAZENAMENTO = 'data/progress.json';
  *         // ... resto do estado
  *     });
  */
-export function salvarProgresso(estado: EstadoProgresso | EstadoProgressoLegado): void {
+export function salvarProgresso(estado: EstadoProgresso): void {
   try {
     // Serializa o estado, tratando o Set de círculos clicados
     const estadoSerializavel = {
@@ -65,8 +48,6 @@ export function salvarProgresso(estado: EstadoProgresso | EstadoProgressoLegado)
 /**
  * Carrega o progresso do usuário do LocalStorage.
  * 
- * Faz migração automática de estados legados para o novo formato.
- * 
  * :returns: Estado do progresso ou null se não existir
  * 
  * **Exemplo:**
@@ -78,7 +59,7 @@ export function salvarProgresso(estado: EstadoProgresso | EstadoProgressoLegado)
  *         console.log("Fase atual:", estado.indiceFaseAtual);
  *     }
  */
-export function carregarProgresso(): EstadoProgresso | EstadoProgressoLegado | null {
+export function carregarProgresso(): EstadoProgresso | null {
   try {
     const estadoSerializado = localStorage.getItem(CHAVE_ARMAZENAMENTO);
     if (!estadoSerializado) return null;
@@ -129,7 +110,3 @@ export function existeProgressoSalvo(): boolean {
   return localStorage.getItem(CHAVE_ARMAZENAMENTO) !== null;
 }
 
-// Mantém exports legados para compatibilidade durante migração
-export const saveProgress = salvarProgresso;
-export const loadProgress = carregarProgresso;
-export const clearProgress = limparProgresso;

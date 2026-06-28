@@ -90,5 +90,3 @@ export function tutorIADisponivel(): boolean {
   return clienteGemini !== null;
 }
 
-// Mantém export legado para compatibilidade durante migração
-export const askAiTutor = solicitarExplicacaoTutorIA;

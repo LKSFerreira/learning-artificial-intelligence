@@ -56,24 +56,3 @@ export interface EstadoProgresso {
   /** Se passou no quiz de primeira tentativa: faseId -> boolean */
   primeirasTentativasQuiz: Record<number, boolean>;
 }
-
-/**
- * Estado legado para compatibilidade com saves antigos.
- * 
- * .. note::
- *    Este tipo existe para migrar dados de versões anteriores.
- *    Novos saves devem usar ``EstadoProgresso``.
- */
-export interface EstadoProgressoLegado {
-  currentPhaseIndex: number;
-  currentStepIndex: number;
-  completedPhases: number[];
-  quizScores: Record<number, number>;
-  isQuizMode: boolean;
-  maxStepReached: Record<number, number>;
-  badgesDesbloqueados?: string[];
-  ultimoBadgeDesbloqueado?: string | null;
-  circulosClicados?: Set<string>;
-  contadorTutorIA?: number;
-  primeirasTentativasQuiz?: Record<number, boolean>;
-}

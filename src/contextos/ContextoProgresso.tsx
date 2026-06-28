@@ -19,8 +19,8 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { EstadoProgresso, EstadoProgressoLegado } from '../tipos';
-import { saveProgress, loadProgress } from '../servicos';
+import type { EstadoProgresso } from '../tipos';
+import { salvarProgresso, carregarProgresso } from '../servicos';
 import { CURRICULO } from '../dados';
 
 /**
@@ -75,31 +75,6 @@ const ESTADO_INICIAL: EstadoProgresso = {
   primeirasTentativasQuiz: {}
 };
 
-/**
- * Migra estado legado para o novo formato.
- */
-function migrarEstadoLegado(estadoLegado: EstadoProgressoLegado): EstadoProgresso {
-  return {
-    indiceFaseAtual: estadoLegado.currentPhaseIndex,
-    indicePassoAtual: estadoLegado.currentStepIndex,
-    fasesCompletas: estadoLegado.completedPhases,
-    pontuacoesQuiz: estadoLegado.quizScores,
-    estaNoModoQuiz: estadoLegado.isQuizMode,
-    maximoPassoAlcancado: estadoLegado.maxStepReached,
-    badgesDesbloqueados: estadoLegado.badgesDesbloqueados ?? [],
-    ultimoBadgeDesbloqueado: estadoLegado.ultimoBadgeDesbloqueado ?? null,
-    circulosClicados: estadoLegado.circulosClicados ?? new Set<string>(),
-    contadorTutorIA: estadoLegado.contadorTutorIA ?? 0,
-    primeirasTentativasQuiz: estadoLegado.primeirasTentativasQuiz ?? {}
-  };
-}
-
-/**
- * Detecta se é estado legado.
- */
-function ehEstadoLegado(estado: unknown): estado is EstadoProgressoLegado {
-  return typeof estado === 'object' && estado !== null && 'currentPhaseIndex' in estado;
-}
 
 // Cria o contexto
 const ContextoProgresso = createContext<ContextoProgressoTipo | undefined>(undefined);
@@ -119,34 +94,13 @@ interface ProvedorProgressoProps {
 export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
   // Inicialização lazy: tenta carregar do storage
   const [estado, setEstado] = useState<EstadoProgresso>(() => {
-    const salvo = loadProgress();
-    if (salvo) {
-      // Migra se for estado legado
-      if (ehEstadoLegado(salvo)) {
-        return migrarEstadoLegado(salvo);
-      }
-      return salvo as EstadoProgresso;
-    }
-    return ESTADO_INICIAL;
+    const salvo = carregarProgresso();
+    return salvo ?? ESTADO_INICIAL;
   });
 
   // Salva automaticamente quando estado muda
   useEffect(() => {
-    // Adapta para formato legado para compatibilidade
-    const estadoLegado: EstadoProgressoLegado = {
-      currentPhaseIndex: estado.indiceFaseAtual,
-      currentStepIndex: estado.indicePassoAtual,
-      completedPhases: estado.fasesCompletas,
-      quizScores: estado.pontuacoesQuiz,
-      isQuizMode: estado.estaNoModoQuiz,
-      maxStepReached: estado.maximoPassoAlcancado,
-      badgesDesbloqueados: estado.badgesDesbloqueados,
-      ultimoBadgeDesbloqueado: estado.ultimoBadgeDesbloqueado,
-      circulosClicados: estado.circulosClicados,
-      contadorTutorIA: estado.contadorTutorIA,
-      primeirasTentativasQuiz: estado.primeirasTentativasQuiz
-    };
-    saveProgress(estadoLegado);
+    salvarProgresso(estado);
   }, [estado]);
 
   // Navega para o próximo passo

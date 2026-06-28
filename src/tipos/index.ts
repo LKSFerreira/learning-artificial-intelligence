@@ -23,8 +23,7 @@ export type {
 
 // Tipos de progresso
 export type { 
-  EstadoProgresso, 
-  EstadoProgressoLegado 
+  EstadoProgresso
 } from './progresso';
 
 // Tipos de badges
