@@ -209,12 +209,12 @@ E será carregado dinamicamente pelo build (Vite pode importar `.md` como string
 ### Fase R0: Limpeza e Verdade Documental ✅
 > *Arrumar a casa antes de reformar.*
 
-- [x] Corrigir HISTORY.md — registrar A1 como entrega real
-- [x] Desmarcar T0.1 Docker no roadmap (não existe no repo)
-- [x] Remover código de migração legado (`migrarEstadoLegado`, `ehEstadoLegado`, `askAiTutor`)
-- [x] Limpar export legado em `servicoGemini.ts` (linha 94)
-- [x] Verificar e limpar imports não utilizados
-- [x] Corrigir emojis corrompidos (U+FFFD) no `ROADMAP.md`
+- [✅] Corrigir HISTORY.md — registrar A1 como entrega real
+- [✅] Desmarcar T0.1 Docker no roadmap (não existe no repo)
+- [✅] Remover código de migração legado (`migrarEstadoLegado`, `ehEstadoLegado`, `askAiTutor`)
+- [✅] Limpar export legado em `servicoGemini.ts` (linha 94)
+- [✅] Verificar e limpar imports não utilizados
+- [✅] Corrigir emojis corrompidos (U+FFFD) no `ROADMAP.md`
 
 **Entregável:** Repo honesto — documentação reflete realidade. ✅
 
@@ -225,20 +225,20 @@ E será carregado dinamicamente pelo build (Vite pode importar `.md` como string
 
 #### R1.1 — Quebrar `AreaConteudoPrincipal.tsx` (436 → ~170 linhas) ✅
 
-| Novo componente | Responsabilidade |
-|----------------|------------------|
-| `TelaQuiz.tsx` ✅ | Fluxo completo do quiz (questões, resultado, gabarito) |
-| `PainelVisual.tsx` ✅ | Container do painel visual direito |
-| `SecaoTutorIA` ✅ | Reusado componente existente |
-| `BotoesNavegacao` ✅ | Reusado componente existente |
+| Status | Novo componente | Responsabilidade |
+|--------|----------------|------------------|
+| ✅ | `TelaQuiz.tsx` | Fluxo completo do quiz (questões, resultado, gabarito) |
+| ✅ | `PainelVisual.tsx` | Container do painel visual direito |
+| ✅ | `SecaoTutorIA` | Reusado componente existente |
+| ✅ | `BotoesNavegacao` | Reusado componente existente |
 
 #### R1.2 — Quebrar `BarraLateralFases.tsx` (262 → ~85 linhas) ✅
 
-| Novo componente | Responsabilidade |
-|----------------|------------------|
-| `SeletorTema.tsx` ✅ | Toggle claro/escuro/dracula |
-| `NavegacaoFases.tsx` ✅ | Lista de fases + passos |
-| `SistemaBadges` ✅ | Reusado componente existente |
+| Status | Novo componente | Responsabilidade |
+|--------|----------------|------------------|
+| ✅ | `SeletorTema.tsx` | Toggle claro/escuro/dracula |
+| ✅ | `NavegacaoFases.tsx` | Lista de fases + passos |
+| ✅ | `SistemaBadges` | Reusado componente existente |
 
 **Entregável:** Mesma UI, mesma funcionalidade, mas cada componente com ≤100 linhas.
 
@@ -294,26 +294,22 @@ Criar um módulo que:
 ### Fase R3: Registro Dinâmico de Visuais ✅
 > *Cada visualização é um plugin, não um case.*
 
-- [x] Criar `REGISTRO_VISUAIS` como `Record<string, FabricaVisual>`
-- [x] Chaves compostas `faseId:estadoVisual` para resolver conflitos
-- [x] `PainelVisual.tsx` usa `resolverVisual()` — zero switch/case
-- [x] Fallback por fase (fase 3 → GradeLabirinto, demais → "Em construção")
+- [✅] Criar `REGISTRO_VISUAIS` como `Record<string, FabricaVisual>`
+- [✅] Chaves compostas `faseId:estadoVisual` para resolver conflitos
+- [✅] `PainelVisual.tsx` usa `resolverVisual()` — zero switch/case
+- [✅] Fallback por fase (fase 3 → GradeLabirinto, demais → "Em construção")
 
 **Entregável:** Adicionar nova fase = criar componente visual + entrada no registro. Zero alteração nos componentes de layout.
 
 ---
 
-### Fase R4: Roteamento
+### Fase R4: Roteamento ✅
 > *Links compartilháveis e navegação nativa.*
 
-- [ ] Instalar `react-router-dom`
-- [ ] Estrutura de rotas:
-  - `/` → Página inicial (seleção de trilha ou redirecionamento)
-  - `/fase/:faseId` → Primeiro passo da fase
-  - `/fase/:faseId/passo/:passoId` → Passo específico
-  - `/fase/:faseId/quiz` → Quiz da fase
-- [ ] Sincronizar `useNavegacao` com o router (URL ↔ estado)
-- [ ] Botão voltar do navegador funciona
+- [✅] Instalar `react-router-dom`
+- [✅] Estrutura de rotas: `/fase/:faseId/passo/:passoIndice`
+- [✅] Sincronizar `useNavegacao` com o router (URL ↔ estado) via `useSincronizacaoRota.ts`
+- [✅] Botão voltar do navegador funciona
 
 **Entregável:** Cada lição tem URL própria. Compartilhar link leva direto ao passo.
 
