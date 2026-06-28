@@ -73,6 +73,7 @@ Todo conceito ensinado deve seguir esta progressão:
 | **Conexão emocional** | O estudante deve sentir o problema antes de ver a solução. |
 | **Interatividade obrigatória** | Conceitos centrais devem ter componente visual/interativo. |
 | **Sem "lixo genérico"** | Proibido texto de preenchimento, introduções vazias ou analogias forçadas. |
+| **Analogias gamer agnósticas** | Usar conceitos genéricos de RPG/MMO (XP, boss, poção, dungeon). Nunca fazer lock-in em um jogo específico (ex: Ragnarok, LoL). Deve funcionar para qualquer jogador. |
 
 ---
 

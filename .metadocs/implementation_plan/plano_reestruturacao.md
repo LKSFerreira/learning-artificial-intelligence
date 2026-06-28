@@ -246,7 +246,7 @@ E será carregado dinamicamente pelo build (Vite pode importar `.md` como string
 
 ---
 
-### Fase R2: Separação de Conteúdo
+### Fase R2: Separação de Conteúdo ✅
 > *O coração do projeto: conteúdo livre do código.*
 
 #### R2.1 — Criar estrutura `src/conteudo/`
