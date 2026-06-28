@@ -25,23 +25,26 @@ interface FrontmatterParsed {
 
 /**
  * Parseia frontmatter YAML simples (chave: "valor" ou chave: valor).
+ * Retorna null se o formato for inválido (não quebra a aplicação).
  */
-function parsearFrontmatter(conteudoBruto: string): { dados: FrontmatterParsed; conteudo: string } {
+function parsearFrontmatter(conteudoBruto: string): { dados: FrontmatterParsed; conteudo: string } | null {
+  // Normaliza line endings (CRLF → LF)
+  const normalizado = conteudoBruto.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const frontmatterRegex = /^---\n([\s\S]*?)\n---\n\n?([\s\S]*)$/;
-  const match = conteudoBruto.match(frontmatterRegex);
+  const match = normalizado.match(frontmatterRegex);
 
   if (!match) {
-    throw new Error('Frontmatter não encontrado no arquivo .md');
+    console.warn('[Loader] Frontmatter não encontrado em um arquivo .md — ignorando.');
+    return null;
   }
 
   const [, yamlBruto, conteudo] = match;
   const dados: Record<string, string | number> = {};
 
   for (const linha of yamlBruto.split('\n')) {
-    const parMatch = linha.match(/^(\w+):\s*"?([^"]*)"?\s*$/);
+    const parMatch = linha.match(/^(\w+):\s*"?([^"\r]*)"?\s*$/);
     if (parMatch) {
       const [, chave, valor] = parMatch;
-      // Converte números
       dados[chave] = /^\d+$/.test(valor) ? parseInt(valor, 10) : valor;
     }
   }
@@ -68,7 +71,10 @@ function carregarCurriculo(): Fase[] {
 
     if (!fasesPorDiretorio[diretorio]) continue;
 
-    const { dados, conteudo } = parsearFrontmatter(conteudoBruto);
+    const resultado = parsearFrontmatter(conteudoBruto);
+    if (!resultado) continue;
+
+    const { dados, conteudo } = resultado;
 
     const passo: Passo = {
       id: dados.id,
