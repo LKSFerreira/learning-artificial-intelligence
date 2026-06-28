@@ -6,10 +6,16 @@ tipo: "content"
 ordem: 6
 ---
 
-Todo sistema de RL tem 5 componentes fundamentais:
+Todo sistema de Aprendizado por Reforço, do mais simples ao mais complexo, é construído sobre cinco peças fundamentais. Se você já jogou qualquer RPG, já convive com todas elas sem saber:
 
-1.  **Agente:** O cérebro (nossa IA).
-2.  **Ambiente:** O mundo (o jogo, o tabuleiro).
-3.  **Estado:** A situação atual (foto da tela).
-4.  **Ação:** O que o agente faz (atacar, andar).
-5.  **Recompensa:** O feedback (+10 pontos, -100 de vida).
+1. **Agente** — quem toma decisões. No jogo, é seu personagem. No RL, é o algoritmo.
+
+2. **Ambiente** — o mundo onde o agente existe. O tabuleiro, o mapa, a dungeon. O agente não controla o ambiente — ele apenas reage a ele.
+
+3. **Estado** — a "foto" da situação atual. Sua vida, sua posição, os inimigos ao redor. É tudo que o agente pode observar para decidir o próximo passo.
+
+4. **Ação** — o que o agente pode fazer naquele momento. Atacar, defender, usar poção, fugir. O conjunto de ações possíveis depende do estado.
+
+5. **Recompensa** — o feedback do ambiente. Derrotou o inimigo? +50 XP. Caiu no buraco? -100 de vida. É o sinal que diz ao agente se a decisão foi boa ou ruim.
+
+Essas cinco peças não são apenas uma lista para decorar. Elas formam um **ciclo** — e entender esse ciclo é entender como toda IA baseada em reforço funciona.

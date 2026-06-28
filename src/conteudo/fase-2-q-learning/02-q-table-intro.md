@@ -1,18 +1,21 @@
 ---
 id: "q_table_intro"
-titulo: "A Mágica da Q-Table ✨"
+titulo: "O Caderno de Anotações da IA ✨"
 estadoVisual: "q_table_zeros"
 tipo: "content"
 ordem: 2
 ---
 
-Vamos conhecer a principal ferramenta desta fase: a **Q-Table** (Tabela de Qualidade).
+Imagine que você está aprendendo um jogo novo e decide manter um caderno. Cada vez que enfrenta uma situação, você anota: *"nesta posição, fazer tal jogada rendeu um bom resultado"* ou *"aqui, essa ação foi péssima"*.
 
-> **A ideia central do Q-Learning é construir uma "cola" para o nosso Agente.**
+Com o tempo, seu caderno se torna um guia: basta olhar a situação atual, consultar as anotações, e escolher a ação com a melhor nota.
 
-Essa "cola" é uma tabela gigante que mapeia **TODA situação possível** do jogo para a qualidade de cada ação.
+Isso é a **Q-Table** — a "Tabela de Qualidade". A letra **Q** vem de *Quality*: a qualidade estimada de tomar uma ação em um determinado estado.
 
-**Exemplo A: Tabuleiro Vazio**
-Imagine o início do jogo. A IA olha para o tabuleiro vazio e consulta sua tabela.
-Como ela ainda não aprendeu nada, todos os valores são **0.0**.
-Conclusão: Ela não tem preferência e fará um movimento aleatório.
+A Q-Table é uma tabela gigante que mapeia **cada situação possível do jogo** para um valor numérico de qualidade para cada ação disponível.
+
+**No início:** a IA nunca jogou. Todas as anotações no caderno estão zeradas — ela não tem preferência nenhuma e age de forma aleatória.
+
+**Depois de milhares de jogos:** o caderno está cheio. Cada posição do tabuleiro tem anotações precisas sobre quais jogadas levam à vitória e quais levam à derrota.
+
+Na visualização ao lado, observe a Q-Table em ação: com valores zerados no início, e como eles mudam conforme a IA aprende.

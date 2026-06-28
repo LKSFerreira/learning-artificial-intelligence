@@ -1,16 +1,21 @@
 ---
 id: "intro"
-titulo: "O que é IA? 🤖"
+titulo: "O Sonho de Criar Mentes 🤖"
 estadoVisual: "intro_concept"
 tipo: "content"
 ordem: 1
 ---
 
-Olá, futuro mestre de IAs! Bem-vindo ao ponto de partida da nossa jornada.
+Antes de escrever uma única linha de código, vale a pena entender de onde vem essa ideia de ensinar máquinas a pensar — porque ela é muito mais antiga do que parece.
 
-Antes de ensinarmos uma máquina a derrotar Porings e MVPs no Ragnarok, precisamos entender como ela "pensa".
+Em mitos gregos, Hefesto forjava autômatos de bronze para proteger Creta. No século XIX, Ada Lovelace escreveu que a máquina analítica de Babbage poderia ir além de simples cálculos — se alguém soubesse instruí-la.
 
-**O que é IA?**
-Pense na IA como o grande sonho da computação: **a arte de criar máquinas que podem pensar, aprender e tomar decisões como seres humanos.**
+Mas a pergunta que mudou tudo veio em 1950, quando **Alan Turing** publicou o artigo *"Computing Machinery and Intelligence"*. Nele, Turing não perguntou "máquinas podem calcular?" — isso era óbvio. Ele perguntou algo muito mais profundo:
 
-É o conceito geral que abrange desde a Siri no seu celular até os robôs dos filmes de ficção científica.
+> *"Máquinas podem pensar?"*
+
+Seis anos depois, no verão de 1956, **John McCarthy** reuniu um grupo de pesquisadores no Dartmouth College (EUA) com uma proposta ambiciosa: estudar como simular qualquer aspecto da inteligência humana em uma máquina. Nessa conferência, nasceu oficialmente o termo **Inteligência Artificial**.
+
+O sonho é simples de enunciar e difícil de realizar: **criar sistemas que aprendem, raciocinam e tomam decisões** — não porque foram programados para cada situação, mas porque conseguem *descobrir o que fazer* por conta própria.
+
+É isso que vamos construir juntos ao longo desta jornada.

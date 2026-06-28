@@ -1,17 +1,23 @@
 ---
 id: "rl_cycle"
-titulo: "O Ciclo de Aprendizado 🔄"
+titulo: "O Loop Infinito 🔄"
 estadoVisual: "rl_cycle_animation"
 tipo: "content"
 ordem: 7
 ---
 
-Esses componentes formam um loop infinito:
+Agora que você conhece as cinco peças, veja como elas se encaixam. O Aprendizado por Reforço não acontece em uma única decisão — ele acontece em um **ciclo que se repete sem parar**:
 
-1.  Agente observa o **Estado**.
-2.  Agente escolhe uma **Ação**.
-3.  Ambiente muda e devolve uma **Recompensa**.
-4.  Agente **Aprende**.
-5.  Repete.
+1. O agente **observa** o estado atual.
+2. Com base no que sabe, **escolhe** uma ação.
+3. O ambiente **reage** — o estado muda e uma recompensa é entregue.
+4. O agente **atualiza** seu conhecimento com essa experiência.
+5. Volta ao passo 1.
 
-Treinar a IA é rodar esse ciclo milhões de vezes.
+É isso. Não existe magia escondida. Todo o aprendizado emerge da **repetição massiva** desse ciclo — milhares, às vezes milhões de vezes.
+
+Pense em um speedrunner. Na primeira vez que joga uma fase, ele morre em tudo. Na centésima, conhece cada armadilha, cada atalho, cada frame de oportunidade. Ninguém lhe ensinou — ele aprendeu rodando o ciclo repetidamente: tentou, viu o resultado, ajustou.
+
+A IA faz exatamente o mesmo. A diferença é que ela pode rodar esse ciclo a uma velocidade que nenhum humano alcança.
+
+Na visualização ao lado, observe o ciclo girando. Cada volta é uma experiência. Cada experiência refina a estratégia.

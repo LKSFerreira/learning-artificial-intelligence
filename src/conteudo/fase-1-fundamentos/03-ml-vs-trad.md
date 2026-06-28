@@ -1,16 +1,23 @@
 ---
 id: "ml_vs_trad"
-titulo: "ML: Aprendendo com Exemplos 📸"
+titulo: "O Momento em que Paramos de Programar Regras 📸"
 estadoVisual: "ml_examples"
 tipo: "content"
 ordem: 3
 ---
 
-> Em vez de programar regras, nós deixamos a máquina **aprender as regras sozinha** a partir de dados.
+Em 1959, um pesquisador da IBM chamado **Arthur Samuel** enfrentou um problema concreto: ele queria que um computador jogasse damas — mas escrever regras para cada situação possível do tabuleiro era impraticável.
 
-Imagine ensinar um computador a reconhecer uma **Poção Vermelha**.
+A solução dele foi radical: em vez de programar a estratégia, ele deixou o computador **jogar milhares de partidas contra si mesmo** e aprender com os resultados. O programa começou péssimo, mas com o tempo passou a vencer jogadores humanos experientes.
 
-*   **Programação Tradicional:** Você escreveria regras rígidas: `SE pixel vermelho E formato vidro ENTÃO poção`. Frágil.
-*   **Machine Learning:** Você mostra **10.000 imagens** de poções. O algoritmo descobre os padrões sozinho.
+Samuel cunhou o termo que define essa revolução:
 
-Vamos usar ML para que nossa IA aprenda o que é um monstro ou um item apenas olhando a tela.
+> *"Machine Learning é o campo de estudo que dá aos computadores a habilidade de aprender sem serem explicitamente programados."*
+> — Arthur Samuel, 1959
+
+Essa é a diferença fundamental:
+
+*   **Programação tradicional:** você escreve regras rígidas. `SE condição X, ENTÃO faça Y.` Funciona para problemas simples, mas cada exceção exige uma regra nova. É frágil.
+*   **Machine Learning:** você mostra **exemplos** ao algoritmo. Milhares deles. O algoritmo descobre sozinho quais padrões importam.
+
+É como a diferença entre decorar um mapa e aprender a se orientar. O mapa funciona só naquele lugar. A habilidade funciona em qualquer lugar.

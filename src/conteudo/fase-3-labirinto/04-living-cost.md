@@ -1,20 +1,25 @@
 ---
 id: "living_cost"
-titulo: "A Preguiça Inteligente 🦥"
+titulo: "O Custo de Existir: Recompensas Negativas 🦥"
 estadoVisual: "rewards_cost"
 tipo: "content"
 ordem: 4
 ---
 
-Como ensinamos a IA a ter pressa? Simples: **cobramos "energia" por cada passo.**
+Aqui está um detalhe sutil que muda tudo no comportamento do agente: **cada passo tem um custo**.
 
-Se o agente ganhar o mesmo prêmio chegando em 10 passos ou 1000 passos, ele pode ficar andando em círculos.
+Se a única recompensa fosse "chegar na saída = +10 pontos", o agente não teria urgência. Ele poderia andar em círculos por mil passos e ainda ganhar os mesmos 10 pontos. Não existe incentivo para eficiência.
 
-**Sistema de Recompensas:**
-*   **Chegar na Saída:** +10.0 (O Grande Biscoito 🍪)
-*   **Bater na Parede:** -0.5 (Dor de Cabeça 🤕)
-*   **Dar um Passo:** -0.1 (Cansaço 😮‍💨)
+A solução é elegante: cobrar uma **pequena penalidade** por cada passo dado.
 
-> **A Lógica da IA:** "Cada passo me custa 0.1. Se eu demorar, perco muitos pontos! Preciso correr para a saída."
+**Sistema de recompensas do labirinto:**
 
-Isso força a IA a encontrar o **caminho ótimo** matematicamente.
+| Evento | Recompensa |
+| :--- | :---: |
+| Chegar na saída | +10.0 |
+| Bater na parede | -0.5 |
+| Dar um passo | -0.1 |
+
+Agora a matemática trabalha a favor da eficiência: um caminho de 10 passos rende `+10.0 - (10 × 0.1) = +9.0`. Um caminho de 100 passos rende `+10.0 - (100 × 0.1) = +0.0`. O agente **precisa** encontrar o caminho mais curto para maximizar a recompensa total.
+
+Esse conceito tem um nome formal: **living cost** (custo de existir). É uma técnica usada em praticamente todo problema de RL onde eficiência importa.
