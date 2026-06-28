@@ -28,7 +28,7 @@ Este estudo usa `.agents/` como fonte oficial de regras, skills e templates.
 
 ## Linguagem do projeto
 
-> LINGUAGEM_PROJETO: <linguagem>
+> LINGUAGEM_PROJETO: JavaScript/TypeScript
 
 Mapeamento:
 

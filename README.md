@@ -25,7 +25,7 @@ Este projeto tem dois objetivos simultâneos e complementares:
 
 O projeto segue um plano de desenvolvimento detalhado. Diferente de tutoriais estáticos, este repositório é uma **plataforma viva** em constante evolução.
 
-👉 **[Consulte o Roadmap Mestre (.metadocs/roadmap.md)](.metadocs/roadmap.md)** para ver o planejamento detalhado das fases de engenharia e conteúdo.
+👉 **[Consulte o Roadmap Mestre (ROADMAP.md)](ROADMAP.md)** para ver o planejamento detalhado das fases de engenharia e conteúdo.
 
 ### Resumo das Trilhas
 

@@ -1,6 +1,6 @@
 # Instruções do Agente
 
-> LINGUAGEM_PROJETO: <linguagem>
+> LINGUAGEM_PROJETO: JavaScript/TypeScript
 
 ## Perfil
 
