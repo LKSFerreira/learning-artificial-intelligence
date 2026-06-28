@@ -206,34 +206,31 @@ E será carregado dinamicamente pelo build (Vite pode importar `.md` como string
 
 ## 📋 Fases da Reestruturação
 
-### Fase R0: Limpeza e Verdade Documental
+### Fase R0: Limpeza e Verdade Documental ✅
 > *Arrumar a casa antes de reformar.*
 
-- [ ] Corrigir HISTORY.md — registrar A1 como entrega real
-- [ ] Desmarcar T0.1 Docker no roadmap (não existe no repo)
-- [ ] Remover código de migração legado (`migrarEstadoLegado`, `ehEstadoLegado`, `askAiTutor`)
-- [ ] Limpar export legado em `servicoGemini.ts` (linha 94)
-- [ ] Verificar e limpar imports não utilizados
+- [x] Corrigir HISTORY.md — registrar A1 como entrega real
+- [x] Desmarcar T0.1 Docker no roadmap (não existe no repo)
+- [x] Remover código de migração legado (`migrarEstadoLegado`, `ehEstadoLegado`, `askAiTutor`)
+- [x] Limpar export legado em `servicoGemini.ts` (linha 94)
+- [x] Verificar e limpar imports não utilizados
+- [x] Corrigir emojis corrompidos (U+FFFD) no `ROADMAP.md`
 
-**Entregável:** Repo honesto — documentação reflete realidade.
+**Entregável:** Repo honesto — documentação reflete realidade. ✅
 
 ---
 
 ### Fase R1: Decomposição de Componentes
 > *Quebrar os monolitos sem mudar a UI.*
 
-#### R1.1 — Quebrar `AreaConteudoPrincipal.tsx` (436 → ~6 arquivos)
+#### R1.1 — Quebrar `AreaConteudoPrincipal.tsx` (436 → ~170 linhas) ✅
 
-| Novo componente | Linhas extraídas | Responsabilidade |
-|----------------|------------------|------------------|
-| `CabecalhoPasso.tsx` | 294-306 | Badge "Fase X" + "Passo N de M" |
-| `CorpoConteudo.tsx` | 308-358 | Switch conteúdo/vídeo/quiz-card |
-| `SecaoTutorIA.tsx` | 360-396 | Botão + resposta do Gemini (já existe, reaproveitar) |
-| `BotoesNavegacao.tsx` | 398-418 | Anterior/Próximo (já existe, reaproveitar) |
-| `TelaQuiz.tsx` | 117-268 | Todo o modo quiz (extrair inteiro) |
-| `PainelVisual.tsx` | 422-433 | Container do painel visual direito |
-
-O `PainelConteudo.tsx` resultante terá ~50 linhas, apenas compondo sub-componentes.
+| Novo componente | Responsabilidade |
+|----------------|------------------|
+| `TelaQuiz.tsx` ✅ | Fluxo completo do quiz (questões, resultado, gabarito) |
+| `PainelVisual.tsx` ✅ | Container do painel visual direito |
+| `SecaoTutorIA` ✅ | Reusado componente existente |
+| `BotoesNavegacao` ✅ | Reusado componente existente |
 
 #### R1.2 — Quebrar `BarraLateralFases.tsx` (262 → ~3 arquivos)
 

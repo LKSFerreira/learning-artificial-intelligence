@@ -95,7 +95,11 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
   // Inicialização lazy: tenta carregar do storage
   const [estado, setEstado] = useState<EstadoProgresso>(() => {
     const salvo = carregarProgresso();
-    return salvo ?? ESTADO_INICIAL;
+    // Valida se o estado carregado tem a estrutura esperada
+    if (salvo && typeof salvo.indiceFaseAtual === 'number') {
+      return salvo;
+    }
+    return ESTADO_INICIAL;
   });
 
   // Salva automaticamente quando estado muda

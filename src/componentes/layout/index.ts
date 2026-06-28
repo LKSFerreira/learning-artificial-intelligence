@@ -4,3 +4,4 @@
 
 export { BarraLateralFases } from "./BarraLateralFases";
 export { AreaConteudoPrincipal } from "./AreaConteudoPrincipal";
+export { PainelVisual } from "./PainelVisual";

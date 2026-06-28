@@ -1,25 +1,15 @@
 /**
  * Área Principal de Conteúdo.
  *
- * Exibe o passo atual (Markdown, Vídeo ou Quiz) com navegação integrada.
- * Utiliza os hooks de navegação e tutor IA para funcionalidades.
- *
- * **Exemplo:**
- *
- * .. code-block:: tsx
- *
- *     <AreaConteudoPrincipal barraLateralAberta={true} />
+ * Compõe o layout central: painel de conteúdo (esquerda) + painel visual (direita).
+ * Delega quiz, tutor IA e navegação para sub-componentes.
  */
 
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
-  ChevronLeft,
   ChevronRight,
-  Lightbulb,
   Brain,
-  Award,
-  RefreshCcw,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -27,63 +17,31 @@ import {
 import { useNavegacao, useTutorIA, useQuiz } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
 import { obterQuestoesPorFase } from "../../dados";
-import { VisualizadorFase1 } from "../visuais/fase1";
-import { VisualizadorFase2 } from "../visuais/fase2";
-import { VisualizadorFase3 } from "../visuais/fase3";
+import { SecaoTutorIA } from "../conteudo";
+import { BotoesNavegacao } from "../navegacao";
+import { TelaQuiz } from "../quiz";
+import { PainelVisual } from "./PainelVisual";
 
 interface PropriedadesAreaConteudo {
-  /** Se a barra lateral está aberta */
   barraLateralAberta: boolean;
-
-  /** Handler para toggle da barra lateral */
   aoToggleBarraLateral: () => void;
 }
 
-/**
- * Renderiza o componente visual correto para a fase atual.
- *
- * :param faseId: ID da fase (1, 2 ou 3)
- * :param estadoVisual: Estado visual do passo atual
- */
-function renderizarVisual(
-  faseId: number,
-  estadoVisual: string | undefined
-): React.ReactElement {
-  const estado = estadoVisual || "";
-  switch (faseId) {
-    case 1:
-      return <VisualizadorFase1 estadoVisual={estado} />;
-    case 2:
-      return <VisualizadorFase2 estadoVisual={estado} />;
-    case 3:
-      return <VisualizadorFase3 estadoVisual={estado} />;
-    default:
-      return <div>Visual não encontrado para fase {faseId}</div>;
-  }
-}
-
-/**
- * Componente da área principal de conteúdo.
- */
 export function AreaConteudoPrincipal({
   barraLateralAberta,
   aoToggleBarraLateral,
 }: PropriedadesAreaConteudo): React.ReactElement {
   const navegacao = useNavegacao();
-  const tutorIA = useTutorIA();
   const { estado, avancarFase } = useContextoProgresso();
 
-  // Busca questões do quiz para a fase atual
   const questoesQuiz = obterQuestoesPorFase(navegacao.faseAtual.id);
   const quiz = useQuiz(questoesQuiz, {
     porcentagemMinima: 75,
     faseId: navegacao.faseAtual.id,
   });
 
-  // Estado local para controle de modo quiz
   const [modoQuiz, setModoQuiz] = useState(false);
 
-  // Pontuação do quiz atual (se já feito antes)
   const pontuacaoAtual = estado.pontuacoesQuiz[navegacao.faseAtual.id];
   const jaPassouQuiz = pontuacaoAtual !== undefined && pontuacaoAtual >= 75;
 
@@ -92,178 +50,25 @@ export function AreaConteudoPrincipal({
     setModoQuiz(true);
   };
 
-  const handleVoltarDoQuiz = () => {
-    setModoQuiz(false);
-  };
-
   const handleAvancarFase = () => {
     avancarFase();
     setModoQuiz(false);
   };
 
-  const handleSolicitarExplicacao = () => {
-    tutorIA.solicitarExplicacao(
-      navegacao.faseAtual.titulo,
-      navegacao.passoAtual.titulo,
-      navegacao.passoAtual.conteudo
-    );
-  };
-
-  // Derivados
   const ehVideo = navegacao.ehVideo;
   const ehQuiz = navegacao.ehQuiz;
 
   // --- MODO QUIZ ---
   if (modoQuiz && ehQuiz) {
     return (
-      <main className="flex-1 flex flex-col relative bg-[#faf9f6] h-screen overflow-hidden">
-        <div className="absolute inset-0 z-20 bg-[#faf9f6] flex flex-col p-8 overflow-y-auto">
-          <div className="max-w-3xl mx-auto w-full">
-            <button
-              onClick={handleVoltarDoQuiz}
-              className="mb-6 flex items-center gap-2 text-slate-500 hover:text-slate-800"
-            >
-              <ChevronLeft size={16} /> Voltar ao conteúdo
-            </button>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-slate-800">
-                  Quiz: {navegacao.faseAtual.titulo}
-                </h2>
-                {!quiz.enviado && (
-                  <span className="text-sm font-mono text-slate-400">
-                    Questão {quiz.indiceQuestao + 1} de {quiz.totalQuestoes}
-                  </span>
-                )}
-              </div>
-
-              {!quiz.enviado ? (
-                <div
-                  className="animate-in fade-in slide-in-from-right-4 duration-300"
-                  key={quiz.indiceQuestao}
-                >
-                  <h3 className="text-lg font-medium text-slate-800 mb-6">
-                    {quiz.questaoAtual?.pergunta}
-                  </h3>
-                  <div className="space-y-3">
-                    {quiz.questaoAtual?.opcoes.map((opcao, indiceOpcao) => (
-                      <button
-                        key={indiceOpcao}
-                        onClick={() => quiz.responder(indiceOpcao)}
-                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                          quiz.respostaSelecionada === indiceOpcao
-                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                            : "border-slate-100 hover:border-indigo-200 hover:bg-slate-50"
-                        }`}
-                      >
-                        {opcao}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between mt-8">
-                    <button
-                      disabled={!quiz.podeVoltarQuestao}
-                      onClick={quiz.questaoAnterior}
-                      className="text-slate-400 disabled:opacity-30 hover:text-slate-600 px-4 py-2"
-                    >
-                      Anterior
-                    </button>
-                    {quiz.podeProximaQuestao ? (
-                      <button
-                        onClick={quiz.proximaQuestao}
-                        className="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-900"
-                      >
-                        Próxima
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => quiz.enviar()}
-                        disabled={!quiz.todasRespondidas}
-                        className="bg-indigo-600 text-white px-8 py-2 rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:shadow-none"
-                      >
-                        Finalizar Quiz
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12 animate-in zoom-in duration-500">
-                  {quiz.aprovado ? (
-                    <>
-                      <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
-                        <Award size={48} />
-                      </div>
-                      <h3 className="text-3xl font-bold text-slate-800 mb-2">
-                        Parabéns!
-                      </h3>
-                      <p className="text-slate-600 mb-8">
-                        Você acertou{" "}
-                        <span className="font-bold text-emerald-600">
-                          {quiz.resultado?.porcentagem.toFixed(0)}%
-                        </span>{" "}
-                        do teste.
-                      </p>
-                      <button
-                        onClick={handleAvancarFase}
-                        className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:scale-105 transition-all"
-                      >
-                        Avançar para Próxima Fase
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
-                        <RefreshCcw size={40} />
-                      </div>
-                      <h3 className="text-2xl font-bold text-slate-800 mb-2">
-                        Vamos tentar de novo?
-                      </h3>
-                      <p className="text-slate-600 mb-8">
-                        Você acertou {quiz.resultado?.porcentagem.toFixed(0)}%.
-                        É necessário 75% para avançar.
-                      </p>
-                      <button
-                        onClick={handleIniciarQuiz}
-                        className="bg-slate-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-900"
-                      >
-                        Refazer Quiz
-                      </button>
-                    </>
-                  )}
-
-                  {/* Gabarito */}
-                  <div className="mt-12 text-left border-t pt-8">
-                    <h4 className="font-bold text-slate-700 mb-4">
-                      Gabarito e Explicações:
-                    </h4>
-                    <div className="space-y-6">
-                      {questoesQuiz.map((questao, indice) => (
-                        <div
-                          key={indice}
-                          className={`p-4 rounded-lg ${
-                            quiz.respostas[questao.id] === questao.indiceCorreto
-                              ? "bg-emerald-50 border border-emerald-100"
-                              : "bg-red-50 border border-red-100"
-                          }`}
-                        >
-                          <p className="font-medium text-slate-800 text-sm mb-2">
-                            {indice + 1}. {questao.pergunta}
-                          </p>
-                          <p className="text-xs text-slate-500 italic">
-                            {questao.explicacao}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </main>
+      <TelaQuiz
+        tituloFase={navegacao.faseAtual.titulo}
+        quiz={quiz}
+        questoesQuiz={questoesQuiz}
+        aoVoltar={() => setModoQuiz(false)}
+        aoIniciarQuiz={handleIniciarQuiz}
+        aoAvancarFase={handleAvancarFase}
+      />
     );
   }
 
@@ -358,78 +163,18 @@ export function AreaConteudoPrincipal({
             )}
 
             {/* Tutor IA */}
-            {!ehQuiz && (
-              <div className="mb-8 border-t border-slate-100 pt-6">
-                {!tutorIA.explicacao ? (
-                  <button
-                    onClick={handleSolicitarExplicacao}
-                    disabled={tutorIA.carregando}
-                    className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 transition-colors font-medium disabled:opacity-50"
-                  >
-                    <Lightbulb size={18} />
-                    {tutorIA.carregando
-                      ? "Tutor IA pensando..."
-                      : "Me dê um exemplo diferente (Tutor IA)"}
-                  </button>
-                ) : (
-                  <div className="bg-white border border-indigo-100 p-5 rounded-xl shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                    <div className="flex items-start gap-3">
-                      <div className="bg-indigo-100 p-1.5 rounded-lg shrink-0">
-                        <Lightbulb className="text-indigo-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
-                          {tutorIA.explicacao}
-                        </p>
-                        <button
-                          onClick={tutorIA.limparExplicacao}
-                          className="text-xs text-slate-400 mt-3 hover:text-indigo-600 font-medium"
-                        >
-                          Fechar explicação
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            {!ehQuiz && <SecaoTutorIA />}
 
-            {/* Botões de Navegação */}
-            <div className="flex items-center gap-4 mt-12">
-              <button
-                onClick={navegacao.voltar}
-                disabled={!navegacao.podeVoltar}
-                className="px-5 py-2.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-white hover:text-slate-800 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 transition-all text-sm font-medium"
-              >
-                <ChevronLeft size={16} />
-                Anterior
-              </button>
-
-              {!ehQuiz && (
-                <button
-                  onClick={navegacao.avancar}
-                  disabled={!navegacao.podeAvancar}
-                  className="px-6 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-200 flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-sm font-medium ml-auto disabled:opacity-30"
-                >
-                  Próximo
-                  <ChevronRight size={16} />
-                </button>
-              )}
-            </div>
+            {/* Navegação */}
+            <BotoesNavegacao />
           </div>
         </div>
 
         {/* Painel Direito: Visualização */}
-        <div className="hidden md:flex w-1/2 bg-[#f0f1f4] border-l border-slate-200 p-2 items-center justify-center relative transition-all duration-300">
-          <div className="w-full h-full bg-white rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden p-4 relative flex items-center justify-center">
-            <div className="w-full h-full flex items-center justify-center">
-              {renderizarVisual(
-                navegacao.faseAtual.id,
-                navegacao.passoAtual.estadoVisual
-              )}
-            </div>
-          </div>
-        </div>
+        <PainelVisual
+          faseId={navegacao.faseAtual.id}
+          estadoVisual={navegacao.passoAtual.estadoVisual}
+        />
       </div>
     </main>
   );

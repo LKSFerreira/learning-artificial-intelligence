@@ -3,7 +3,10 @@
  */
 
 // Layout
-export { BarraLateralFases, AreaConteudoPrincipal } from './layout';
+export { BarraLateralFases, AreaConteudoPrincipal, PainelVisual } from './layout';
+
+// Quiz
+export { TelaQuiz } from './quiz';
 
 // Conquistas/Badges
 export { BadgeItem, SistemaBadges } from './conquistas';
