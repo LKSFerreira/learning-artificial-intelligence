@@ -33,7 +33,7 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 ---
 
-### � Fase A2: Gamificação e Engajamento — PRÓXIMA
+### 🎮 Fase A2: Gamificação e Engajamento — PRÓXIMA
 
 **Objetivo:** Implementar mecânicas que tornem o aprendizado viciante.
 
@@ -119,7 +119,7 @@ Esta trilha define o **conteúdo** ensinado na plataforma. Todo conceito deve se
 
 ---
 
-### � Fase B4: Visão Computacional (OpenCV) — FUTURO
+### 👁️ Fase B4: Visão Computacional (OpenCV) — FUTURO
 
 - [ ] Processamento de imagem, detecção de bordas.
 - [ ] Projeto: Agente que joga Dino Run lendo a tela.
@@ -135,7 +135,6 @@ Esta trilha define o **conteúdo** ensinado na plataforma. Todo conceito deve se
 
 ## 🛠️ Fase Técnica 0: Setup do Desenvolvedor
 
-- [x] **T0.1 Ambiente:** Docker configurado para desenvolvimento.
 - [ ] **T0.2 Qualidade:** ESLint, Prettier, Husky (pre-commit).
 - [ ] **T0.3 Testes:** Vitest (Frontend) e Pytest (Backend de IA).
 
@@ -145,8 +144,8 @@ Esta trilha define o **conteúdo** ensinado na plataforma. Todo conceito deve se
 
 | Trilha         | Fase Atual             | Status            |
 | :------------- | :--------------------- | :---------------- |
-| **Engenharia** | A1 ✅ → **A2 Próxima** | � Pronto p/ A2    |
-| **Currículo**  | B1-B3 ✅ → **B0 Nova** | � Conteúdo Básico |
+| **Engenharia** | A1 ✅ → **A2 Próxima** | 🟢 Pronto p/ A2    |
+| **Currículo**  | B1-B3 ✅ → **B0 Nova** | 🟡 Conteúdo Básico |
 
 > **Onde retomar:** Escolha entre **A2 (Gamificação)** para engajamento ou **B0 (História)** para conteúdo novo.
 
