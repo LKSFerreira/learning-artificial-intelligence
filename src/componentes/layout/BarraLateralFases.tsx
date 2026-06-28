@@ -21,11 +21,32 @@ import {
   CheckCircle2,
   Lock,
   RotateCcw,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useNavegacao } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
 import { CURRICULO } from "../../dados";
 import { SistemaBadges } from "../conquistas";
+
+// 1. Definição do Tipo de Tema
+type TipoTema = "claro" | "escuro" | "dracula";
+
+// 2. Componente SVG do Morcego do Tema Dracula
+const IconeMorcego: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M12 18s-2.5-3.5-5.5-3.5c-2 0-3.5 1-4.5 2 1.5-4 4.5-6.5 8-6.5h4c3.5 0 6.5 2.5 8 6.5-1-1-2.5-2-4.5-2-3 0-5.5 3.5-5.5 3.5z" />
+    <path d="M12 10V6l-2 1.5L9 6l3 4 3-4-1 1.5L12 6v4z" />
+  </svg>
+);
 
 interface PropriedadesBarraLateral {
   /** Se a barra lateral está aberta/visível */
@@ -49,6 +70,20 @@ export function BarraLateralFases({
   const { indiceFase, indicePasso, irParaFase, irParaPasso } = useNavegacao();
   const { estado } = useContextoProgresso();
 
+  // Estado para gerenciar o tema ativo
+  const [tema, setTema] = React.useState<TipoTema>(() => {
+    return (localStorage.getItem("tema-estudo") as TipoTema) || "claro";
+  });
+
+  // Efeito para sincronizar a classe do HTML com o tema selecionado
+  const alterarTema = (novoTema: TipoTema) => {
+    setTema(novoTema);
+    localStorage.setItem("tema-estudo", novoTema);
+    
+    // Atualiza a classe no html
+    document.documentElement.className = `theme-${novoTema}`;
+  };
+
   return (
     <aside
       className={`${
@@ -62,10 +97,49 @@ export function BarraLateralFases({
         className="p-6 border-b border-slate-100 select-none"
         onDoubleClick={aoDevUnlock}
       >
-        <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2 tracking-tight cursor-default">
-          <BookOpen size={24} className="text-indigo-600" />
-          <span className="truncate">Aprendendo IA</span>
-        </h1>
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2 tracking-tight cursor-default">
+            <BookOpen size={24} className="text-indigo-600 shrink-0" />
+            <span className="truncate">Aprendendo IA</span>
+          </h1>
+          
+          {/* Seletor Segmentado de Tema */}
+          <div className="flex bg-slate-100 border-slate-200/50 rounded-lg p-0.5 border shrink-0">
+            <button
+              onClick={() => alterarTema("claro")}
+              className={`p-1.5 rounded-md transition-all ${
+                tema === "claro"
+                  ? "bg-white text-amber-500 shadow-sm"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+              title="Tema Claro"
+            >
+              <Sun size={14} />
+            </button>
+            <button
+              onClick={() => alterarTema("escuro")}
+              className={`p-1.5 rounded-md transition-all ${
+                tema === "escuro"
+                  ? "bg-slate-800 text-indigo-400 shadow-sm"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+              title="Tema Escuro"
+            >
+              <Moon size={14} />
+            </button>
+            <button
+              onClick={() => alterarTema("dracula")}
+              className={`p-1.5 rounded-md transition-all ${
+                tema === "dracula"
+                  ? "bg-[#282a36] text-[#bd93f9] shadow-sm"
+                  : "text-slate-400 hover:text-[#bd93f9]"
+              }`}
+              title="Tema Dracula"
+            >
+              <IconeMorcego className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
         <p className="text-xs text-slate-400 mt-2 font-medium truncate">
           Jornada Interativa v2.0
         </p>

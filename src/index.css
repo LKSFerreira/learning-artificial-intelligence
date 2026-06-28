@@ -144,3 +144,178 @@ body {
   color: inherit;
   padding: 0;
 }
+
+/* ==========================================================================
+   5. Sistema de Temas (Claro, Escuro e Dracula)
+   ========================================================================== */
+
+/* Tema Claro (Suave / Warm Light) */
+:root, .theme-claro {
+  --bg-app: #eae7df; /* Tom areia/pólen de livro envelhecido, confortável nos olhos */
+  --bg-card: #faf9f5; /* Tom creme/papel bem claro e limpo para cartões */
+  --border-theme: #d6d2c4; /* Borda cinza-areia suave */
+  --text-theme: #4b5563; /* slate-600 (mais suave e legível nos olhos) */
+  --text-theme-dark: #1f2937; /* slate-800 */
+  --text-muted-theme: #6b7280; /* slate-500 */
+  --accent-theme: #4f46e5; /* indigo-600 */
+  --bg-sidebar: #f5f3ed; /* Barra lateral creme claro, fornecendo contraste excelente para leitura */
+  --hover-sidebar: #eae7df; /* Hover cor do areia */
+}
+
+/* Tema Escuro */
+.theme-escuro {
+  --bg-app: #0f172a; /* slate-900 */
+  --bg-card: #1e293b; /* slate-800 */
+  --border-theme: #334155; /* slate-700 */
+  --text-theme: #e2e8f0; /* slate-200 */
+  --text-theme-dark: #f8fafc; /* slate-50 */
+  --text-muted-theme: #94a3b8; /* slate-400 */
+  --accent-theme: #6366f1; /* indigo-500 */
+  --bg-sidebar: #0f172a;
+  --hover-sidebar: #1e293b;
+}
+
+/* Tema Dracula */
+.theme-dracula {
+  --bg-app: #1e1f29;
+  --bg-card: #282a36;
+  --border-theme: #44475a;
+  --text-theme: #f8f8f2;
+  --text-theme-dark: #ffffff;
+  --text-muted-theme: #6272a4;
+  --accent-theme: #bd93f9; /* Dracula Purple */
+  --bg-sidebar: #1e1f29;
+  --hover-sidebar: #282a36;
+  --accent-dracula-pink: #ff79c6;
+  --accent-dracula-cyan: #8be9fd;
+}
+
+/* Regras de Sobrescrita Segura para os Componentes do App (Global para todos os temas) */
+body {
+  background-color: var(--bg-app);
+  color: var(--text-theme);
+}
+
+.bg-white {
+  background-color: var(--bg-card) !important;
+}
+
+aside.bg-white {
+  background-color: var(--bg-sidebar) !important;
+}
+
+.bg-\[\#faf9f6\],
+.bg-\[\#f0f1f4\],
+.bg-slate-50 {
+  background-color: var(--bg-app) !important;
+}
+
+.text-slate-800,
+.text-slate-900 {
+  color: var(--text-theme-dark) !important;
+}
+
+.text-slate-700,
+.text-slate-600 {
+  color: var(--text-theme) !important;
+}
+
+.text-slate-500 {
+  color: var(--text-muted-theme) !important;
+}
+
+/* Garantir que texto de passos bloqueados (text-slate-300) tenha contraste em qualquer tema */
+.text-slate-300 {
+  color: var(--text-theme) !important;
+  opacity: 0.55 !important;
+}
+
+/* Ajuste de opacidade para títulos de fases bloqueadas na barra lateral */
+aside .opacity-40 {
+  opacity: 0.65 !important;
+}
+
+.border-slate-200,
+.border-slate-100 {
+  border-color: var(--border-theme) !important;
+}
+
+.border-r,
+.border-b,
+.border-t {
+  border-color: var(--border-theme) !important;
+}
+
+.hover\:bg-slate-50:hover {
+  background-color: var(--hover-sidebar) !important;
+}
+
+.hover\:text-indigo-600:hover {
+  color: var(--accent-theme) !important;
+}
+
+.theme-escuro .bg-indigo-50,
+.theme-escuro .text-indigo-600 {
+  color: #818cf8 !important; /* indigo-400 para melhor contraste no escuro */
+}
+
+.theme-escuro .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Estilos de Markdown para Temas Escuros */
+.theme-escuro .markdown-content strong,
+.theme-dracula .markdown-content strong {
+  color: var(--text-theme-dark) !important;
+}
+
+.theme-escuro .markdown-content code,
+.theme-dracula .markdown-content code {
+  background-color: var(--border-theme) !important;
+  color: #ff79c6 !important; /* rosa dracula ou cor de destaque clara no escuro */
+}
+
+.theme-escuro .markdown-content blockquote,
+.theme-dracula .markdown-content blockquote {
+  background-color: var(--border-theme) !important;
+  color: var(--text-theme) !important;
+  border-left-color: var(--accent-theme) !important;
+}
+
+/* Outros ajustes específicos para o tema Dracula */
+.theme-dracula ::-webkit-scrollbar-thumb {
+  background-color: rgba(98, 114, 164, 0.5); /* comment color com opacidade */
+}
+
+.theme-dracula ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(98, 114, 164, 0.9);
+}
+
+.theme-dracula * {
+  scrollbar-color: rgba(98, 114, 164, 0.5) transparent;
+}
+
+/* Correção de sombra no tema Dracula e Escuro */
+.theme-dracula .shadow-lg,
+.theme-escuro .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Redefinição do shadow-slate-200 para um glow branco translúcido e suave sob temas escuro/dracula */
+.theme-escuro .shadow-slate-200,
+.theme-dracula .shadow-slate-200 {
+  --tw-shadow-color: rgba(255, 255, 255, 0.18) !important;
+  --tw-shadow: 0 10px 20px -3px rgba(255, 255, 255, 0.25), 0 4px 12px -4px rgba(255, 255, 255, 0.18) !important;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+}
+
+/* Redefinição do shadow-slate-200 para o tema Claro ( Warm Light ) para dar contraste no fundo creme */
+:root .shadow-slate-200,
+.theme-claro .shadow-slate-200 {
+  --tw-shadow-color: rgba(0, 0, 0, 0.18) !important;
+  --tw-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.22), 0 4px 12px -4px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+}
+
+
+

@@ -14,6 +14,14 @@
     
     <title>Aprendendo IA</title>
     
+    <!-- Script de Inicialização de Tema para Evitar FOUC -->
+    <script>
+      (function() {
+        const tema = localStorage.getItem('tema-estudo') || 'claro';
+        document.documentElement.className = 'theme-' + tema;
+      })();
+    </script>
+    
     <!-- Tailwind CSS (CDN para desenvolvimento) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
