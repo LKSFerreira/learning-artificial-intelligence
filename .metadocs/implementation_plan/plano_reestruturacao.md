@@ -291,13 +291,13 @@ Criar um módulo que:
 
 ---
 
-### Fase R3: Registro Dinâmico de Visuais
+### Fase R3: Registro Dinâmico de Visuais ✅
 > *Cada visualização é um plugin, não um case.*
 
-- [ ] Criar `REGISTRO_VISUAIS` como `Record<string, ComponentType>`
-- [ ] Cada componente visual se auto-registra via export no `index.ts`
-- [ ] `PainelVisual.tsx` faz lookup no registro pelo `estadoVisual` do passo
-- [ ] Componente fallback para `estadoVisual` desconhecido
+- [x] Criar `REGISTRO_VISUAIS` como `Record<string, FabricaVisual>`
+- [x] Chaves compostas `faseId:estadoVisual` para resolver conflitos
+- [x] `PainelVisual.tsx` usa `resolverVisual()` — zero switch/case
+- [x] Fallback por fase (fase 3 → GradeLabirinto, demais → "Em construção")
 
 **Entregável:** Adicionar nova fase = criar componente visual + entrada no registro. Zero alteração nos componentes de layout.
 
