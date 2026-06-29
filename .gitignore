@@ -42,3 +42,159 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ===========================================
+# .gitignore gerado por gerador.io
+# ===========================================
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+lerna-debug.log*
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+build/
+*.egg-info/
+*.egg
+.eggs/
+*.whl
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.pyo
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+.settings/
+.classpath
+.project
+hs_err_pid*
+replay_pid*
+
+# React
+coverage/
+
+# Vue
+.env.*.local
+*.local
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel
+
+# Django
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+*.pot
+*.mo
+media/
+staticfiles/
+static_collected/
+celerybeat-schedule
+
+# Flask
+instance/
+.webassets-cache
+
+# Spring
+application-local.properties
+application-local.yml
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Vim
+[._]*.s[a-v][a-z]
+!*.svg
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+tags
+[._]*.un~
