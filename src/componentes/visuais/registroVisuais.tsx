@@ -40,6 +40,26 @@ function VisualPadrao({ estado }: { estado: string }): React.ReactElement {
   );
 }
 
+function QuizVisualFase1(): React.ReactElement {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-600 rounded-xl text-white p-6 text-center animate-in zoom-in duration-500">
+      <Brain size={120} className="mb-8 text-indigo-200 opacity-50" />
+      <h3 className="text-4xl font-bold mb-4">Quiz: Fundamentos</h3>
+      <p className="opacity-80 text-xl">Mostre que você dominou os pilares da Inteligência Artificial.</p>
+    </div>
+  );
+}
+
+function VideoVisual(): React.ReactElement {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 rounded-xl text-white p-6 text-center animate-in fade-in duration-500">
+      <span className="text-8xl mb-6">🍿</span>
+      <h3 className="text-3xl font-bold mb-4">Hora do Vídeo</h3>
+      <p className="opacity-70 text-lg">Assista no painel ao lado para consolidar o aprendizado.</p>
+    </div>
+  );
+}
+
 function QuizVisualFase2(): React.ReactElement {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-600 rounded-xl text-white p-6 text-center animate-in zoom-in duration-500">
@@ -78,6 +98,8 @@ export const REGISTRO_VISUAIS: Record<string, FabricaVisual> = {
   "1:rl_components_interactive": () => <TreinadorRL />,
   "1:rl_cycle_animation": () => <TreinadorRL />,
   "1:exploration_exploitation": () => <TreinadorRL />,
+  "1:video_static": () => <VideoVisual />,
+  "1:quiz_static": () => <QuizVisualFase1 />,
 
   // === Fase 2 ===
   "2:intro_concept": () => <IntroducaoFase2 />,
@@ -87,6 +109,7 @@ export const REGISTRO_VISUAIS: Record<string, FabricaVisual> = {
   "2:q_table_zeros": (estado) => <TabuleiroQTable estadoVisual={estado} />,
   "2:critical_defense": (estado) => <TabuleiroQTable estadoVisual={estado} />,
   "2:quiz_static": () => <QuizVisualFase2 />,
+  "2:video_static": () => <VideoVisual />,
 
   // === Fase 3 ===
   "3:intro_maze": () => <IntroducaoFase3 />,

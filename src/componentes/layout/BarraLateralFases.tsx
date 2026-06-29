@@ -9,7 +9,6 @@ import { BookOpen, RotateCcw } from "lucide-react";
 
 import { SeletorTema } from "./SeletorTema";
 import { NavegacaoFases } from "./NavegacaoFases";
-import { SistemaBadges } from "../conquistas";
 
 type TipoTema = "claro" | "escuro" | "dracula";
 
@@ -61,11 +60,6 @@ export function BarraLateralFases({
 
       {/* Navegação */}
       <NavegacaoFases />
-
-      {/* Badges */}
-      <div className="px-4 pb-4">
-        <SistemaBadges />
-      </div>
 
       {/* Reset */}
       <div className="p-4 border-t border-slate-100 bg-slate-50">
