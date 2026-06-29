@@ -50,6 +50,9 @@ interface ContextoProgressoTipo {
   
   /** Reseta todo o progresso */
   resetarProgresso: () => void;
+
+  /** Desbloqueia todas as fases e passos (modo dev) */
+  desbloquearTudo: () => void;
   
   /** Registra uso do Tutor IA */
   registrarUsoTutorIA: () => void;
@@ -224,6 +227,22 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
     setEstado(ESTADO_INICIAL);
   }, []);
 
+  // Desbloqueia todas as fases (easter egg)
+  const desbloquearTudo = useCallback(() => {
+    const todasFases = CURRICULO.map(fase => fase.id);
+    const maximoPassos: Record<number, number> = {};
+    CURRICULO.forEach((fase, indice) => {
+      maximoPassos[indice] = fase.passos.length - 1;
+    });
+
+    setEstado(prev => ({
+      ...prev,
+      fasesCompletas: todasFases,
+      maximoPassoAlcancado: maximoPassos,
+      pontuacoesQuiz: Object.fromEntries(todasFases.map(id => [id, 100])),
+    }));
+  }, []);
+
   // Registra uso do Tutor IA
   const registrarUsoTutorIA = useCallback(() => {
     setEstado(prev => ({
@@ -256,6 +275,7 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
     irParaPasso,
     avancarFase,
     resetarProgresso,
+    desbloquearTudo,
     registrarUsoTutorIA,
     registrarPontuacaoQuiz
   };

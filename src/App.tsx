@@ -41,7 +41,7 @@ const App: React.FC = () => {
   const [mostrarConfirmacaoReset, setMostrarConfirmacaoReset] = useState(false);
 
   // Acesso ao contexto para resetar progresso
-  const { resetarProgresso } = useContextoProgresso();
+  const { resetarProgresso, desbloquearTudo } = useContextoProgresso();
 
   /**
    * Handler para confirmar o reset do progresso.
@@ -57,8 +57,7 @@ const App: React.FC = () => {
    */
   const handleDevUnlock = (evento: React.MouseEvent) => {
     if (evento.shiftKey && evento.altKey) {
-      // Usa o contexto para desbloquear (futuramente podemos expor essa função)
-      alert("🔓 Modo Dev: Use o console para desbloquear fases manualmente.");
+      desbloquearTudo();
     }
   };
 
