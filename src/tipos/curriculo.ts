@@ -28,7 +28,7 @@ export type TipoPasso = "content" | "video" | "quiz";
  * Representa um passo individual dentro de uma fase.
  *
  * Cada passo pode ser um conteúdo textual, vídeo ou quiz.
- * O campo ``visualState`` controla qual visualização interativa
+ * O campo ``estadoVisual`` controla qual visualização interativa
  * é exibida no painel lateral.
  */
 export interface Passo {

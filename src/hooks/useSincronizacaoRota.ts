@@ -6,7 +6,7 @@
  * - Formato: /fase/{faseId}/passo/{passoIndice}
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useContextoProgresso } from '../contextos';
 import { CURRICULO } from '../dados';
@@ -15,15 +15,11 @@ export function useSincronizacaoRota(): void {
   const { estado, irParaPasso } = useContextoProgresso();
   const navigate = useNavigate();
   const location = useLocation();
-  const inicializado = useRef(false);
 
-  // Na montagem: lê URL e navega para o passo correspondente
+  // 1. Sincroniza URL -> Estado (Escuta PopState / Navegação manual / Botão Voltar)
   useEffect(() => {
-    if (inicializado.current) return;
-    inicializado.current = true;
-
     const partes = location.pathname.split('/').filter(Boolean);
-    // Formato esperado: /fase/1/passo/3
+    // Formato esperado: /fase/{faseId}/passo/{passoIndice}
     if (partes[0] === 'fase' && partes[2] === 'passo') {
       const faseId = parseInt(partes[1], 10);
       const passoIndice = parseInt(partes[3], 10);
@@ -34,13 +30,16 @@ export function useSincronizacaoRota(): void {
       if (indiceFase >= 0 && passoIndice >= 0) {
         const fase = CURRICULO[indiceFase];
         if (passoIndice < fase.passos.length) {
-          irParaPasso(indiceFase, passoIndice);
+          // Só atualiza o estado global se for diferente da URL atual
+          if (estado.indiceFaseAtual !== indiceFase || estado.indicePassoAtual !== passoIndice) {
+            irParaPasso(indiceFase, passoIndice);
+          }
         }
       }
     }
-  }, []);
+  }, [location.pathname, irParaPasso, estado.indiceFaseAtual, estado.indicePassoAtual]);
 
-  // Quando estado muda → atualiza URL (sem reload)
+  // 2. Sincroniza Estado -> URL (Atualiza barra de endereços quando o progresso muda)
   useEffect(() => {
     const faseAtual = CURRICULO[estado.indiceFaseAtual];
     if (!faseAtual) return;
@@ -48,7 +47,10 @@ export function useSincronizacaoRota(): void {
     const novaRota = `/fase/${faseAtual.id}/passo/${estado.indicePassoAtual}`;
 
     if (location.pathname !== novaRota) {
-      navigate(novaRota, { replace: true });
+      // Se for a rota padrão ou raiz (/), faz replace para limpar.
+      // Para navegações normais dentro do app, acumulamos histórico (replace: false).
+      const ehRotaRaiz = location.pathname === '/' || location.pathname === '';
+      navigate(novaRota, { replace: ehRotaRaiz });
     }
-  }, [estado.indiceFaseAtual, estado.indicePassoAtual]);
+  }, [estado.indiceFaseAtual, estado.indicePassoAtual, location.pathname, navigate]);
 }

@@ -15,6 +15,12 @@ import { FASE_1 } from './fase1';
 import { FASE_2 } from './fase2';
 import { FASE_3 } from './fase3';
 
+if (CURRICULO_MD.length === 0) {
+  console.warn(
+    "[Fallback] O Loader de Markdown retornou vazio. Usando os fallbacks estáticos em TypeScript (fase1.ts - fase3.ts)."
+  );
+}
+
 /**
  * O currículo completo da aplicação.
  *

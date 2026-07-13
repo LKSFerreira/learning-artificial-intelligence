@@ -111,7 +111,7 @@ Imagine que o chão tem setas invisíveis indicando a qualidade de ir para cada 
 
 *   No Jogo da Velha, navegávamos por estados de peças.
 *   No Labirinto, navegamos por posições físicas.
-*   No Ragnarok (futuro), navegaremos por mapas reais do jogo.
+*   Na robótica avançada ou jogos complexos, navegamos por ambientes tridimensionais.
 
 A matemática (Q-Learning, Bellman) é **exatamente a mesma**. Só mudamos o que chamamos de "Estado" e "Ação".`,
       estadoVisual: "architecture_phase3",

@@ -48,6 +48,9 @@ interface ContextoProgressoTipo {
   /** Avança para a próxima fase após completar quiz */
   avancarFase: () => void;
   
+  /** Ativa o modo quiz globalmente */
+  iniciarQuiz: () => void;
+  
   /** Reseta todo o progresso */
   resetarProgresso: () => void;
 
@@ -182,7 +185,14 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
   // Navega para um passo específico
   const irParaPasso = useCallback((indiceFase: number, indicePasso: number) => {
     setEstado(prev => {
-      // Verifica locks
+      // Valida se a fase destino está desbloqueada
+      const faseDesbloqueada = indiceFase === 0 || 
+        prev.fasesCompletas.includes(CURRICULO[indiceFase - 1].id) ||
+        prev.fasesCompletas.length === CURRICULO.length; // desvio para modo desenvolvedor
+
+      if (!faseDesbloqueada) return prev;
+
+      // Verifica locks internos de passos na fase
       const faseCompleta = prev.fasesCompletas.includes(CURRICULO[indiceFase].id);
       const maximoAlcancado = prev.maximoPassoAlcancado[indiceFase] ?? 0;
       const passoBloqueado = !faseCompleta && indicePasso > maximoAlcancado;
@@ -204,15 +214,23 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
       const faseAtual = CURRICULO[prev.indiceFaseAtual];
       const proximaFaseIndice = prev.indiceFaseAtual + 1;
 
-      if (proximaFaseIndice >= CURRICULO.length) return prev;
+      const novasFasesCompletas = prev.fasesCompletas.includes(faseAtual.id)
+        ? prev.fasesCompletas
+        : [...prev.fasesCompletas, faseAtual.id];
+
+      if (proximaFaseIndice >= CURRICULO.length) {
+        return {
+          ...prev,
+          fasesCompletas: novasFasesCompletas,
+          estaNoModoQuiz: false
+        };
+      }
 
       return {
         ...prev,
         indiceFaseAtual: proximaFaseIndice,
         indicePassoAtual: 0,
-        fasesCompletas: prev.fasesCompletas.includes(faseAtual.id) 
-          ? prev.fasesCompletas 
-          : [...prev.fasesCompletas, faseAtual.id],
+        fasesCompletas: novasFasesCompletas,
         estaNoModoQuiz: false,
         maximoPassoAlcancado: {
           ...prev.maximoPassoAlcancado,
@@ -220,6 +238,14 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
         }
       };
     });
+  }, []);
+
+  // Ativa o modo quiz
+  const iniciarQuiz = useCallback(() => {
+    setEstado(prev => ({
+      ...prev,
+      estaNoModoQuiz: true
+    }));
   }, []);
 
   // Reseta progresso
@@ -274,6 +300,7 @@ export function ProvedorProgresso({ children }: ProvedorProgressoProps) {
     irParaFase,
     irParaPasso,
     avancarFase,
+    iniciarQuiz,
     resetarProgresso,
     desbloquearTudo,
     registrarUsoTutorIA,

@@ -20,6 +20,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [react()],
+    // ALERTA DE SEGURANÇA: define substitui e expõe chaves literalmente no bundle servido ao navegador.
+    // Use apenas chaves com restrições severas de cota em ambiente de desenvolvimento local.
     define: {
       "process.env.API_KEY": JSON.stringify(env.GEMINI_API_KEY),
       "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),

@@ -9,7 +9,5 @@ export {
 
 export { 
   salvarProgresso, 
-  carregarProgresso, 
-  limparProgresso,
-  existeProgressoSalvo
+  carregarProgresso
 } from './servicoArmazenamento';

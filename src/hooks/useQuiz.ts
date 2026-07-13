@@ -16,7 +16,7 @@
  *     } = useQuiz(questoes);
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { QuestaoQuiz, RespostasQuiz, ResultadoQuiz } from '../tipos';
 import { useContextoProgresso } from '../contextos';
 
@@ -102,6 +102,11 @@ export function useQuiz(
   const [enviado, setEnviado] = useState(false);
   const [resultado, setResultado] = useState<ResultadoQuiz | null>(null);
   const [jaTentou, setJaTentou] = useState(false);
+
+  // Reseta o estado de tentativa quando mudar de fase
+  useEffect(() => {
+    setJaTentou(false);
+  }, [faseId]);
 
   const questaoAtual = useMemo(() => 
     questoes[indiceQuestao], 

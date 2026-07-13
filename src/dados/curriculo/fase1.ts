@@ -26,7 +26,7 @@ export const FASE_1: Fase = {
       titulo: "O que é IA? 🤖",
       conteudo: `Olá, futuro mestre de IAs! Bem-vindo ao ponto de partida da nossa jornada.
 
-Antes de ensinarmos uma máquina a derrotar Porings e MVPs no Ragnarok, precisamos entender como ela "pensa".
+Antes de começarmos a criar e testar algoritmos complexos, precisamos entender como a máquina "pensa".
 
 **O que é IA?**
 Pense na IA como o grande sonho da computação: **a arte de criar máquinas que podem pensar, aprender e tomar decisões como seres humanos.**
@@ -54,12 +54,12 @@ Imagine que a **Inteligência Artificial (IA)** é a sua oficina inteira.
       titulo: "ML: Aprendendo com Exemplos 📸",
       conteudo: `> Em vez de programar regras, nós deixamos a máquina **aprender as regras sozinha** a partir de dados.
 
-Imagine ensinar um computador a reconhecer uma **Poção Vermelha**.
+Imagine ensinar um computador a reconhecer uma **Maçã Vermelha**.
 
-*   **Programação Tradicional:** Você escreveria regras rígidas: \`SE pixel vermelho E formato vidro ENTÃO poção\`. Frágil.
-*   **Machine Learning:** Você mostra **10.000 imagens** de poções. O algoritmo descobre os padrões sozinho.
+*   **Programação Tradicional:** Você escreveria regras rígidas: \`SE pixel vermelho E formato circular ENTÃO maçã\`. Frágil.
+*   **Machine Learning:** Você mostra **10.000 imagens** de maçãs. O algoritmo descobre os padrões sozinho.
 
-Vamos usar ML para que nossa IA aprenda o que é um monstro ou um item apenas olhando a tela.`,
+Vamos usar ML para que nossa IA aprenda a reconhecer padrões olhando representações gráficas de dados.`,
       estadoVisual: "ml_examples",
       tipo: 'content'
     },
@@ -129,7 +129,7 @@ Treinar a IA é rodar esse ciclo milhões de vezes.`,
       conteudo: `Dois conceitos finais:
 
 **Política (Policy):**
-É o "manual" final da IA. *"Se vida baixa, usar poção"*.
+É o "manual" final da IA. *"Se parede detectada à frente, vire à direita"*.
 
 **Exploração vs Exploitation:**
 O dilema do aventureiro.

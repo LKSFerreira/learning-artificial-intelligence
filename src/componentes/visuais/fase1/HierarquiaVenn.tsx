@@ -9,6 +9,7 @@
 
 import React, { useState } from "react";
 import { Box, Database, Brain, XCircle, CheckCircle } from "lucide-react";
+import { useContextoBadges } from "../../../contextos";
 
 /**
  * Informações de cada círculo do diagrama.
@@ -64,11 +65,13 @@ type TipoCirculo = keyof typeof INFORMACOES_CIRCULOS;
  * Componente de diagrama de Venn interativo.
  */
 export function HierarquiaVenn(): React.ReactElement {
+  const { registrarCliqueCirculo } = useContextoBadges();
   const [circuloSelecionado, setCirculoSelecionado] =
     useState<TipoCirculo | null>(null);
 
   const selecionarCirculo = (tipo: TipoCirculo) => {
     setCirculoSelecionado((prev) => (prev === tipo ? null : tipo));
+    registrarCliqueCirculo(tipo);
   };
 
   const infoAtual = circuloSelecionado

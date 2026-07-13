@@ -36,7 +36,7 @@ Uma Inteligência Artificial que aprende a jogar **Jogo da Velha** (Tic-Tac-Toe)
 4.  Torna-se um **mestre invencível**.
 
 **Por que Jogo da Velha?**
-É o ambiente perfeito: simples, controlado e com aprendizado visível. Se você dominar isso aqui, dominará o Ragnarok depois.`,
+É o ambiente perfeito: simples, controlado e com aprendizado visível. Se você dominar isso aqui, dominará as bases da tomada de decisões com aprendizado por reforço.`,
       estadoVisual: "intro_concept",
       tipo: "content"
     },

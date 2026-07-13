@@ -65,6 +65,29 @@ export function obterQuestoesPorFase(faseId: number): QuestaoQuiz[] {
 }
 
 /**
+ * Obtém um quiz específico pelo ID do quiz (string).
+ * 
+ * :param quizId: Identificador textual do quiz
+ * :returns: O Quiz correspondente ou undefined se não encontrado
+ */
+export function obterQuizPorId(quizId: string): Quiz | undefined {
+  if (quizId === "quiz_fase_1") return obterQuizPorFase(1);
+  if (quizId === "quiz_fase_2") return obterQuizPorFase(2);
+  if (quizId === "quiz_fase_3") return obterQuizPorFase(3);
+  return undefined;
+}
+
+/**
+ * Obtém as questões de um quiz específico pelo ID do quiz (string).
+ * 
+ * :param quizId: Identificador textual do quiz
+ * :returns: Array de questões ou array vazio se não encontrado
+ */
+export function obterQuestoesPorId(quizId: string): QuestaoQuiz[] {
+  return obterQuizPorId(quizId)?.questoes ?? [];
+}
+
+/**
  * Total de questões em todos os quizzes.
  */
 export const TOTAL_QUESTOES = TODOS_OS_QUIZZES.reduce(

@@ -35,6 +35,8 @@ export {
   QUESTOES_FASE_3,
   obterQuizPorFase,
   obterQuestoesPorFase,
+  obterQuizPorId,
+  obterQuestoesPorId,
   TOTAL_QUESTOES
 } from './quizzes';
 

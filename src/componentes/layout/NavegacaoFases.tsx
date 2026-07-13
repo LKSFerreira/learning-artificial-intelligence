@@ -107,6 +107,7 @@ export function NavegacaoFases(): React.ReactElement {
               <ul className="ml-3 pl-3 border-l border-slate-200 space-y-3 mt-2 mb-4">
                 {fase.passos.map((passo, indicePassoLoop) => {
                   const ehAtivo =
+                    indiceFaseLoop === indiceFase &&
                     indicePassoLoop === indicePasso &&
                     !estado.estaNoModoQuiz;
 

@@ -5,19 +5,16 @@
  * Delega quiz, tutor IA e navegação para sub-componentes.
  */
 
-import React, { useState } from "react";
-import ReactMarkdown from "react-markdown";
+import React from "react";
 import {
-  ChevronRight,
-  Brain,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
 
-import { useNavegacao, useTutorIA, useQuiz } from "../../hooks";
+import { useNavegacao, useQuiz } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
-import { obterQuestoesPorFase } from "../../dados";
-import { SecaoTutorIA } from "../conteudo";
+import { obterQuestoesPorFase, obterQuestoesPorId } from "../../dados";
+import { SecaoTutorIA, ConteudoMarkdown, ConteudoVideo, CartaoQuiz } from "../conteudo";
 import { BotoesNavegacao } from "../navegacao";
 import { TelaQuiz } from "../quiz";
 import { PainelVisual } from "./PainelVisual";
@@ -32,40 +29,45 @@ export function AreaConteudoPrincipal({
   aoToggleBarraLateral,
 }: PropriedadesAreaConteudo): React.ReactElement {
   const navegacao = useNavegacao();
-  const { estado, avancarFase } = useContextoProgresso();
+  const { estado, avancarFase, iniciarQuiz, setEstado } = useContextoProgresso();
 
-  const questoesQuiz = obterQuestoesPorFase(navegacao.faseAtual.id);
+  const quizId = navegacao.passoAtual.quizId;
+  const questoesQuiz = quizId 
+    ? obterQuestoesPorId(quizId)
+    : obterQuestoesPorFase(navegacao.faseAtual.id);
+
   const quiz = useQuiz(questoesQuiz, {
     porcentagemMinima: 75,
     faseId: navegacao.faseAtual.id,
   });
-
-  const [modoQuiz, setModoQuiz] = useState(false);
 
   const pontuacaoAtual = estado.pontuacoesQuiz[navegacao.faseAtual.id];
   const jaPassouQuiz = pontuacaoAtual !== undefined && pontuacaoAtual >= 75;
 
   const handleIniciarQuiz = () => {
     quiz.resetar();
-    setModoQuiz(true);
+    iniciarQuiz();
   };
 
   const handleAvancarFase = () => {
     avancarFase();
-    setModoQuiz(false);
+  };
+
+  const handleVoltarQuiz = () => {
+    setEstado(prev => ({ ...prev, estaNoModoQuiz: false }));
   };
 
   const ehVideo = navegacao.ehVideo;
   const ehQuiz = navegacao.ehQuiz;
 
   // --- MODO QUIZ ---
-  if (modoQuiz && ehQuiz) {
+  if (estado.estaNoModoQuiz && ehQuiz) {
     return (
       <TelaQuiz
         tituloFase={navegacao.faseAtual.titulo}
         quiz={quiz}
         questoesQuiz={questoesQuiz}
-        aoVoltar={() => setModoQuiz(false)}
+        aoVoltar={handleVoltarQuiz}
         aoIniciarQuiz={handleIniciarQuiz}
         aoAvancarFase={handleAvancarFase}
       />
@@ -111,97 +113,26 @@ export function AreaConteudoPrincipal({
 
             {/* Corpo do Conteúdo */}
             {ehVideo ? (
-              <div className="mb-8">
-                <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-slate-200">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={navegacao.passoAtual.urlVideo}
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-                <p className="mt-4 text-slate-600">
-                  {navegacao.passoAtual.conteudo}
-                </p>
-              </div>
+              <ConteudoVideo 
+                urlVideo={navegacao.passoAtual.urlVideo ?? ""} 
+                descricao={navegacao.passoAtual.conteudo} 
+              />
             ) : ehQuiz ? (
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold mb-2">Desafio Final</h3>
-                  <p className="text-indigo-100 mb-6">
-                    Prove que você dominou os conceitos desta fase para
-                    desbloquear a próxima etapa da jornada.
-                  </p>
-                  {jaPassouQuiz ? (
-                    <button
-                      onClick={handleAvancarFase}
-                      className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
-                    >
-                      Avançar para Próxima Fase <ChevronRight size={18} />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleIniciarQuiz}
-                      className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
-                    >
-                      Iniciar Quiz <ChevronRight size={18} />
-                    </button>
-                  )}
-                </div>
-                <Brain
-                  className="absolute -bottom-8 -right-8 text-white opacity-10"
-                  size={200}
-                />
-              </div>
+              <CartaoQuiz
+                aoIniciar={handleIniciarQuiz}
+                jaPassouQuiz={jaPassouQuiz}
+                aoAvancar={handleAvancarFase}
+                conteudo={navegacao.passoAtual.conteudo}
+              />
             ) : (
-              <div className="markdown-content text-lg text-slate-600 leading-relaxed mb-8">
-                <ReactMarkdown>{navegacao.passoAtual.conteudo}</ReactMarkdown>
-              </div>
+              <ConteudoMarkdown conteudo={navegacao.passoAtual.conteudo} />
             )}
 
-            {/* Vídeo embutido ou link externo com thumbnail */}
+            {/* Vídeo embutido ou link externo com thumbnail (complementar) */}
             {!ehVideo && navegacao.passoAtual.urlVideo && (
-              <div className="mb-8">
-                {navegacao.passoAtual.urlVideo.includes('/embed/') ? (
-                  <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-slate-200">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={navegacao.passoAtual.urlVideo}
-                      title="Vídeo complementar"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                ) : (
-                  <a
-                    href={navegacao.passoAtual.urlVideo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group relative aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 hover:shadow-xl transition-shadow"
-                  >
-                    <img
-                      src={`https://img.youtube.com/vi/${navegacao.passoAtual.urlVideo.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)?.[1] || ''}/maxresdefault.jpg`}
-                      alt="Thumbnail do vídeo"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <svg viewBox="0 0 24 24" fill="white" className="w-7 h-7 ml-1">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                      Assistir no YouTube ↗
-                    </div>
-                  </a>
-                )}
-              </div>
+              <ConteudoVideo 
+                urlVideo={navegacao.passoAtual.urlVideo} 
+              />
             )}
 
             {/* Tutor IA */}

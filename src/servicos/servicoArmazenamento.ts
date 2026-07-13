@@ -79,34 +79,3 @@ export function carregarProgresso(): EstadoProgresso | null {
     return null;
   }
 }
-
-/**
- * Remove todos os dados de progresso do LocalStorage.
- * 
- * Usado quando o usuário quer reiniciar do zero.
- * 
- * **Exemplo:**
- * 
- * .. code-block:: typescript
- * 
- *     if (confirm("Deseja reiniciar?")) {
- *         limparProgresso();
- *     }
- */
-export function limparProgresso(): void {
-  try {
-    localStorage.removeItem(CHAVE_ARMAZENAMENTO);
-  } catch (erro) {
-    console.error("Erro ao limpar progresso:", erro);
-  }
-}
-
-/**
- * Verifica se existe progresso salvo.
- * 
- * :returns: true se existe um save válido
- */
-export function existeProgressoSalvo(): boolean {
-  return localStorage.getItem(CHAVE_ARMAZENAMENTO) !== null;
-}
-
