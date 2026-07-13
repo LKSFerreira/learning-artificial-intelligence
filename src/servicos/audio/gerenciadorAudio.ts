@@ -35,6 +35,6 @@ export function obterCaminhoAudioEstatico(
   licaoId: string,
   voz: string
 ): string {
-  return `/audios/${licaoId}_${voz}.mp3`;
+  return `/audios/${voz}/${licaoId}.mp3`;
 }
 
