@@ -4,6 +4,15 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Player de Áudio Estático e Geração Offline de Voz com Gemini ✅
+
+- Removida a lógica de geração de áudio por IA em tempo real e gerenciamento de chaves de API locais no frontend (Vite/React).
+- Player de áudio simplificado para carregar arquivos MP3 estáticos locais seguindo o formato `/public/audios/fase_{faseId}_passo_{passoIndice}_{voz}.mp3`.
+- Adicionado controle refinado de velocidade (+/- de 0.25 em 0.25), minutagem unificada (`00:00:32/00:03:35`) e download dinâmico de arquivos estáticos.
+- Criada a pasta `sintetizar/` com scripts em Node.js (`sintetizar.js` e `converter.js`) para ler arquivos Markdown, gerar WAV pelo Gemini e compactar em MP3 a 128kbps localmente usando `lamejs`.
+- Deletados arquivos de provedores, tipos e conversores sem uso (`provedorGemini.ts`, `provedorOpenRouter.ts`, `provedorGroq.ts`, `conversorMp3.ts`, `lamejs.d.ts`), mantendo o build verde.
+- Detalhes de implementação e arquitetura em [.metadocs/implemented/player_estatico.md](.metadocs/implemented/player_estatico.md).
+
 ### 2026-07-13 — Correção de Tipagem Vite e Resolução de Erros TypeScript ✅
 
 - Adicionados tipos do cliente Vite (`vite/client`) nas `compilerOptions` do `tsconfig.json`, resolvendo erro de propriedade `glob` inexistente em `import.meta`.
