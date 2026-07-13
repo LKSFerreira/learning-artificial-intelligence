@@ -92,13 +92,13 @@ export function AreaConteudoPrincipal({
         </button>
 
         {/* Painel Esquerdo: Conteúdo */}
-        <div className="w-full md:w-1/2 h-full overflow-y-auto custom-scrollbar bg-[#faf9f6] px-8 md:px-12 py-8 md:py-12 transition-all duration-300">
+        <div className="w-full md:w-1/2 h-full overflow-y-auto custom-scrollbar bg-[#faf9f6] px-4 md:px-6 py-8 md:py-12 transition-all duration-300">
           <div
-            className="max-w-xl mx-auto w-full fade-in pb-20"
+            className="max-w-4xl mx-auto w-full fade-in pb-20"
             key={navegacao.passoAtual.id}
           >
             {/* Cabeçalho */}
-            <div className="flex items-center gap-2 mb-4 pl-8">
+            <div className="flex items-center gap-2 mb-4">
               <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
                 Fase {navegacao.faseAtual.id}
               </span>

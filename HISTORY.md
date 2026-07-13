@@ -4,6 +4,15 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Modo Cinema, Correção de Embed e Otimização de Layout ✅
+
+- Substituídos travessões por vírgulas em `src/conteudo/fase-1-fundamentos/01-intro.md` para fluidez do conteúdo.
+- Refatorado componente `ConteudoVideo.tsx` para usar o domínio de privacidade `youtube-nocookie.com/embed/`, resolvendo o erro 152-4 gerado por ad-blockers.
+- Criada modal imersiva responsiva com tamanho dinâmico proporcional (`w-[min(95vw,160vh)]`), backdrop com desfoque de vidro, fechamento por clique fora ou tecla `Escape` (Esc) e autoplay ativo.
+- Ampliada a área central de leitura do conteúdo em `AreaConteudoPrincipal.tsx` de `max-w-xl` para `max-w-4xl` e reduzidos paddings laterais.
+- Adicionado diagnóstico detalhado em `.metadocs/postmortem/152-4-embed-youtube.md`.
+- Detalhes de implementação em `.metadocs/implemented/video_cinema_layout.md`.
+
 ### 2026-07-13 — Correção Geral de Inconsistências (Auditoria Completa) ✅
 
 - Ajustada a conclusão da Fase 3 e implementado bloqueio de bypass de fase em `ContextoProgresso.tsx`.
