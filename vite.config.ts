@@ -8,12 +8,11 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: "0.0.0.0",
-      // Configurações para hot-reload funcionar no Docker
+      // Polling: útil em WSL/volumes montados (não implica Docker no projeto)
       watch: {
         usePolling: true,
         interval: 1000,
       },
-      // HMR: Configura o WebSocket para funcionar com Docker
       hmr: {
         host: "localhost",
         port: 3000,

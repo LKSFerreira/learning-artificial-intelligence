@@ -1,5 +1,9 @@
 # 🧠 Fase 2: Nosso Primeiro Cérebro de IA — Jogo da Velha com Q-Learning
 
+> **Nota (verdade documental):** este arquivo em `docs/` é **material de apoio/exportação** e pode estar desatualizado.  
+> **Fonte de verdade do currículo na plataforma:** `src/conteudo/fase-2-q-learning/*.md`.  
+> Filosofia de escrita: `docs/filosofia_conteudo.md`.
+
 Seja bem-vindo ao nosso "dojo" de treinamento! É aqui que a teoria da Fase 1 se transforma em código e nossa primeira IA nasce.
 
 ### O que vamos construir?

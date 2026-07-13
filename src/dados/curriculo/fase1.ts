@@ -1,8 +1,8 @@
 /**
- * Conteúdo da Fase 1: Fundamentos de IA.
- * 
- * Esta fase introduz os conceitos básicos de IA, ML, DL e RL,
- * usando analogias do mundo real e do universo de games.
+ * FALLBACK LEGADO — Fase 1: Fundamentos de IA.
+ *
+ * Não editar lições aqui. Fonte de verdade: `src/conteudo/fase-1-fundamentos/*.md`.
+ * Este arquivo só entra se o loader Markdown retornar vazio.
  */
 
 import type { Fase } from '../../tipos';

@@ -64,6 +64,11 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 **Objetivo:** Implementar mecânicas que tornem o aprendizado viciante.
 
+> **Estado parcial:** já existem `ContextoBadges`, definições em `src/dados/badges/` e componentes em `src/componentes/conquistas/` (`SistemaBadges`, `BadgeItem`). A **UI de conquistas foi removida da sidebar** de propósito e deve ser **remontada** nesta fase — não recriar o domínio do zero.
+
+- [ ] **A2.0 Badges na interface**
+  - [ ] Reexpor `SistemaBadges` (ou equivalente) na sidebar ou área dedicada.
+  - [ ] Garantir desbloqueio visível ao concluir passos/quizzes (ligar eventos de progresso).
 - [ ] **A2.1 Sistema de XP e Níveis**
   - [ ] Implementar cálculo de XP por ações (leitura, quiz, exercícios).
   - [ ] Criar sistema de níveis (Novato → Aprendiz → Mestre).
@@ -76,7 +81,7 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 ---
 
-### ☁️ Fase A3: Infraestrutura e Identidade
+### ☁️ Fase A3: Infraestrutura e Identidade — FUTURO
 
 **Objetivo:** Profissionalizar a persistência de dados e gestão de usuários.
 
@@ -85,17 +90,19 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
   - [ ] **Login Proprietário (Desativado):** Implementar sistema Email/Senha via _feature flag_.
 - [ ] **A3.2 Migração de Banco de Dados**
   - [ ] Desenhar esquema relacional (Usuários, Progresso, Conquistas).
-  - [ ] Migrar de `LocalStorage` para PostgreSQL/SQLite + Prisma/Drizzle.
+  - [ ] Migrar de `localStorage` para PostgreSQL/SQLite + Prisma/Drizzle.
 - [ ] **A3.3 Sistema de Apoio (Doações)**
   - [ ] Integrar gateway de pagamento (Stripe ou Pix).
   - [ ] Criar página "Apoie o Projeto".
+- [ ] **A3.4 Containerização (opcional):** `Dockerfile` / Compose — só quando fizer sentido para o deploy; **ainda não existe** no repositório.
 
 ---
 
-### ⚡ Fase A4: Recursos Avançados
+### ⚡ Fase A4: Recursos Avançados — FUTURO
 
 - [ ] **A4.1 Sandboxes de Código:** Executar Python no navegador (Pyodide).
-- [ ] **A4.2 Tutor IA Contextual:** Chatbot integrado contextualizado.
+- [x] **A4.2 Tutor IA (base):** integração Gemini (`useTutorIA`, `servicoGemini`, `SecaoTutorIA`) — exige `GEMINI_API_KEY`.
+  - [ ] **A4.2b Tutor contextual avançado:** histórico multi-turno, memória do progresso do aluno, prompts por fase mais ricos, UX de chat contínua.
 - [ ] **A4.3 Mobile/PWA:** Aplicação 100% instalável e responsiva.
 
 ---
@@ -168,8 +175,11 @@ A filosofia do projeto exige **história + problema + analogia + interação em 
 
 ## 🛠️ Fase Técnica 0: Setup do Desenvolvedor
 
-- [ ] **T0.2 Qualidade:** ESLint, Prettier, Husky (pre-commit).
-- [ ] **T0.3 Testes:** Vitest (Frontend) e Pytest (Backend de IA).
+> **T0.1 Docker:** removido do roadmap enquanto **não** houver `Dockerfile` no repositório (ver A3.4 se voltar a ser prioridade).
+
+- [ ] **T0.2 Qualidade:** ESLint, Prettier, Husky (pre-commit) — **ainda não configurados**.
+- [ ] **T0.3 Testes de frontend:** Vitest (+ Testing Library, se necessário) — **ainda não configurados**.
+- [ ] **T0.4 Testes de backend de IA:** Pytest — **só quando** existir backend Python no repo (hoje não há).
 
 ---
 
@@ -179,8 +189,13 @@ A filosofia do projeto exige **história + problema + analogia + interação em 
 | :------------- | :--------------------------------- | :---------------------------------------------------- |
 | **Engenharia** | A1 ✅ + R1–R6 ✅                   | 🟡 Gate: polir B1–B3 antes de A2                      |
 | **Currículo**  | B1–B3 ✅ (gênese embutida na B1)   | 🟡 Gate: melhorar conteúdo/interatividade; depois B4+ |
+| **Tutor IA**   | Base Gemini ✅                     | 🟡 A4.2b = evolução contextual (não recriar do zero) |
+| **Badges**     | Domínio/código ✅; UI sidebar ❌   | 🟡 Remontar na A2.0                                   |
+| **T0**         | Lint/testes pendentes              | ⚪ Opcional em paralelo ao polimento de B1–B3         |
 
-> **Onde retomar:** A reestruturação (R1–R6) está consolidada. A **história/gênese da IA já está na B1** (não falta um módulo B0). **Próximo passo real:** revisar e melhorar conteúdo + interatividade de B1–B3 até o critério de avanço ser marcado. **Depois do gate:** A2 (gamificação) e/ou novas fases de currículo (B4+).
+> **Onde retomar:** A reestruturação (R1–R6) está consolidada. A **história/gênese da IA já está na B1** (não falta um módulo B0). **Próximo passo real:** revisar e melhorar conteúdo + interatividade de B1–B3 até o critério de avanço ser marcado. **Depois do gate:** A2 (inclui badges na UI) e/ou novas fases de currículo (B4+).
+
+> **Fonte de verdade do currículo:** arquivos `.md` em `src/conteudo/`. Os `.ts` em `src/dados/curriculo/fase*.ts` são **fallback legado** (não editar conteúdo pedagógico neles).
 
 ---
 

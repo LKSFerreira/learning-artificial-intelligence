@@ -1,5 +1,9 @@
 # 🧠 Fase 3: O agente no Labirinto — Navegação em Grid World
 
+> **Nota (verdade documental):** este arquivo em `docs/` é **material de apoio/exportação** e pode estar desatualizado.  
+> **Fonte de verdade do currículo na plataforma:** `src/conteudo/fase-3-labirinto/*.md`.  
+> Filosofia de escrita: `docs/filosofia_conteudo.md`.
+
 Bem-vindo à Fase 3! Se na fase anterior nossa IA aprendeu a jogar um jogo de tabuleiro estático, agora ela vai aprender a **andar**.
 
 ### O que vamos construir?

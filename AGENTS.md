@@ -23,8 +23,9 @@ Este estudo usa `.agents/` como fonte oficial de regras, skills e templates.
 1. `/.agents/rules/code.md`
 2. `/.agents/rules/workflow.md`
 3. `/.agents/rules/git.md`
-4. `/.agents/rules/docker.md`, quando Docker fizer parte do estudo
-5. `/.agents/rules/<linguagem>.md`, conforme `LINGUAGEM_PROJETO`
+4. `/.agents/rules/<linguagem>.md`, conforme `LINGUAGEM_PROJETO`
+
+> **Docker:** ainda **não** faz parte deste repositório (sem `Dockerfile`, sem regra/skill Docker). Quando for adotado, criar `.agents/rules/docker.md` e, se útil, `.agents/skills/docker/` — e só então listá-los aqui.
 
 ## Linguagem do projeto
 

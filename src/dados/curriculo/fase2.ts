@@ -1,8 +1,8 @@
 /**
- * Conteúdo da Fase 2: Q-Learning.
- * 
- * Esta fase ensina o algoritmo Q-Learning através da implementação
- * de uma IA para jogar Jogo da Velha.
+ * FALLBACK LEGADO — Fase 2: Q-Learning.
+ *
+ * Não editar lições aqui. Fonte de verdade: `src/conteudo/fase-2-q-learning/*.md`.
+ * Este arquivo só entra se o loader Markdown retornar vazio.
  */
 
 import type { Fase } from '../../tipos';

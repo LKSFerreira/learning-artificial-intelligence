@@ -49,10 +49,13 @@ src/
 │
 ├── contextos/                        ← Progresso, Badges, Quiz
 ├── hooks/                            ← useNavegacao, useQuiz, useTutorIA, useSincronizacaoRota
-├── dados/                            ← Fallback de currículo, badges e quizzes
-├── servicos/                         ← LocalStorage e Gemini
+├── dados/                            ← Fallback legado de currículo (não editar lições), badges e quizzes
+├── servicos/                         ← localStorage e Gemini (tutor base)
 └── tipos/                            ← Tipos TypeScript do domínio
 ```
+
+> **Pós-R6 (2026-07-12):** UI de badges continua fora da sidebar (A2.0); tutor Gemini base = A4.2; evolução contextual = A4.2b. Sem Docker no repositório.
+
 
 ---
 

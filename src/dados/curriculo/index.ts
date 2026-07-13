@@ -1,14 +1,16 @@
 /**
  * Re-exportação centralizada do currículo.
  *
- * O conteúdo agora é carregado de arquivos .md em src/conteudo/.
- * Os arquivos .ts de fase são mantidos apenas como fallback/referência.
+ * Fonte de verdade: arquivos Markdown em `src/conteudo/` (loader em
+ * `src/conteudo/index.ts`). Os arquivos `fase1.ts`–`fase3.ts` são apenas
+ * fallback de emergência se o loader MD retornar vazio — podem estar
+ * desatualizados e **não** devem receber conteúdo pedagógico novo.
  */
 
 import type { Fase, Curriculo } from '../../tipos';
 import { CURRICULO_MD } from '../../conteudo';
 
-// Importa fases individuais (fallback/referência)
+// Fallback legado (não editar lições aqui — edite os .md)
 import { FASE_1 } from './fase1';
 import { FASE_2 } from './fase2';
 import { FASE_3 } from './fase3';
@@ -16,7 +18,7 @@ import { FASE_3 } from './fase3';
 /**
  * O currículo completo da aplicação.
  *
- * Prioriza conteúdo carregado dos .md. Se o loader falhar, usa fallback.
+ * Prioriza conteúdo carregado dos .md. Se o loader falhar, usa fallback legado.
  */
 export const CURRICULO: Curriculo = CURRICULO_MD.length > 0
   ? CURRICULO_MD
@@ -43,5 +45,5 @@ export const TOTAL_PASSOS = CURRICULO.reduce(
   0
 );
 
-// Re-exporta fases individuais para acesso direto (referência)
+// Re-exporta fallback legado (não usar como fonte de conteúdo pedagógico)
 export { FASE_1, FASE_2, FASE_3 };

@@ -39,4 +39,14 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 - **R5: Reescrita de Conteúdo**: Toda a trilha de aprendizado foi enriquecida com profundidade histórica, contexto narrativo e analogias precisas seguindo a filosofia educativa.
 - **R6: Documentação e Polimento**: Roadmap, histórico e metadocs alinhados ao estado real; timelines clicáveis, loader por `ordem` no frontmatter e vídeos complementares. Detalhes em [.metadocs/implemented/reestruturacao_plataforma.md](.metadocs/implemented/reestruturacao_plataforma.md).
 
+### 2026-07-12 — Sincronização: inconsistências documentais e de referência
+
+- Removidas referências a `.agents/rules/docker.md` e skill `/docker` em `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` e `.github/copilot-instructions.md` (arquivos inexistentes; Docker não está no repo).
+- `README.md`: stack **agora** vs **planejada**; resumo de trilhas alinhado ao gate B1–B3.
+- `ROADMAP.md`: A2.0 (remontar badges na UI); A4.2 base Gemini marcada como entregue + A4.2b futuro; T0 sem Pytest inventado; A3.4 Docker opcional explícito.
+- `.env.example` com `GEMINI_API_KEY`; comentários de fallback legado em `src/dados/curriculo/`; `vite.config.ts` sem implicar Docker no projeto.
+- `docs/fase_*.md` marcados como apoio (fonte de verdade = `src/conteudo/`).
+- `.metadocs/escopo.md` e registro R atualizados para a mesma verdade.
+- `servicoGemini.ts`: leitura prioritária de `GEMINI_API_KEY` (alinhada ao `vite.config.ts`).
+
 

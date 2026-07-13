@@ -1,5 +1,9 @@
 # 🧠 Fase 1: Fundamentos de Inteligência Artificial
 
+> **Nota (verdade documental):** este arquivo em `docs/` é **material de apoio/exportação** e pode estar desatualizado.  
+> **Fonte de verdade do currículo na plataforma:** `src/conteudo/fase-1-fundamentos/*.md`.  
+> Filosofia de escrita: `docs/filosofia_conteudo.md`.
+
 Olá, futuro mestre de IAs! Bem-vindo ao ponto de partida da nossa jornada.
 
 Antes de ensinarmos uma máquina a derrotar Porings e MVPs no Ragnarok, precisamos entender como ela "pensa". O objetivo desta fase é transformar esses termos complexos como "Machine Learning" e "Redes Neurais" em conceitos simples e intuitivos.

@@ -22,8 +22,9 @@ Todas as regras e skills estão em `.agents/`. Leia os arquivos relevantes antes
 | 1 | `.agents/rules/code.md` | Sempre |
 | 2 | `.agents/rules/workflow.md` | Sempre |
 | 3 | `.agents/rules/git.md` | Ao versionar |
-| 4 | `.agents/rules/docker.md` | Ao usar Docker |
-| 5 | `.agents/rules/<linguagem>.md` | Ao codificar |
+| 4 | `.agents/rules/<linguagem>.md` | Ao codificar (JS/TS → `javascript.md`) |
+
+> **Docker:** não há `Dockerfile`, `.agents/rules/docker.md` nem skill `/docker` neste repositório. Só referenciar Docker depois de adotá-lo de fato.
 
 ### Skills disponíveis
 
@@ -35,7 +36,6 @@ Quando o usuário solicitar uma tarefa listada abaixo, leia o `SKILL.md` corresp
 | `/pr` | `.agents/skills/pr/` | Texto de Pull Request |
 | `/sync` | `.agents/skills/sync/` | Sincronização de contexto |
 | `/init` | `.agents/skills/init/` | Inicialização de projeto |
-| `/docker` | `.agents/skills/docker/` | Setup Docker |
 | `/tests` | `.agents/skills/tests/` | Planejamento de testes |
 | `/review` | `.agents/skills/review/` | Revisão de código |
 | `/deps` | `.agents/skills/deps/` | Gerenciar dependências |

@@ -25,10 +25,22 @@ Todas as regras e skills estão em `.agents/`. Leia os arquivos relevantes antes
 
 ## Referência rápida de skills
 
+Skills existentes em `.agents/skills/` (não inventar skill ausente):
+
 - `/commit` → `.agents/skills/commit/`
 - `/pr` → `.agents/skills/pr/`
 - `/sync` → `.agents/skills/sync/`
 - `/init` → `.agents/skills/init/`
-- `/docker` → `.agents/skills/docker/`
 - `/tests` → `.agents/skills/tests/`
 - `/review` → `.agents/skills/review/`
+- `/deps` → `.agents/skills/deps/`
+- `/db` → `.agents/skills/db/`
+- `/env` → `.agents/skills/env/`
+- `/diag` → `.agents/skills/diag/`
+- `/feat` → `.agents/skills/feat/`
+- `/front` → `.agents/skills/front/`
+- `/create-skill` → `.agents/skills/create-skill/`
+- `/find` → `.agents/skills/find/`
+- `/web` → `.agents/skills/web/`
+
+> **Docker:** não há skill `/docker` nem `Dockerfile` neste repositório. Adotar Docker só com artefatos reais no repo.

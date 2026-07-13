@@ -14,10 +14,9 @@ Este projeto tem dois objetivos simultâneos e complementares:
     - 1000% Interativo: Nada de "ler e decorar". Aqui você vê, clica e experimenta.
 
 2.  **Excelência em Engenharia (Trilha da Plataforma):**
-    - Construir uma aplicação web escalável e moderna.
-    - Arquitetura limpa, testes automatizados e boas práticas.
-    - Features avançadas: Gamificação, Auth, Sandboxes de código.
-    - Migração de bancos de dados e infraestrutura real.
+    - Construir uma aplicação web moderna (React + TypeScript + Vite).
+    - Arquitetura limpa e boas práticas (testes automatizados e lint ainda no roadmap — T0).
+    - Evolução planejada: gamificação, auth, sandboxes de código, DB real (ver `ROADMAP.md`).
 
 ---
 
@@ -29,13 +28,14 @@ O projeto segue um plano de desenvolvimento detalhado. Diferente de tutoriais es
 
 ### Resumo das Trilhas
 
-| 🏗️ Engenharia (A Plataforma)              | 🧠 Conhecimento (O Currículo)                         |
-| :---------------------------------------- | :---------------------------------------------------- |
-| **Fase A1:** Refatoração & Arquitetura    | **Fase B1:** Fundamentos + gênese da IA (embutida) 🎓 |
-| **Fase A2:** Gamificação (XP, Níveis)     | **Fase B2:** Q-Learning (Jogo da Velha) ❌⭕          |
-| **Fase A3:** Infra (Auth, DB, Pagamentos) | **Fase B3:** Navegação (Labirinto) 🧩                 |
-| **Fase A4:** Sandboxes & Tutor IA         | **Fase B4+:** Visão, DQN, … (futuro)                  |
-| ...                                       | ...                                                   |
+| 🏗️ Engenharia (A Plataforma) | 🧠 Conhecimento (O Currículo) |
+| :--------------------------- | :---------------------------- |
+| **A1 + R:** Arquitetura limpa e conteúdo em Markdown ✅ | **B1:** Fundamentos + gênese da IA (embutida) ✅ |
+| **A2:** Gamificação (XP, badges na UI) — *após o gate* | **B2:** Q-Learning (Jogo da Velha) ✅ |
+| **A3:** Infra (Auth, DB, pagamentos) — futuro | **B3:** Navegação (Labirinto) ✅ |
+| **A4:** Sandboxes, tutor avançado, PWA — futuro | **B4+:** Visão, DQN, … (futuro) |
+
+> **Onde estamos:** polir B1–B3 até o gate do autor no `ROADMAP.md`. A2 e B4+ **não** são o próximo passo automático.
 
 ---
 
@@ -51,11 +51,19 @@ Para aprender de verdade, você precisa sujar as mãos.
 
 ## 🛠️ Tecnologias
 
-O projeto utiliza uma stack moderna para garantir performance e experiência de usuário premium:
+### Agora (no repositório)
 
-- **Frontend:** React, TypeScript, Vite; estilos utilitários com Tailwind CSS via CDN (`index.html`).
-- **IA/Backend:** Python, NumPy, PyTorch (futuro).
-- **Infra:** Docker, (Futuro: PostgreSQL, OAuth).
+- **Frontend:** React 19, TypeScript, Vite 6, `react-router-dom`, `react-markdown`, Lucide.
+- **Estilos:** Tailwind CSS via CDN (`index.html`) + temas em `src/index.css`.
+- **Conteúdo:** Markdown com frontmatter em `src/conteudo/` (fonte de verdade do currículo).
+- **Persistência:** `localStorage`.
+- **Tutor (opcional):** Google Gemini via `@google/genai` — variável `GEMINI_API_KEY` (ver `.env.example`).
+
+### Planejado (roadmap — ainda não existe no código)
+
+- Python / NumPy / PyTorch e sandboxes no navegador (Pyodide).
+- Auth (ex.: GitHub OAuth), PostgreSQL (ou similar), Docker, pagamentos.
+- ESLint, Prettier, Husky, Vitest.
 
 ---
 

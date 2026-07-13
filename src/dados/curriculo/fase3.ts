@@ -1,8 +1,8 @@
 /**
- * Conteúdo da Fase 3: Labirinto.
- * 
- * Esta fase generaliza os conceitos de Q-Learning para navegação
- * espacial em um Grid World.
+ * FALLBACK LEGADO — Fase 3: Labirinto.
+ *
+ * Não editar lições aqui. Fonte de verdade: `src/conteudo/fase-3-labirinto/*.md`.
+ * Este arquivo só entra se o loader Markdown retornar vazio.
  */
 
 import type { Fase } from '../../tipos';

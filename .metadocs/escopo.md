@@ -34,8 +34,9 @@ A plataforma web não é o destino final; é o **veículo e o diário vivo** des
 - Visuais interativos por fase (registro em `registroVisuais.tsx`).
 - Progresso e preferências em **localStorage**.
 - Temas claro / escuro / dracula.
-- Quizzes por fase; tutor via **Gemini** (quando a chave de API estiver configurada).
-- Código de **badges** presente; UI de conquistas na sidebar **ainda não montada** (reservada à Fase A2).
+- Quizzes por fase; tutor **base** via **Gemini** (`useTutorIA` / `servicoGemini`) quando `GEMINI_API_KEY` estiver no `.env` (ver `.env.example`).
+- Código de **badges** presente (`ContextoBadges`, `componentes/conquistas/`); UI de conquistas na sidebar **ainda não montada** (item **A2.0** no roadmap).
+- Fallback legado de currículo em `src/dados/curriculo/fase*.ts` — **não** é fonte de verdade; editar só os `.md` em `src/conteudo/`.
 
 ### Currículo (conhecimento)
 
@@ -56,11 +57,11 @@ Prioridade condicionada ao **gate do autor** no `ROADMAP.md`: polir B1–B3 ante
 
 | Bloco | Exemplos |
 |---|---|
-| **A2 — Gamificação** | XP, níveis, streaks; reexpor badges na UI |
-| **A3 — Identidade e dados** | Auth (ex.: GitHub), DB em vez de só localStorage, doações |
-| **A4 — Avançado de plataforma** | Sandbox Python (Pyodide), tutor mais contextual, PWA |
+| **A2 — Gamificação** | Remontar badges na UI (A2.0), XP, níveis, streaks |
+| **A3 — Identidade e dados** | Auth (ex.: GitHub), DB em vez de só localStorage, doações; Docker opcional (A3.4) |
+| **A4 — Avançado de plataforma** | Sandbox Python (Pyodide), **A4.2b** tutor contextual avançado, PWA |
 | **B4+ — Currículo** | Visão computacional, DQN, e o caminho até treinar um **Nano LM** |
-| **T0 — Qualidade** | ESLint, Prettier, Husky, Vitest |
+| **T0 — Qualidade** | ESLint, Prettier, Husky, Vitest (Pytest só se houver backend Python) |
 
 Enquanto o gate de B1–B3 não for marcado, **A2 e B4+ não são o próximo passo automático**.
 
@@ -72,8 +73,9 @@ Enquanto o gate de B1–B3 não for marcado, **A2 e B4+ não são o próximo pas
 
 - **Frontend:** React 19, TypeScript, Vite 6, `react-router-dom`, `react-markdown`, Lucide.
 - **Estilos:** utilitários **Tailwind via CDN** (`index.html`) + CSS de temas em `src/index.css`.
-- **IA auxiliar:** `@google/genai` (tutor), não treino de modelos no app.
+- **IA auxiliar:** `@google/genai` (tutor base), não treino de modelos no app.
 - **Persistência:** `localStorage` (`servicoArmazenamento.ts`).
+- **Sem:** Dockerfile, ESLint/Prettier/Husky/Vitest, backend Python, auth, DB remoto.
 
 ### Depois (roadmap — não inventar como se já estivesse feito)
 
@@ -102,4 +104,4 @@ Enquanto o gate de B1–B3 não for marcado, **A2 e B4+ não são o próximo pas
 
 ---
 
-> **Nota:** Este arquivo descreve o que o repositório **é** e o que **pretende ser**, sem misturar os dois. Atualizado em 2026-07-12.
+> **Nota:** Este arquivo descreve o que o repositório **é** e o que **pretende ser**, sem misturar os dois. Atualizado em 2026-07-12 (segunda passagem: alinhamento total com roadmap/README/agentes).
