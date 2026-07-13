@@ -33,7 +33,34 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 ---
 
-### 🎮 Fase A2: Gamificação e Engajamento — PRÓXIMA
+### 🏗️ Fase R: Reestruturação de Arquitetura e Conteúdo — COMPLETA (2026-07-06)
+
+**Objetivo:** Evoluir a plataforma promovendo modularização de componentes, desacoplamento de conteúdo e reescrita sob narrativa histórica de alta qualidade.
+
+- [x] **R1 Decomposição de Componentes**
+  - [x] Quebrar `AreaConteudoPrincipal.tsx` em subcomponentes independentes (`TelaQuiz`, `PainelVisual`, etc.).
+  - [x] Separar controles e lógicas secundárias de `BarraLateralFases.tsx` (extraindo `SeletorTema`, `NavegacaoFases`).
+- [x] **R2 Separação de Conteúdo**
+  - [x] Extrair o conteúdo estático do código TypeScript e movê-lo para arquivos `.md` com frontmatter na pasta `src/conteudo/`.
+  - [x] Criar sistema de loading dinâmico para importar os conteúdos em Markdown em tempo de build/execução.
+- [x] **R3 Registro Dinâmico de Visuais**
+  - [x] Substituir switch/case estático por mapa centralizado `REGISTRO_VISUAIS`.
+- [x] **R4 Roteamento de Rotas**
+  - [x] Integrar `react-router-dom` para navegação e compatibilidade com botão voltar do navegador.
+- [x] **R5 Reescrita de Conteúdo (Filosofia Narrativa)**
+  - [x] Reescrever conteúdos das fases 1, 2 e 3 com analogias consistentes, embasamento acadêmico e viés histórico.
+- [x] **R6 Polimento e Documentação**
+  - [x] Limpar código morto e atualizar artefatos de documentação (`ROADMAP.md`, `HISTORY.md`).
+
+---
+
+### **Critério de avanço (gate do autor — LKS Ferreira)**
+
+- [ ] Somente após melhorar o conteúdo atual, melhorar a interatividade e revisar os módulos B1–B3 é que seguiremos com conteúdo adicional ou features grandes de engenharia que dependam desse currículo estável.
+
+> **Leitura operacional:** A2 (gamificação) e novas fases de currículo (B4+) **não** são o próximo passo automático. O próximo passo é polir B1–B3 até o gate acima ser marcado.
+
+### 🎮 Fase A2: Gamificação e Engajamento — BLOQUEADA PELO GATE
 
 **Objetivo:** Implementar mecânicas que tornem o aprendizado viciante.
 
@@ -77,25 +104,30 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 Esta trilha define o **conteúdo** ensinado na plataforma. Todo conceito deve ser **1000% interativo**, explicado com analogias simples e embasado academicamente.
 
-### 🕰️ Fase B0: A Gênese (História e Filosofia) — A CRIAR
+### ⏭️ Fase B0: A Gênese (História e Filosofia) — ABSORVIDA PELA B1
 
-**Objetivo:** Contextualizar a IA como uma busca humana milenar.
+> **Não criar fase separada.** Com a reescrita narrativa (R5) e a `docs/filosofia_conteudo.md`, a gênese da IA **já vive dentro da B1** (e se repete como contexto em cada conceito), em vez de um módulo isolado “só de história”.
 
-- [ ] **B0.1 O Sonho do Autômato:** De Talos aos autômatos de relojoaria.
-- [ ] **B0.2 O Nascimento Lógico:** Ada Lovelace, Alan Turing e o Teste de Turing.
-- [ ] **B0.3 A Era de Ouro e os Invernos:** Expectativas exageradas e quedas.
-- [ ] **B0.4 A Revolução do Deep Learning:** ImageNet e a explosão de dados.
-- [ ] **Interatividade:** Linha do tempo navegável.
+| Tema antigo da B0 | Onde está hoje |
+|---|---|
+| Sonho do autômato, Ada Lovelace, Turing, Dartmouth | `fase-1-fundamentos/01-intro.md` — *O Sonho de Criar Mentes* |
+| Hierarquia e eras (regras → ML → DL) | `02-hierarchy.md` e demais lições da B1 |
+| Revolução do Deep Learning / ImageNet | `04-deep-learning.md` |
+| Consolidação histórica em vídeo | `09-video-lesson.md` |
+
+A filosofia do projeto exige **história + problema + analogia + interação em cada conceito** — não um “capítulo zero” solto.
 
 ---
 
-### ✅ Fase B1: Fundamentos Teóricos — CONTEÚDO BASE CRIADO
+### ✅ Fase B1: Fundamentos (com Gênese embutida) — CONTEÚDO BASE CRIADO
 
-**Objetivo:** Explicar a hierarquia IA > ML > DL > RL de forma visual.
+**Objetivo:** Abrir a jornada com a origem do sonho da IA e explicar a hierarquia IA > ML > DL > RL de forma visual e histórica.
 
-- [x] Conteúdo textual de introdução à IA, ML, DL, RL.
-- [x] Visualização interativa básica (Venn, Ciclo RL).
-- [ ] Melhorias futuras: animações mais ricas, matemática intuitiva.
+- [x] Gênese / história introdutória (Talos → Lovelace → Turing → Dartmouth) na abertura da fase.
+- [x] Conteúdo textual de introdução à IA, ML, DL, RL com contexto histórico.
+- [x] Visualização interativa básica (Venn, Ciclo RL, timelines).
+- [x] Vídeo de consolidação da linha do tempo.
+- [ ] Melhorias futuras: animações mais ricas, matemática intuitiva, eventual aprofundamento de “invernos da IA” se faltar no fluxo.
 
 ---
 
@@ -105,7 +137,8 @@ Esta trilha define o **conteúdo** ensinado na plataforma. Todo conceito deve se
 
 - [x] Conteúdo textual sobre Estados, Ações, Q-Table.
 - [x] Visualização interativa do tabuleiro e Q-Table.
-- [ ] Melhorias futuras: slider de Epsilon, animação de treinamento.
+- [x] Slider de Epsilon (`SliderEpsilon.tsx`).
+- [ ] Melhorias futuras: animação de treinamento mais rica.
 
 ---
 
@@ -142,12 +175,12 @@ Esta trilha define o **conteúdo** ensinado na plataforma. Todo conceito deve se
 
 ## 📊 Status Geral do Projeto
 
-| Trilha         | Fase Atual             | Status            |
-| :------------- | :--------------------- | :---------------- |
-| **Engenharia** | A1 ✅ → **A2 Próxima** | 🟢 Pronto p/ A2    |
-| **Currículo**  | B1-B3 ✅ → **B0 Nova** | 🟡 Conteúdo Básico |
+| Trilha         | Fase Atual                         | Status                                                |
+| :------------- | :--------------------------------- | :---------------------------------------------------- |
+| **Engenharia** | A1 ✅ + R1–R6 ✅                   | 🟡 Gate: polir B1–B3 antes de A2                      |
+| **Currículo**  | B1–B3 ✅ (gênese embutida na B1)   | 🟡 Gate: melhorar conteúdo/interatividade; depois B4+ |
 
-> **Onde retomar:** Escolha entre **A2 (Gamificação)** para engajamento ou **B0 (História)** para conteúdo novo.
+> **Onde retomar:** A reestruturação (R1–R6) está consolidada. A **história/gênese da IA já está na B1** (não falta um módulo B0). **Próximo passo real:** revisar e melhorar conteúdo + interatividade de B1–B3 até o critério de avanço ser marcado. **Depois do gate:** A2 (gamificação) e/ou novas fases de currículo (B4+).
 
 ---
 

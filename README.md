@@ -29,13 +29,13 @@ O projeto segue um plano de desenvolvimento detalhado. Diferente de tutoriais es
 
 ### Resumo das Trilhas
 
-| 🏗️ Engenharia (A Plataforma)              | 🧠 Conhecimento (O Currículo)                |
-| :---------------------------------------- | :------------------------------------------- |
-| **Fase A1:** Refatoração & Arquitetura    | **Fase B0:** História da IA 🏛️               |
-| **Fase A2:** Gamificação (XP, Níveis)     | **Fase B1:** Fundamentos Teóricos 🎓         |
-| **Fase A3:** Infra (Auth, DB, Pagamentos) | **Fase B2:** Q-Learning (Jogo da Velha) ❌⭕ |
-| **Fase A4:** Sandboxes & Tutor IA         | **Fase B3:** Navegação (Labirinto) 🧩        |
-| ...                                       | ...                                          |
+| 🏗️ Engenharia (A Plataforma)              | 🧠 Conhecimento (O Currículo)                         |
+| :---------------------------------------- | :---------------------------------------------------- |
+| **Fase A1:** Refatoração & Arquitetura    | **Fase B1:** Fundamentos + gênese da IA (embutida) 🎓 |
+| **Fase A2:** Gamificação (XP, Níveis)     | **Fase B2:** Q-Learning (Jogo da Velha) ❌⭕          |
+| **Fase A3:** Infra (Auth, DB, Pagamentos) | **Fase B3:** Navegação (Labirinto) 🧩                 |
+| **Fase A4:** Sandboxes & Tutor IA         | **Fase B4+:** Visão, DQN, … (futuro)                  |
+| ...                                       | ...                                                   |
 
 ---
 
@@ -53,7 +53,7 @@ Para aprender de verdade, você precisa sujar as mãos.
 
 O projeto utiliza uma stack moderna para garantir performance e experiência de usuário premium:
 
-- **Frontend:** React, TypeScript, Tailwind CSS, Vite.
+- **Frontend:** React, TypeScript, Vite; estilos utilitários com Tailwind CSS via CDN (`index.html`).
 - **IA/Backend:** Python, NumPy, PyTorch (futuro).
 - **Infra:** Docker, (Futuro: PostgreSQL, OAuth).
 
