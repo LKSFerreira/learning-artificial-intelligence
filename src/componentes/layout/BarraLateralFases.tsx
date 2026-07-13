@@ -1,7 +1,8 @@
 /**
  * Barra Lateral de Navegação entre Fases.
  *
- * Compõe: cabeçalho, seletor de tema, navegação por fases, badges e reset.
+ * Compõe: cabeçalho, seletor de tema, navegação por fases e reset.
+ * (UI de badges removida da sidebar; código em `componentes/conquistas/` permanece para a Fase A2.)
  */
 
 import React from "react";

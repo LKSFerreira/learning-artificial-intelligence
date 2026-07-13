@@ -52,6 +52,9 @@ export interface Passo {
 
   /** ID do quiz associado (apenas para tipo 'quiz') */
   quizId?: string;
+
+  /** Ordem opcional do passo (carregada do frontmatter) */
+  ordem?: number;
 }
 
 /**

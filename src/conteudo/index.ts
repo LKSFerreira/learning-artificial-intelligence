@@ -82,6 +82,7 @@ function carregarCurriculo(): Fase[] {
       conteudo,
       estadoVisual: dados.estadoVisual,
       tipo: dados.tipo,
+      ordem: dados.ordem,
       ...(dados.urlVideo && { urlVideo: dados.urlVideo }),
       ...(dados.quizId && { quizId: dados.quizId }),
     };
@@ -97,27 +98,11 @@ function carregarCurriculo(): Fase[] {
       titulo: meta.titulo,
       descricao: meta.descricao,
       passos: passos.sort((a, b) => {
-        // Ordena pelo nome do arquivo (que tem prefixo numérico)
-        const ordemA = obterOrdemDoPasso(a.id);
-        const ordemB = obterOrdemDoPasso(b.id);
+        const ordemA = a.ordem ?? 999;
+        const ordemB = b.ordem ?? 999;
         return ordemA - ordemB;
       }),
     }));
-}
-
-/**
- * Obtém a ordem de um passo pelo seu caminho no glob.
- */
-function obterOrdemDoPasso(passoId: string): number {
-  // Busca nos arquivos importados o path que contém esse id
-  for (const caminho of Object.keys(arquivosMarkdown)) {
-    if (caminho.includes(passoId.replace('_', '-')) || caminho.includes(passoId)) {
-      const nomeArquivo = caminho.split('/').pop() || '';
-      const numero = parseInt(nomeArquivo.split('-')[0], 10);
-      if (!isNaN(numero)) return numero;
-    }
-  }
-  return 999;
 }
 
 /**

@@ -1,6 +1,6 @@
 ---
 id: "concepts_extra"
-titulo: "Explorar ou Explorar? O Dilema do Aventureiro 🧭"
+titulo: "Arriscar ou Repetir? O Dilema do Aventureiro 🧭"
 estadoVisual: "exploration_exploitation"
 tipo: "content"
 ordem: 8

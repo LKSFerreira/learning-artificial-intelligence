@@ -162,6 +162,48 @@ export function AreaConteudoPrincipal({
               </div>
             )}
 
+            {/* Vídeo embutido ou link externo com thumbnail */}
+            {!ehVideo && navegacao.passoAtual.urlVideo && (
+              <div className="mb-8">
+                {navegacao.passoAtual.urlVideo.includes('/embed/') ? (
+                  <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-slate-200">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={navegacao.passoAtual.urlVideo}
+                      title="Vídeo complementar"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                ) : (
+                  <a
+                    href={navegacao.passoAtual.urlVideo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group relative aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 hover:shadow-xl transition-shadow"
+                  >
+                    <img
+                      src={`https://img.youtube.com/vi/${navegacao.passoAtual.urlVideo.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)?.[1] || ''}/maxresdefault.jpg`}
+                      alt="Thumbnail do vídeo"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <svg viewBox="0 0 24 24" fill="white" className="w-7 h-7 ml-1">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                      Assistir no YouTube ↗
+                    </div>
+                  </a>
+                )}
+              </div>
+            )}
+
             {/* Tutor IA */}
             {!ehQuiz && <SecaoTutorIA />}
 
