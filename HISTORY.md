@@ -4,6 +4,13 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Correção de Tipagem Vite e Resolução de Erros TypeScript ✅
+
+- Adicionados tipos do cliente Vite (`vite/client`) nas `compilerOptions` do `tsconfig.json`, resolvendo erro de propriedade `glob` inexistente em `import.meta`.
+- Limpos imports redundantes de `React` em componentes (BadgeItem, SistemaBadges, ConteudoMarkdown, SecaoTutorIA, ModalResetProgresso, BotoesNavegacao, TelaQuiz, ContextoBadges) de acordo com o JSX transform moderno.
+- Removidos imports de ícones e tipos não utilizados (`RotateCcw`, `ChevronRight`, `Badge`), resultando em compilação TypeScript limpa com zero erros no typecheck (`npx tsc --noEmit`).
+- Realizada a limpeza sistemática de travessões longos (`—`) em todas as lições markdown da plataforma (Fases 1, 2 e 3) e arquivos técnicos do loader.
+
 ### 2026-07-13 — Modo Cinema, Correção de Embed e Otimização de Layout ✅
 
 - Substituídos travessões por vírgulas em `src/conteudo/fase-1-fundamentos/01-intro.md` para fluidez do conteúdo.
