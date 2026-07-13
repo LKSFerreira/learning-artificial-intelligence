@@ -4,6 +4,17 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Correção Geral de Inconsistências (Auditoria Completa) ✅
+
+- Ajustada a conclusão da Fase 3 e implementado bloqueio de bypass de fase em `ContextoProgresso.tsx`.
+- Refatorado hook `useSincronizacaoRota` para suportar histórico e botão voltar/avançar de forma limpa.
+- Adicionado reset de tentativas de quiz por fase para destravar o badge "Prodígio".
+- Substituída renderização inline por componentes estruturados (`ConteudoMarkdown`, `ConteudoVideo`, `CartaoQuiz`).
+- Integrada a seleção da hierarquia de Venn com o desbloqueio do badge "Explorador".
+- Deletado código morto órfão (Visualizadores de fase velhos, ContextoQuiz redundante e funções de persistência sem uso).
+- Habilitado TypeScript estrito, instalados `@types/react` / `@types/react-dom` e corrigidos warnings e tipagens.
+- Detalhes técnicos e validação em [.metadocs/implemented/correcao_inconsistencias.md](.metadocs/implemented/correcao_inconsistencias.md).
+
 ### 2024-12-24 — Fase A1: Refatoração e Arquitetura Limpa ✅
 
 - Extraída lógica do `App.tsx` para Hooks customizados (`useNavegacao`, `useQuiz`, `useTutorIA`).
