@@ -23,7 +23,8 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Inicializa o cliente apenas se a chave estiver presente
-const chaveApi = process.env.API_KEY || '';
+// Vite injeta GEMINI_API_KEY (e alias API_KEY) via define em vite.config.ts
+const chaveApi = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
 const clienteGemini = chaveApi ? new GoogleGenAI({ apiKey: chaveApi }) : null;
 
 /**
