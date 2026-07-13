@@ -4,6 +4,16 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Sintetizador CLI Interativo, Organização por Vozes e Refinamentos de UI/UX ✅
+
+- Refatoração do script `sintetizar.js` com menu CLI interativo em cores ANSI 256, suporte a geração por lote, seleção de lições específicas, teste avulso e Spinner animado de requisição com tempo decorrido.
+- Reestruturação do diretório de áudios em subpastas por voz (`public/audios/Aoede/` e `public/audios/Kore/`), com rotina de migração automática dos arquivos antigos desorganizados e atualização do gerenciador de caminhos estáticos (`gerenciadorAudio.ts`).
+- Correção de bugs de comunicação do payload do Gemini TTS (remoção do `voiceConfig` e da modalidade `AUDIO` incompatíveis com o SDK `@google/genai` no endpoint de interações).
+- Aprimoramento da detecção de arquivos concluídos baseando-se no disco (tamanho do arquivo físico > 0) e sincronização automática em background com o cache `mapa_sintese.json`.
+- Refinamento do controle de velocidade do player de áudio React (`PlayerAudioIA.tsx`) para passos de `0.20` e eliminação de números mágicos por constantes estruturadas.
+- Otimização do leitor de Markdown (`ConteudoMarkdown.tsx` e `index.css`) com suporte a links que abrem em outra aba (`target="_blank"`) e restauração do contraste de cores em cabeçalhos, negritos, blockquotes e códigos para compatibilidade com o Tema Escuro.
+- Enriquecimento histórico e didático da lição inicial (`01-intro.md`) com a inclusão de tags HTML especiais `<!-- audio-skip-start/end -->` para pular a síntese de links bibliográficos complexos e leituras recomendadas.
+
 ### 2026-07-13 — Redesenho do Player e Controle de Download Seguro ✅
 
 - Refatoração do design visual do player de áudio IA usando glassmorphism com fundo desfocado (`backdrop-blur-xl bg-slate-950/70`), bordas finas com brilho e efeito de glow superior em gradiente.
@@ -19,7 +29,7 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 - Removida a lógica de geração de áudio por IA em tempo real e gerenciamento de chaves de API locais no frontend (Vite/React).
 - Player de áudio simplificado para carregar arquivos MP3 estáticos locais seguindo o formato `/public/audios/fase_{faseId}_passo_{passoIndice}_{voz}.mp3`.
 - Adicionado controle refinado de velocidade (+/- de 0.25 em 0.25), minutagem unificada (`00:00:32/00:03:35`) e download dinâmico de arquivos estáticos.
-- Criada a pasta `sintetizar/` com scripts em Node.js (`sintetizar.js` e `converter.js`) para ler arquivos Markdown, gerar WAV pelo Gemini e compactar em MP3 a 128kbps localmente usando `lamejs`.
+- Criada a pasta `sintetizar/` com script em Node.js (`sintetizar.js`) que lê arquivos Markdown, gera o áudio pelo Gemini e compacta em MP3 a 128kbps localmente usando `lamejs` (função `converterPcmParaMp3Buffer`).
 - Deletados arquivos de provedores, tipos e conversores sem uso (`provedorGemini.ts`, `provedorOpenRouter.ts`, `provedorGroq.ts`, `conversorMp3.ts`, `lamejs.d.ts`), mantendo o build verde.
 - Detalhes de implementação e arquitetura em [.metadocs/implemented/player_estatico.md](.metadocs/implemented/player_estatico.md).
 

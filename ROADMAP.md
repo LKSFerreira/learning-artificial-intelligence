@@ -33,7 +33,7 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 ---
 
-### 🏗️ Fase R: Reestruturação de Arquitetura e Conteúdo — COMPLETA (2026-07-06)
+### 🏗️ Fase R: Reestruturação de Arquitetura e Conteúdo — COMPLETA (2026-07-13)
 
 **Objetivo:** Evoluir a plataforma promovendo modularização de componentes, desacoplamento de conteúdo e reescrita sob narrativa histórica de alta qualidade.
 
@@ -53,7 +53,7 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
   - [x] Limpar código morto e atualizar artefatos de documentação (`ROADMAP.md`, `HISTORY.md`).
 - [x] **R7 Player de Áudio Estático e Scripts CLI de Geração Offline**
   - [x] Simplificar player frontend removendo chaves de API locais e provedores dinâmicos de áudio.
-  - [x] Criar scripts em Node.js (`sintetizar.js` e `converter.js`) na pasta `/sintetizar/` para gerar WAV pelo Gemini e compactar em MP3 de 128kbps via CLI.
+  - [x] Criar script em Node.js (`sintetizar.js`) na pasta `/sintetizar/` que gera o áudio pelo Gemini e compacta em MP3 de 128kbps via CLI (compressão em `converterPcmParaMp3Buffer`).
   - [x] Resolver caminhos de arquivos estáticos no padrão de nomenclatura `/public/audios/`.
   - [x] Redesenhar player com visual premium glassmorphism, velocidade inline (+/-), dropdown de vozes alinhado paralelo e bloqueio físico de downloads fantasmas (HEAD 404).
 

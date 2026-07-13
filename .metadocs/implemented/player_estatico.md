@@ -15,10 +15,9 @@ A mudança para áudio estático simplifica a interface do aluno e torna a gera�
 ## O que foi implementado
 
 ### 1. Novo Diretório e Ferramentas CLI
-Criamos a pasta `/sintetizar/` na raiz do projeto com scripts autônomos de desenvolvimento:
+Criamos a pasta `/sintetizar/` na raiz do projeto com ferramentas autônomas de desenvolvimento:
 * **`sintetizar.md`:** Arquivo onde o desenvolvedor cola o conteúdo em Markdown do passo a ser narrado.
-* **`sintetizar.js`:** Script em Node.js (ES Modules) que limpa o Markdown (removendo códigos, imagens, negritos), faz o request oficial usando o SDK `@google/genai` (v2.11.0) para o modelo `gemini-3.1-flash-tts-preview` e salva a saída em `sintetizar/sintese.wav` incluindo o cabeçalho WAV padrão de 44 bytes a 24000Hz.
-* **`converter.js`:** Script que lê o WAV gerado, pula o cabeçalho de 44 bytes e utiliza o codificador `lamejs` para realizar a compressão local de áudio para MP3 a 128kbps Mono em fração de segundos.
+* **`sintetizar.js`:** Script em Node.js (ES Modules) que limpa o Markdown (removendo códigos, imagens, negritos), faz o request oficial usando o SDK `@google/genai` (v2.11.0) para o modelo `gemini-3.1-flash-tts-preview` e recebe o áudio PCM cru retornado pela API. A compressão para MP3 a 128kbps Mono é feita no próprio script pela função `converterPcmParaMp3Buffer` (codificador `lamejs`), sem etapa intermediária de arquivo WAV.
 
 ### 2. Player de Áudio Simplificado (`PlayerAudioIA.tsx`)
 * Removidos modais, botões de engrenagem de configurações, fluxos de persistência e validação de chaves locais do navegador.
