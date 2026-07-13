@@ -55,6 +55,7 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
   - [x] Simplificar player frontend removendo chaves de API locais e provedores dinâmicos de áudio.
   - [x] Criar scripts em Node.js (`sintetizar.js` e `converter.js`) na pasta `/sintetizar/` para gerar WAV pelo Gemini e compactar em MP3 de 128kbps via CLI.
   - [x] Resolver caminhos de arquivos estáticos no padrão de nomenclatura `/public/audios/`.
+  - [x] Redesenhar player com visual premium glassmorphism, velocidade inline (+/-), dropdown de vozes alinhado paralelo e bloqueio físico de downloads fantasmas (HEAD 404).
 
 ---
 

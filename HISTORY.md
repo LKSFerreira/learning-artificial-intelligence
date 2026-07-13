@@ -4,6 +4,16 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Redesenho do Player e Controle de Download Seguro ✅
+
+- Refatoração do design visual do player de áudio IA usando glassmorphism com fundo desfocado (`backdrop-blur-xl bg-slate-950/70`), bordas finas com brilho e efeito de glow superior em gradiente.
+- Implementação de título dinâmico da lição (`titulo`) com truncamento em telas menores e equalizador de voz animado pulsante baseado em CSS/SVG ao lado da lição ativa.
+- Substituição do controle de velocidade de áudio por seletores inline de incrementos rápidos (+ / - de 0.25).
+- Correção de desalinhamento geométrico na barra de progresso (timeline) na base do card definindo larguras simétricas idênticas (`w-10 text-left` e `w-10 text-right`) para as minutagens da esquerda e direita.
+- Correção do dropdown de vozes para possuir largura fixa (`w-44`) idêntica ao botão e alinhamento paralelo diretamente abaixo dele (`left-0 w-full`).
+- Implementação de bloqueio de download fantasma na função `handleDownload` e no JSX (`onClick`) se o áudio não existir fisicamente no servidor (404), desativando o botão e mostrando o cursor `cursor-not-allowed`.
+- Detalhes de implementação e arquitetura em [.metadocs/implemented/redesenho_player_premium.md](.metadocs/implemented/redesenho_player_premium.md).
+
 ### 2026-07-13 — Player de Áudio Estático e Geração Offline de Voz com Gemini ✅
 
 - Removida a lógica de geração de áudio por IA em tempo real e gerenciamento de chaves de API locais no frontend (Vite/React).
