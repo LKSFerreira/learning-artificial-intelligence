@@ -14,7 +14,7 @@ import {
 import { useNavegacao, useQuiz } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
 import { obterQuestoesPorFase, obterQuestoesPorId } from "../../dados";
-import { SecaoTutorIA, ConteudoMarkdown, ConteudoVideo, CartaoQuiz } from "../conteudo";
+import { SecaoTutorIA, ConteudoMarkdown, ConteudoVideo, CartaoQuiz, PlayerAudioIA } from "../conteudo";
 import { BotoesNavegacao } from "../navegacao";
 import { TelaQuiz } from "../quiz";
 import { PainelVisual } from "./PainelVisual";
@@ -106,6 +106,16 @@ export function AreaConteudoPrincipal({
                 Passo {navegacao.indicePasso + 1} de {navegacao.totalPassos}
               </span>
             </div>
+
+            {!ehVideo && !ehQuiz && (
+              <PlayerAudioIA 
+                licaoId={navegacao.passoAtual.id}
+                faseId={navegacao.faseAtual.id}
+                passoIndice={navegacao.indicePasso}
+                texto={navegacao.passoAtual.conteudo} 
+                titulo={navegacao.passoAtual.titulo} 
+              />
+            )}
 
             <h2 className="text-3xl font-bold text-slate-900 mb-6 leading-tight">
               {navegacao.passoAtual.titulo}

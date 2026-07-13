@@ -1,12 +1,4 @@
-/**
- * Hook para sincronizar navegação com a URL do browser.
- *
- * - Quando o estado de navegação muda → atualiza a URL
- * - Quando a URL muda (browser back/forward) → atualiza o estado
- * - Formato: /fase/{faseId}/passo/{passoIndice}
- */
-
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useContextoProgresso } from '../contextos';
 import { CURRICULO } from '../dados';
@@ -16,7 +8,15 @@ export function useSincronizacaoRota(): void {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Mantém uma referência atualizada do estado de progresso para evitar
+  // stale closures sem forçar a execução do efeito quando o estado muda localmente.
+  const estadoRef = useRef(estado);
+  useEffect(() => {
+    estadoRef.current = estado;
+  }, [estado]);
+
   // 1. Sincroniza URL -> Estado (Escuta PopState / Navegação manual / Botão Voltar)
+  // Roda estritamente quando a URL física do browser (pathname) muda
   useEffect(() => {
     const partes = location.pathname.split('/').filter(Boolean);
     // Formato esperado: /fase/{faseId}/passo/{passoIndice}
@@ -30,14 +30,15 @@ export function useSincronizacaoRota(): void {
       if (indiceFase >= 0 && passoIndice >= 0) {
         const fase = CURRICULO[indiceFase];
         if (passoIndice < fase.passos.length) {
+          const est = estadoRef.current;
           // Só atualiza o estado global se for diferente da URL atual
-          if (estado.indiceFaseAtual !== indiceFase || estado.indicePassoAtual !== passoIndice) {
+          if (est.indiceFaseAtual !== indiceFase || est.indicePassoAtual !== passoIndice) {
             irParaPasso(indiceFase, passoIndice);
           }
         }
       }
     }
-  }, [location.pathname, irParaPasso, estado.indiceFaseAtual, estado.indicePassoAtual]);
+  }, [location.pathname, irParaPasso]);
 
   // 2. Sincroniza Estado -> URL (Atualiza barra de endereços quando o progresso muda)
   useEffect(() => {
