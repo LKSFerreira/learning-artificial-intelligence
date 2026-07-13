@@ -26,6 +26,12 @@ interface PropriedadesPlayerAudio {
   titulo?: string;
 }
 
+// Constantes de Configuração de Velocidade (Clean Code - Sem números mágicos)
+const VELOCIDADE_MINIMA = 0.80;
+const VELOCIDADE_MAXIMA = 3.0;
+const PASSO_VELOCIDADE = 0.20;
+const VELOCIDADE_PADRAO = 1.0;
+
 export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: PropriedadesPlayerAudio) {
   // Lista de vozes estáticas
   const vozesDisponiveis = obterVozes();
@@ -37,7 +43,7 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
   });
 
   // Configurações de Reprodução
-  const [velocidade, setVelocidade] = useState<number>(1.0);
+  const [velocidade, setVelocidade] = useState<number>(VELOCIDADE_PADRAO);
   const [muted, setMuted] = useState<boolean>(false);
   const [volume] = useState<number>(0.8);
   const [progresso, setProgresso] = useState<number>(0);
@@ -304,7 +310,7 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
           {/* Seletor de Velocidade Inline (+ / -) */}
           <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl px-1.5 h-9 shrink-0 gap-1.5 shadow-inner">
             <button 
-              onClick={() => setVelocidade(v => Math.max(0.5, v - 0.25))} 
+              onClick={() => setVelocidade(v => Math.max(VELOCIDADE_MINIMA, Number((v - PASSO_VELOCIDADE).toFixed(2))))} 
               className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all select-none font-bold text-sm"
               title="Diminuir velocidade"
             >
@@ -314,7 +320,7 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
               {velocidade.toFixed(2)}x
             </span>
             <button 
-              onClick={() => setVelocidade(v => Math.min(3.0, v + 0.25))} 
+              onClick={() => setVelocidade(v => Math.min(VELOCIDADE_MAXIMA, Number((v + PASSO_VELOCIDADE).toFixed(2))))} 
               className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all select-none font-bold text-sm"
               title="Aumentar velocidade"
             >
