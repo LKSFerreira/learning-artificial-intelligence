@@ -15,7 +15,7 @@
  *     }
  */
 
-import React, { createContext, useContext, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useCallback, ReactNode } from 'react';
 import { useContextoProgresso } from './ContextoProgresso';
 import { CURRICULO, TODOS_OS_QUIZZES } from '../dados';
 

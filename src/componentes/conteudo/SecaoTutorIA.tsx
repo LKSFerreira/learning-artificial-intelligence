@@ -4,7 +4,6 @@
  * Exibe botão para solicitar explicação e mostra a resposta.
  */
 
-import React from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useTutorIA } from '../../hooks';
 import { useNavegacao } from '../../hooks';

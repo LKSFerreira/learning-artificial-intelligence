@@ -4,8 +4,7 @@
  * Exibe aviso antes de limpar todo o progresso do usuário.
  */
 
-import React from 'react';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 interface PropriedadesModalReset {
   /** Se o modal está visível */

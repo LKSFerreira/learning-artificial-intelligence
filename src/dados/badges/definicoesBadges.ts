@@ -18,7 +18,7 @@
  *    ``BADGES_DISPONIVEIS`` seguindo o padrão existente.
  */
 
-import type { Badge, MapaBadges } from '../../tipos';
+import type { MapaBadges } from '../../tipos';
 
 /**
  * Mapeamento de todos os badges disponíveis no sistema.

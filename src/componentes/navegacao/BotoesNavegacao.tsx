@@ -4,7 +4,6 @@
  * Componente reutilizável para navegação anterior/próximo.
  */
 
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavegacao } from '../../hooks';
 

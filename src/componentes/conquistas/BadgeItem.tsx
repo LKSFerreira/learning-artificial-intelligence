@@ -4,7 +4,6 @@
  * Exibe um badge com seu ícone, tooltip e indicador de "novo".
  */
 
-import React from 'react';
 import type { Badge } from '../../tipos';
 
 interface PropriedadesBadgeItem {

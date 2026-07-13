@@ -2,7 +2,6 @@
  * Exibição de conteúdo em Markdown.
  */
 
-import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
 interface PropriedadesConteudoMarkdown {

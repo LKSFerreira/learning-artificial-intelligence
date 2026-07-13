@@ -5,10 +5,8 @@
  * resultado (aprovado/reprovado) e gabarito.
  */
 
-import React from "react";
 import {
   ChevronLeft,
-  ChevronRight,
   Award,
   RefreshCcw,
 } from "lucide-react";

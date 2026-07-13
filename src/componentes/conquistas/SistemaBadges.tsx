@@ -11,7 +11,6 @@
  *     <SistemaBadges />
  */
 
-import React from 'react';
 import { Award } from 'lucide-react';
 import { BadgeItem } from './BadgeItem';
 import { useContextoBadges } from '../../contextos';
