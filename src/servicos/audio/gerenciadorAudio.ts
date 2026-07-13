@@ -1,4 +1,9 @@
-import { VozAudio } from './tipos';
+export interface VozAudio {
+  id: string;
+  nome: string;
+  descricao?: string;
+  idioma: string;
+}
 
 /**
  * Retorna as vozes disponíveis na plataforma.
