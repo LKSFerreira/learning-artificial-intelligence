@@ -11,8 +11,8 @@ export interface VozAudio {
  */
 export function obterVozes(): VozAudio[] {
   return [
-    { id: 'Aoede', nome: 'Aoede - pt_BR (Feminino)', descricao: 'Voz feminina expressiva e clara', idioma: 'pt-BR' },
-    { id: 'Kore', nome: 'Kore - pt_BR (Feminino)', descricao: 'Voz feminina suave e natural', idioma: 'pt-BR' }
+    { id: 'Aoede', nome: 'Aoede - Feminina', descricao: 'Voz expressiva e clara', idioma: 'pt-BR' },
+    { id: 'Kore', nome: 'Kore - Feminina', descricao: 'Voz suave e natural', idioma: 'pt-BR' }
   ];
 }
 

@@ -8,7 +8,8 @@ import {
   Loader2, 
   AlertCircle,
   Download,
-  Sparkles
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 import { obterVozes, obterCaminhoAudioEstatico } from '../../servicos/audio/gerenciadorAudio';
 
@@ -25,7 +26,7 @@ interface PropriedadesPlayerAudio {
   titulo?: string;
 }
 
-export function PlayerAudioIA({ licaoId, faseId, passoIndice }: PropriedadesPlayerAudio) {
+export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: PropriedadesPlayerAudio) {
   // Lista de vozes estáticas
   const vozesDisponiveis = obterVozes();
 
@@ -48,14 +49,32 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice }: PropriedadesPlay
   const [tocando, setTocando] = useState<boolean>(false);
   const [carregando, setCarregando] = useState<boolean>(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [disponivel, setDisponivel] = useState<boolean | null>(null);
 
-  // Referência para o elemento de áudio
+  // Estados de Controle de Menus Popover
+  const [vozesAberto, setVozesAberto] = useState<boolean>(false);
+
+  // Referências para o elemento de áudio e menus
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const menuVozesRef = useRef<HTMLDivElement | null>(null);
 
-  // Atualiza a URL do áudio sempre que o licaoId ou voz muda
+  // Efeito para fechar popover se clicar fora dele
+  useEffect(() => {
+    function tratarCliqueFora(event: MouseEvent) {
+      const target = event.target as Node;
+      if (menuVozesRef.current && !menuVozesRef.current.contains(target)) {
+        setVozesAberto(false);
+      }
+    }
+    document.addEventListener('mousedown', tratarCliqueFora);
+    return () => document.removeEventListener('mousedown', tratarCliqueFora);
+  }, []);
+
+  // Atualiza a URL do áudio sempre que o licaoId ou voz muda e verifica se o arquivo de fato existe no servidor
   useEffect(() => {
     pararAudio();
     setErro(null);
+    setDisponivel(null); // Reseta a disponibilidade enquanto carrega
 
     const url = obterCaminhoAudioEstatico(licaoId, voz);
     setAudioUrl(url);
@@ -65,6 +84,21 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice }: PropriedadesPlay
       audioRef.current.pause();
       audioRef.current = null;
     }
+
+    // Faz um HEAD request leve para verificar a existência física do arquivo MP3 no servidor
+    fetch(url, { method: 'HEAD' })
+      .then(res => {
+        if (res.ok) {
+          setDisponivel(true);
+        } else {
+          setDisponivel(false);
+          setErro('Áudio indisponível para esta lição (não gerado).');
+        }
+      })
+      .catch(() => {
+        setDisponivel(false);
+        setErro('Áudio indisponível para esta lição (não gerado).');
+      });
   }, [licaoId, voz]);
 
   // Persiste a voz selecionada
@@ -79,14 +113,13 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice }: PropriedadesPlay
     }
   }, [velocidade]);
 
-  // Formata o tempo em segundos para hh:mm:ss
+  // Formata o tempo em segundos para mm:ss
   const formatarTempo = (segundos: number): string => {
-    if (isNaN(segundos) || !isFinite(segundos)) return '00:00:00';
-    const hrs = Math.floor(segundos / 3600);
-    const mins = Math.floor((segundos % 3600) / 60);
+    if (isNaN(segundos) || !isFinite(segundos)) return '00:00';
+    const mins = Math.floor(segundos / 60);
     const secs = Math.floor(segundos % 60);
     const pad = (num: number) => num.toString().padStart(2, '0');
-    return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+    return `${pad(mins)}:${pad(secs)}`;
   };
 
   const pararAudio = () => {
@@ -166,10 +199,9 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice }: PropriedadesPlay
   };
 
   const handleDownload = () => {
-    if (!audioUrl) return;
+    if (!audioUrl || disponivel !== true) return;
     const link = document.createElement('a');
     link.href = audioUrl;
-    // Tenta montar um nome amigável caso faseId e passoIndice estejam disponíveis, senão usa o licaoId
     const nomeAmigavel = (faseId !== undefined && passoIndice !== undefined) 
       ? `Fase ${faseId} - Passo ${passoIndice + 1} (${voz}).mp3`
       : `${licaoId}_${voz}.mp3`;
@@ -180,69 +212,238 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice }: PropriedadesPlay
   };
 
   return (
-    <div className="w-full bg-slate-900 border border-slate-700/80 rounded-2xl p-4 shadow-lg mb-6 transition-all duration-300 text-white">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-950 flex items-center justify-center text-indigo-400 border border-indigo-900/50 shadow-inner shrink-0">
-            {carregando ? <Loader2 size={18} className="animate-spin" /> : tocando ? <div className="flex items-end gap-[2px] h-3.5 w-4 overflow-hidden"><span className="w-0.5 bg-indigo-400 rounded-full animate-bounce h-3"></span><span className="w-0.5 bg-indigo-400 rounded-full animate-bounce h-4"></span></div> : <Sparkles size={18} />}
+    <div className="w-full backdrop-blur-xl bg-slate-950/70 border border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.3)] rounded-3xl p-5 mb-6 relative transition-all duration-300 hover:border-slate-800 text-white flex flex-col gap-4">
+      
+      {/* Efeito Glow Sutil no Topo */}
+      <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent pointer-events-none"></div>
+
+      <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-10 w-full">
+        
+        {/* Esquerda: Info & Waveform de Status */}
+        <div className="flex items-center gap-3 w-full md:w-[30%] min-w-0">
+          <div className="w-11 h-11 rounded-2xl bg-indigo-950/40 flex items-center justify-center border border-indigo-900/50 shadow-inner shrink-0 relative overflow-hidden group">
+            {carregando ? (
+              <Loader2 size={18} className="animate-spin text-indigo-400" />
+            ) : tocando ? (
+              <div className="flex items-end gap-[3px] h-3.5 w-4.5 overflow-hidden">
+                <span className="w-[2.5px] bg-gradient-to-t from-violet-500 to-indigo-400 rounded-full animate-[bounce_0.8s_infinite] h-2.5"></span>
+                <span className="w-[2.5px] bg-gradient-to-t from-violet-500 to-indigo-400 rounded-full animate-[bounce_0.5s_infinite] h-3.5"></span>
+                <span className="w-[2.5px] bg-gradient-to-t from-violet-500 to-indigo-400 rounded-full animate-[bounce_0.7s_infinite] h-2"></span>
+                <span className="w-[2.5px] bg-gradient-to-t from-violet-500 to-indigo-400 rounded-full animate-[bounce_0.6s_infinite] h-3"></span>
+              </div>
+            ) : (
+              <Sparkles size={18} className="text-indigo-400 group-hover:scale-110 transition-transform duration-200" />
+            )}
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-              Ouvir Conteúdo {tocando && <span className="text-[9px] px-1.5 py-0.5 bg-green-950/80 text-green-400 rounded font-medium border border-green-900/50 animate-pulse">Tocando</span>}
-            </h4>
-            <p className="text-[10px] text-slate-400">
-              {carregando ? 'Carregando áudio estático...' : `Voz: ${vozesDisponiveis.find(v => v.id === voz)?.nome || voz}`}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h4 className="text-xs font-bold text-slate-100 leading-tight truncate max-w-full" title={titulo}>
+                {titulo || 'Narração'}
+              </h4>
+              {tocando && (
+                <span className="text-[8px] font-bold px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 tracking-wide uppercase animate-pulse">
+                  Ao Vivo
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1 truncate">
+              {carregando ? 'Carregando áudio...' : `Narradora: ${vozesDisponiveis.find(v => v.id === voz)?.nome || voz}`}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button onClick={alternarReproducao} disabled={carregando} className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${tocando ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-600 hover:bg-indigo-700'}`}>
-            {carregando ? <Loader2 size={20} className="animate-spin" /> : tocando ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
-          </button>
-          {(tocando || progresso > 0) && (
-            <button onClick={pararAudio} className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
-              <Square size={16} fill="currentColor" />
+        {/* Centro: Controles Principais */}
+        <div className="flex items-center gap-3">
+          {/* Botão Stop */}
+          {(tocando || tempoAtual > 0) && (
+            <button 
+              onClick={pararAudio} 
+              className="w-9 h-9 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center transition-all duration-200 active:scale-95 shadow-md animate-[fadeIn_0.15s_ease-out]"
+              title="Parar áudio"
+            >
+              <Square size={12} fill="currentColor" className="text-slate-400" />
             </button>
           )}
-          <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg px-1 shrink-0 gap-1.5 h-8">
-            <button onClick={() => setVelocidade(v => Math.max(0.5, v - 0.25))} className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white">-</button>
-            <span className="text-[11px] text-slate-100 font-semibold min-w-[38px] text-center">{velocidade.toFixed(2)}x</span>
-            <button onClick={() => setVelocidade(v => Math.min(3.0, v + 0.25))} className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white">+</button>
-          </div>
-          <select value={voz} onChange={(e) => setVoz(e.target.value)} className="bg-slate-800 border border-slate-700 rounded-lg py-1.5 px-2 text-xs text-white max-w-[120px]">
-            {vozesDisponiveis.map(v => <option key={v.id} value={v.id}>{v.nome}</option>)}
-          </select>
-          <button onClick={() => setMuted(!muted)} className="p-2 text-slate-400 hover:text-white">
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+
+          {/* Play/Pause Central */}
+          <button 
+            onClick={alternarReproducao} 
+            disabled={carregando || disponivel !== true} 
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg active:scale-95 text-white ${
+              disponivel !== true
+                ? 'bg-slate-900/60 border border-slate-800 text-slate-600 cursor-not-allowed shadow-none'
+                : tocando 
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-orange-500/20' 
+                  : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-indigo-500/25'
+            }`}
+          >
+            {carregando ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : tocando ? (
+              <Pause size={18} fill="currentColor" />
+            ) : (
+              <Play size={18} fill="currentColor" className="ml-0.5" />
+            )}
+          </button>
+
+          {/* Mute */}
+          <button 
+            onClick={() => setMuted(!muted)} 
+            className={`w-9 h-9 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-slate-800/80 flex items-center justify-center transition-all duration-200 active:scale-95 ${
+              muted ? 'text-rose-400 border-rose-950/40 bg-rose-950/10' : 'text-slate-400 hover:text-white'
+            }`}
+            title={muted ? 'Ativar som' : 'Mutar'}
+          >
+            {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {!erro && (
-            <button onClick={handleDownload} className="p-2 text-slate-400 hover:text-white border border-slate-800 rounded-lg">
-              <Download size={18} />
+        {/* Direita: Configurações de Voz & Download */}
+        <div className="flex items-center gap-3.5 w-full md:w-auto justify-center md:justify-end flex-wrap md:flex-nowrap">
+          
+          {/* Seletor de Velocidade Inline (+ / -) */}
+          <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl px-1.5 h-9 shrink-0 gap-1.5 shadow-inner">
+            <button 
+              onClick={() => setVelocidade(v => Math.max(0.5, v - 0.25))} 
+              className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all select-none font-bold text-sm"
+              title="Diminuir velocidade"
+            >
+              -
             </button>
-          )}
+            <span className="text-xs font-mono font-bold text-indigo-400 min-w-[38px] text-center select-none">
+              {velocidade.toFixed(2)}x
+            </span>
+            <button 
+              onClick={() => setVelocidade(v => Math.min(3.0, v + 0.25))} 
+              className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all select-none font-bold text-sm"
+              title="Aumentar velocidade"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Dropdown de Vozes Gemini Customizado (Abertura para baixo) */}
+          <div className="relative" ref={menuVozesRef}>
+            <button 
+              onClick={() => setVozesAberto(!vozesAberto)}
+              className={`h-9 w-44 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between gap-1.5 transition-all duration-200 whitespace-nowrap ${
+                vozesAberto 
+                  ? 'bg-indigo-600/10 border-indigo-500/40 text-indigo-400' 
+                  : 'bg-slate-900 border border-slate-800 text-slate-200 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider shrink-0">Voz:</span>
+                <span className="truncate">
+                  {vozesDisponiveis.find(v => v.id === voz)?.nome || voz}
+                </span>
+              </div>
+              <ChevronDown size={14} className={`opacity-60 transition-transform duration-200 shrink-0 ${vozesAberto ? 'rotate-180' : ''}`} />
+            </button>
+
+            {vozesAberto && (
+              <div className="absolute left-0 top-full mt-2 w-full rounded-2xl bg-slate-900 border border-slate-800/80 p-1.5 shadow-2xl z-50 backdrop-blur-md animate-[fadeIn_0.15s_ease-out]">
+                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider px-2 py-1 mb-1 border-b border-slate-800/60 select-none">
+                  Vozes Gemini
+                </p>
+                {vozesDisponiveis.map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => { setVoz(v.id); setVozesAberto(false); }}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all flex flex-col gap-0.5 ${
+                      voz === v.id 
+                        ? 'bg-indigo-600/10 text-indigo-400 font-bold' 
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="truncate">{v.nome}</span>
+                      {voz === v.id && <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0"></span>}
+                    </div>
+                    {v.descricao && (
+                      <span className={`text-[9px] font-normal leading-normal truncate ${
+                        voz === v.id ? 'text-indigo-400/65' : 'text-slate-500'
+                      }`}>
+                        {v.descricao}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Download */}
+          <button 
+            onClick={disponivel === true ? handleDownload : undefined} 
+            disabled={disponivel !== true}
+            className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-200 ${
+              disponivel !== true
+                ? 'bg-slate-900/40 border-slate-800/50 text-slate-600 cursor-not-allowed shadow-none'
+                : 'bg-slate-900/80 hover:bg-slate-800 border border-slate-800/80 text-slate-400 hover:text-white active:scale-95 shadow-md'
+            }`}
+            title={disponivel !== true ? 'Download indisponível (áudio não gerado)' : 'Baixar MP3'}
+          >
+            <Download size={16} />
+          </button>
         </div>
+
       </div>
 
-      {(tocando || progresso > 0) && (
-        <div className="w-full flex items-center gap-3 mt-3 animate-fade-in select-none">
-          <div className="flex-1 relative group flex items-center h-4">
-            <input type="range" min="0" max={duracao || 100} step="0.1" value={tempoAtual} onChange={(e) => { const t = parseFloat(e.target.value); setTempoAtual(t); if(audioRef.current) audioRef.current.currentTime = t; }} className="w-full h-1 bg-slate-950 rounded-full appearance-none cursor-pointer border border-slate-800" style={{ background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${(tempoAtual / (duracao || 1)) * 100}%, #020617 ${(tempoAtual / (duracao || 1)) * 100}%, #020617 100%)` }} />
-            <style>{`input[type='range']::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:#818cf8;cursor:pointer;}`}</style>
-          </div>
-          <span className="text-[10px] text-slate-400 font-mono shrink-0">
-            {formatarTempo(tempoAtual)}/{formatarTempo(duracao)}
-          </span>
+      {/* Linha do Tempo Estilizada e Contínua (Largura Total na Base com Alinhamento Simétrico) */}
+      <div className="w-full flex items-center gap-3 mt-1.5 select-none relative z-10">
+        <span className="w-10 text-left text-[10px] text-slate-500 font-mono shrink-0 select-none">
+          {formatarTempo(tempoAtual)}
+        </span>
+        
+        <div className="flex-1 relative group flex items-center h-4">
+          <input 
+            type="range" 
+            min="0" 
+            max={duracao || 100} 
+            step="0.1" 
+            value={tempoAtual} 
+            onChange={(e) => { 
+              const t = parseFloat(e.target.value); 
+              setTempoAtual(t); 
+              if(audioRef.current) audioRef.current.currentTime = t; 
+            }} 
+            className="w-full h-1 bg-slate-950 rounded-full appearance-none cursor-pointer border border-slate-900 group-hover:h-[6px] transition-all duration-150" 
+            style={{ 
+              background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${(tempoAtual / (duracao || 1)) * 100}%, #090d16 ${(tempoAtual / (duracao || 1)) * 100}%, #090d16 100%)` 
+            }} 
+          />
+          <style>{`
+            input[type='range']::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              width: 0px;
+              height: 0px;
+              border-radius: 50%;
+              background: #818cf8;
+              cursor: pointer;
+              transition: all 0.15s ease-in-out;
+              box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            }
+            .group:hover input[type='range']::-webkit-slider-thumb {
+              width: 12px;
+              height: 12px;
+            }
+          `}</style>
         </div>
-      )}
 
+        <span className="w-10 text-right text-[10px] text-slate-500 font-mono shrink-0 select-none">
+          {formatarTempo(duracao)}
+        </span>
+      </div>
+
+      {/* Box de Erros Elegante */}
       {erro && (
-        <div className="mt-3 p-3 rounded-xl bg-rose-950/40 border border-rose-900/50 text-rose-300 text-xs flex items-start gap-2">
-          <AlertCircle size={16} className="shrink-0 mt-0.5" />
-          <div><p className="font-semibold">Áudio Estático</p><p className="mt-0.5">{erro}</p></div>
+        <div className="mt-1 p-3 rounded-xl bg-rose-950/20 border border-rose-900/30 text-rose-300 text-xs flex items-start gap-2 animate-[fadeIn_0.2s_ease-out] relative z-10">
+          <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-400" />
+          <div>
+            <p className="font-semibold">Áudio Estático</p>
+            <p className="mt-0.5 opacity-90">{erro}</p>
+          </div>
         </div>
       )}
     </div>
