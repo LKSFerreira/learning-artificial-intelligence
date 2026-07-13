@@ -1,5 +1,5 @@
 /**
- * Loader de Conteúdo — carrega arquivos .md com frontmatter e monta o currículo.
+ * Loader de Conteúdo: carrega arquivos .md com frontmatter e monta o currículo.
  *
  * Usa import.meta.glob do Vite para importar todos os .md como strings.
  * Parseia o frontmatter YAML simples e constrói o array Fase[].
@@ -34,7 +34,7 @@ function parsearFrontmatter(conteudoBruto: string): { dados: FrontmatterParsed; 
   const match = normalizado.match(frontmatterRegex);
 
   if (!match) {
-    console.warn('[Loader] Frontmatter não encontrado em um arquivo .md — ignorando.');
+    console.warn('[Loader] Frontmatter não encontrado em um arquivo .md, ignorando.');
     return null;
   }
 

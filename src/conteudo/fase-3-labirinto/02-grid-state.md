@@ -6,7 +6,7 @@ tipo: "content"
 ordem: 2
 ---
 
-No Jogo da Velha, o "estado" era a configuração de todas as peças no tabuleiro — uma representação complexa com milhares de possibilidades. No Grid World, o estado é algo muito mais intuitivo: **a posição do agente**.
+No Jogo da Velha, o "estado" era a configuração de todas as peças no tabuleiro, uma representação complexa com milhares de possibilidades. No Grid World, o estado é algo muito mais intuitivo: **a posição do agente**.
 
 O mundo é uma grade. Cada célula tem uma coordenada (linha, coluna). O agente está em exatamente uma célula a cada momento.
 
