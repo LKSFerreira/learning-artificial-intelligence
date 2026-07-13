@@ -15,7 +15,15 @@ interface PropriedadesConteudoMarkdown {
 export function ConteudoMarkdown({ conteudo }: PropriedadesConteudoMarkdown) {
   return (
     <div className="markdown-content text-lg text-slate-600 leading-relaxed mb-8">
-      <ReactMarkdown>{conteudo}</ReactMarkdown>
+      <ReactMarkdown
+        components={{
+          a: ({ node, ...props }) => (
+            <a target="_blank" rel="noopener noreferrer" {...props} />
+          )
+        }}
+      >
+        {conteudo}
+      </ReactMarkdown>
     </div>
   );
 }
