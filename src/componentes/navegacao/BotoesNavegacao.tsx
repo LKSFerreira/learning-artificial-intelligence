@@ -1,9 +1,4 @@
-/**
- * Botões de navegação entre passos.
- * 
- * Componente reutilizável para navegação anterior/próximo.
- */
-
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavegacao } from '../../hooks';
 
@@ -16,8 +11,42 @@ export function BotoesNavegacao() {
     podeVoltar, 
     ehQuiz, 
     avancar, 
-    voltar 
+    voltar,
+    passoAtual
   } = useNavegacao();
+
+  const [passosVideosConcluidos, setPassosVideosConcluidos] = useState(false);
+
+  useEffect(() => {
+    const verificarVideosConcluidos = () => {
+      if (passoAtual.id === 'hierarchy') {
+        const salvo = localStorage.getItem('aprendendo-ia:videos-hierarchy');
+        if (salvo) {
+          try {
+            const lista = JSON.parse(salvo);
+            setPassosVideosConcluidos(
+              lista.includes('ia') && lista.includes('ml') && lista.includes('dl')
+            );
+          } catch (e) {
+            setPassosVideosConcluidos(false);
+          }
+        } else {
+          setPassosVideosConcluidos(false);
+        }
+      } else {
+        setPassosVideosConcluidos(true);
+      }
+    };
+
+    // Executa a primeira verificação
+    verificarVideosConcluidos();
+
+    // Escuta alterações locais disparadas por HierarquiaVenn
+    window.addEventListener('aprendendo-ia:progresso-video-alterado', verificarVideosConcluidos);
+    return () => {
+      window.removeEventListener('aprendendo-ia:progresso-video-alterado', verificarVideosConcluidos);
+    };
+  }, [passoAtual]);
 
   return (
     <div className="flex items-center gap-4 mt-12">
@@ -35,8 +64,9 @@ export function BotoesNavegacao() {
       {!ehQuiz && (
         <button 
           onClick={avancar}
-          disabled={!podeAvancar}
+          disabled={!podeAvancar || !passosVideosConcluidos}
           className="px-6 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-200 flex items-center gap-2 transition-all transform hover:-translate-y-0.5 text-sm font-medium ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          title={!passosVideosConcluidos && passoAtual.id === 'hierarchy' ? 'Conclua a exploração dos 3 vídeos no painel à direita para liberar' : undefined}
         >
           Próximo
           <ChevronRight size={16} />

@@ -6,14 +6,24 @@ interface PropriedadesConteudoVideo {
   
   /** Descrição adicional opcional */
   descricao?: string;
+
+  /** Callback executado quando o vídeo é concluído/fechado */
+  aoConcluir?: () => void;
 }
 
 /**
  * Componente para exibição de vídeos do YouTube em modal imersiva.
  * Converte URLs normais em URLs de embed nocookie e ativa autoplay ao abrir.
  */
-export function ConteudoVideo({ urlVideo, descricao }: PropriedadesConteudoVideo) {
+export function ConteudoVideo({ urlVideo, descricao, aoConcluir }: PropriedadesConteudoVideo) {
   const [estaAberto, setEstaAberto] = useState(false);
+
+  const lidarComFechar = () => {
+    setEstaAberto(false);
+    if (aoConcluir) {
+      aoConcluir();
+    }
+  };
 
   // Fecha o modal ao pressionar a tecla Escape (Esc)
   useEffect(() => {
@@ -21,13 +31,13 @@ export function ConteudoVideo({ urlVideo, descricao }: PropriedadesConteudoVideo
 
     const lidarComTeclado = (evento: KeyboardEvent) => {
       if (evento.key === 'Escape') {
-        setEstaAberto(false);
+        lidarComFechar();
       }
     };
 
     window.addEventListener('keydown', lidarComTeclado);
     return () => window.removeEventListener('keydown', lidarComTeclado);
-  }, [estaAberto]);
+  }, [estaAberto, aoConcluir]);
 
   // Extrai o ID do vídeo do YouTube (suportando watch, share, embed e shorts)
   const regexYoutube = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/;
@@ -111,13 +121,13 @@ export function ConteudoVideo({ urlVideo, descricao }: PropriedadesConteudoVideo
       {estaAberto && (
         <div 
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-modal-fade cursor-pointer"
-          onClick={() => setEstaAberto(false)}
+          onClick={lidarComFechar}
         >
           {/* Botão de Fechar (X) - Altamente chamativo com cor vermelha e sombra forte */}
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              setEstaAberto(false);
+              lidarComFechar();
             }}
             className="absolute top-6 right-6 text-white bg-red-600 hover:bg-red-500 p-3.5 rounded-full shadow-2xl border-2 border-white/20 hover:scale-110 hover:rotate-90 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-500/50 cursor-default"
             aria-label="Fechar vídeo"

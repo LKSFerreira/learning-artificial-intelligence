@@ -5,7 +5,7 @@
  * Delega quiz, tutor IA e navegação para sub-componentes.
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -14,6 +14,7 @@ import {
 import { useNavegacao, useQuiz } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
 import { obterQuestoesPorFase, obterQuestoesPorId } from "../../dados";
+import { CONTEUDO_VENN } from "../../dados/conteudoVenn";
 import { SecaoTutorIA, ConteudoMarkdown, ConteudoVideo, CartaoQuiz, PlayerAudioIA } from "../conteudo";
 import { BotoesNavegacao } from "../navegacao";
 import { TelaQuiz } from "../quiz";
@@ -30,6 +31,24 @@ export function AreaConteudoPrincipal({
 }: PropriedadesAreaConteudo): React.ReactElement {
   const navegacao = useNavegacao();
   const { estado, avancarFase, iniciarQuiz, setEstado } = useContextoProgresso();
+
+  const [vennSelecionado, setVennSelecionado] = useState<string | null>(null);
+
+  useEffect(() => {
+    const lidarComSelecao = (evento: Event) => {
+      const customEvent = evento as CustomEvent;
+      setVennSelecionado(customEvent.detail);
+    };
+    window.addEventListener("aprendendo-ia:venn-circulo-selecionado", lidarComSelecao);
+    return () => {
+      window.removeEventListener("aprendendo-ia:venn-circulo-selecionado", lidarComSelecao);
+    };
+  }, []);
+
+  // Reseta a seleção temporária do Venn ao mudar de lição
+  useEffect(() => {
+    setVennSelecionado(null);
+  }, [navegacao.passoAtual.id]);
 
   const quizId = navegacao.passoAtual.quizId;
   const questoesQuiz = quizId 
@@ -74,6 +93,20 @@ export function AreaConteudoPrincipal({
     );
   }
 
+  const ehHierarchy = navegacao.passoAtual.id === "hierarchy";
+  const dadosVenn = ehHierarchy && vennSelecionado ? CONTEUDO_VENN[vennSelecionado] : null;
+
+  const tituloExibido = dadosVenn ? dadosVenn.titulo : navegacao.passoAtual.titulo;
+  const markdownExibido = dadosVenn ? dadosVenn.markdown : navegacao.passoAtual.conteudo;
+  const exibirPlayerAudio = !ehVideo && !ehQuiz && !dadosVenn;
+
+  const obterNomeVenn = (tipo: string | null) => {
+    if (tipo === "ia") return "Inteligência Artificial";
+    if (tipo === "ml") return "Machine Learning";
+    if (tipo === "dl") return "Deep Learning";
+    return "";
+  };
+
   // --- MODO CONTEÚDO NORMAL ---
   return (
     <main className="flex-1 flex flex-col relative bg-[#faf9f6] h-screen overflow-hidden">
@@ -95,7 +128,7 @@ export function AreaConteudoPrincipal({
         <div className="w-full md:w-1/2 h-full overflow-y-auto custom-scrollbar bg-[#faf9f6] px-4 md:px-6 py-8 md:py-12 transition-all duration-300">
           <div
             className="max-w-4xl mx-auto w-full fade-in pb-20"
-            key={navegacao.passoAtual.id}
+            key={dadosVenn ? vennSelecionado! : navegacao.passoAtual.id}
           >
             {/* Cabeçalho */}
             <div className="flex items-center gap-2 mb-4">
@@ -105,9 +138,14 @@ export function AreaConteudoPrincipal({
               <span className="text-slate-400 text-xs">
                 Passo {navegacao.indicePasso + 1} de {navegacao.totalPassos}
               </span>
+              {dadosVenn && (
+                <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[10px] font-semibold animate-pulse">
+                  Foco: {obterNomeVenn(vennSelecionado)}
+                </span>
+              )}
             </div>
 
-            {!ehVideo && !ehQuiz && (
+            {exibirPlayerAudio && (
               <PlayerAudioIA 
                 licaoId={navegacao.passoAtual.id}
                 faseId={navegacao.faseAtual.id}
@@ -118,7 +156,7 @@ export function AreaConteudoPrincipal({
             )}
 
             <h2 className="text-3xl font-bold text-slate-900 mb-6 leading-tight">
-              {navegacao.passoAtual.titulo}
+              {tituloExibido}
             </h2>
 
             {/* Corpo do Conteúdo */}
@@ -135,11 +173,25 @@ export function AreaConteudoPrincipal({
                 conteudo={navegacao.passoAtual.conteudo}
               />
             ) : (
-              <ConteudoMarkdown conteudo={navegacao.passoAtual.conteudo} />
+              <ConteudoMarkdown conteudo={markdownExibido} />
             )}
 
-            {/* Vídeo embutido ou link externo com thumbnail (complementar) */}
-            {!ehVideo && navegacao.passoAtual.urlVideo && (
+            {/* Se for a lição de hierarquia e houver um tema selecionado, exibe o respectivo vídeo de estudo */}
+            {dadosVenn && (
+              <ConteudoVideo 
+                urlVideo={dadosVenn.urlVideo} 
+                aoConcluir={() => {
+                  window.dispatchEvent(
+                    new CustomEvent("aprendendo-ia:venn-video-concluido", { 
+                      detail: vennSelecionado 
+                    })
+                  );
+                }}
+              />
+            )}
+
+            {/* Vídeo embutido ou link externo com thumbnail (complementar) para outros passos */}
+            {!ehVideo && !dadosVenn && navegacao.passoAtual.urlVideo && (
               <ConteudoVideo 
                 urlVideo={navegacao.passoAtual.urlVideo} 
               />
