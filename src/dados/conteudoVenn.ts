@@ -1,6 +1,6 @@
-import markdownIA from "../conteudo/fase-1-fundamentos/venn-ia.md?raw";
-import markdownML from "../conteudo/fase-1-fundamentos/venn-ml.md?raw";
-import markdownDL from "../conteudo/fase-1-fundamentos/venn-dl.md?raw";
+import markdownIA from "../conteudo/fase-1-fundamentos/02.1-ia.md?raw";
+import markdownML from "../conteudo/fase-1-fundamentos/02.2-ml.md?raw";
+import markdownDL from "../conteudo/fase-1-fundamentos/02.3-dl.md?raw";
 
 export interface ConteudoVennTipo {
   titulo: string;

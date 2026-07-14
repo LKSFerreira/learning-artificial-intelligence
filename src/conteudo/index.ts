@@ -7,8 +7,8 @@
 
 import type { Fase, Passo, TipoPasso } from '../tipos';
 
-// Importa todos os .md como string crua
-const arquivosMarkdown = import.meta.glob('./*/[0-9]*.md', { eager: true, query: '?raw', import: 'default' }) as Record<string, string>;
+// Importa todos os .md como string crua (ignorando subconteúdos decimais para não criar passos extras)
+const arquivosMarkdown = import.meta.glob(['./*/[0-9]*.md', '!**/[0-9]*.[0-9]*.md'], { eager: true, query: '?raw', import: 'default' }) as Record<string, string>;
 
 // Importa os metadados de cada fase
 const arquivosMeta = import.meta.glob('./*/_meta.json', { eager: true, import: 'default' }) as Record<string, { id: number; titulo: string; descricao: string }>;
