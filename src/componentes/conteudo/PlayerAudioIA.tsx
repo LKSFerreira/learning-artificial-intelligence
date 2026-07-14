@@ -223,7 +223,7 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
       {/* Efeito Glow Sutil no Topo */}
       <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent pointer-events-none"></div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-10 w-full">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-20 w-full">
         
         {/* Esquerda: Info & Waveform de Status */}
         <div className="flex items-center gap-3 w-full md:w-[30%] min-w-0">
