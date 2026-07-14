@@ -1,0 +1,133 @@
+/* Animações aprimoradas para o Diagrama de Venn (HierarquiaVenn) */
+
+@keyframes focus-pulse-ia {
+  0%, 100% {
+    border-color: rgba(148, 163, 184, 0.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.01);
+    transform: scale(1);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    transform: scale(1.01);
+  }
+}
+
+@keyframes focus-pulse-ml {
+  0%, 100% {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.05);
+    transform: scale(1);
+  }
+  50% {
+    border-color: rgba(96, 165, 250, 0.7);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.25);
+    transform: scale(1.015);
+  }
+}
+
+@keyframes focus-pulse-dl {
+  0%, 100% {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+    transform: scale(1);
+  }
+  50% {
+    border-color: rgba(129, 140, 248, 0.8);
+    box-shadow: 0 0 50px rgba(99, 102, 241, 0.4);
+    transform: scale(1.03);
+  }
+}
+
+.animate-focus-ia {
+  animation: focus-pulse-ia 3s infinite ease-in-out;
+}
+
+.animate-focus-ml {
+  animation: focus-pulse-ml 3s infinite ease-in-out;
+}
+
+.animate-focus-dl {
+  animation: focus-pulse-dl 3s infinite ease-in-out;
+}
+
+/* ==========================================================================
+ * HOVER PREMIUM — halo giratório + glow pulsante nas áreas liberadas
+ * ========================================================================== */
+@keyframes girar-halo-premium {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulso-glow-hover-ia {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(203,213,225,0), 0 0 20px 0 rgba(148,184,184,0.18); }
+  50% { box-shadow: 0 0 0 4px rgba(203,213,225,0.14), 0 0 42px 4px rgba(199,210,254,0.4); }
+}
+@keyframes pulso-glow-hover-ml {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0), 0 0 20px 0 rgba(59,130,246,0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(96,165,250,0.16), 0 0 46px 4px rgba(147,197,253,0.5); }
+}
+@keyframes pulso-glow-hover-dl {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0), 0 0 20px 0 rgba(99,102,241,0.25); }
+  50% { box-shadow: 0 0 0 5px rgba(129,140,248,0.2), 0 0 55px 6px rgba(196,181,253,0.55); }
+}
+
+.hover-premium::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  padding: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+}
+
+.hover-premium:hover::before {
+  opacity: 1;
+  animation: girar-halo-premium 2.5s linear infinite;
+}
+
+.hover-premium-ia::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(203,213,225,0.95) 10%, rgba(129,140,248,0.55) 22%, transparent 34%, transparent 100%);
+}
+.hover-premium-ml::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(147,197,253,0.95) 10%, rgba(59,130,246,0.55) 22%, transparent 34%, transparent 100%);
+}
+.hover-premium-dl::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(196,181,253,0.95) 10%, rgba(99,102,241,0.6) 22%, transparent 34%, transparent 100%);
+}
+
+.hover-premium-ia:hover {
+  animation: pulso-glow-hover-ia 1.8s ease-in-out infinite !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  transform: scale(1.015) !important;
+}
+.hover-premium-ia:hover * {
+  color: #ffffff !important;
+}
+
+.hover-premium-ml:hover {
+  animation: pulso-glow-hover-ml 1.8s ease-in-out infinite !important;
+  background-color: rgba(59, 130, 246, 0.22) !important;
+  border-color: rgba(96, 165, 250, 0.9) !important;
+  transform: scale(1.02) !important;
+}
+.hover-premium-ml:hover * {
+  color: #93c5fd !important;
+}
+
+.hover-premium-dl:hover {
+  animation: pulso-glow-hover-dl 1.8s ease-in-out infinite !important;
+  background-color: rgba(99, 102, 241, 0.4) !important;
+  border-color: rgba(129, 140, 248, 0.95) !important;
+  transform: scale(1.04) !important;
+}
+.hover-premium-dl:hover * {
+  color: #e0e7ff !important;
+}
