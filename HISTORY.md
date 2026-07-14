@@ -4,6 +4,13 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-13 — Correção de Sobreposição no Dropdown de Vozes do Player ✅
+
+- Correção do Stacking Context no player de áudio (`PlayerAudioIA.tsx`): ajustado o `z-index` do contêiner superior do player de `z-10` para `z-20`. Isso impede que elementos irmãos renderizados depois no DOM (como a linha do tempo e a caixa de alertas de erro de áudio indisponível, que usam `z-10`) sobreponham o menu dropdown de seleção de vozes.
+- **Aprimoramento Pedagógico**: Refatoração profunda e enriquecimento conceitual do passo 2 da Fase 1 (`02-hierarchy.md`), adicionando rigor acadêmico aos acrônimos de IA, ML, DL e RL na primeira ocorrência e contextualizando o cenário pré-1956. Também foram estruturadas explicações didáticas detalhando os três pilares do Aprendizado de Máquina (Supervisionado, por Reforço e Não Supervisionado) e o posicionamento da Inteligência Artificial Generativa como subconjunto evoluído do Deep Learning (DL) para modelos de síntese.
+- **Melhoria Estética e Escaneabilidade**: Reestruturado o arquivo `02-hierarchy.md` para torná-lo visualmente mais leve e estruturado, reduzindo parágrafos longos por blocos no estilo de cards informativos (Conceito, Exemplo, Conexão), utilizando blocos de citação (`>`) e adicionando um diagrama Mermaid visual para representar o roadmap prático de aprendizado do curso. O pilar de Aprendizado por Reforço (RL) foi movido para o meio das definições de ML, conforme especificação.
+- **Estruturação de Mídia**: Adicionada a propriedade de controle `urlVideo` no frontmatter de `02-hierarchy.md` para integrar um vídeo complementar do YouTube no componente de layout.
+
 ### 2026-07-13 — Sintetizador CLI Interativo, Organização por Vozes e Refinamentos de UI/UX ✅
 
 - Refatoração do script `sintetizar.js` com menu CLI interativo em cores ANSI 256, suporte a geração por lote, seleção de lições específicas, teste avulso e Spinner animado de requisição com tempo decorrido.
