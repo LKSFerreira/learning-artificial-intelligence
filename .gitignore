@@ -104,6 +104,10 @@ gradle/wrapper/gradle-wrapper.jar
 hs_err_pid*
 replay_pid*
 
+# Áudios gerados localmente (hospedagem em Supabase/R2 — ver .metadocs/procedimentos/)
+public/audios/
+*.mp3
+
 # React
 coverage/
 
