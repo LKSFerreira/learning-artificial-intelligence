@@ -11,7 +11,7 @@ import {
   Sparkles,
   ChevronDown
 } from 'lucide-react';
-import { obterVozes, obterCaminhoAudioEstatico } from '../../servicos/audio/gerenciadorAudio';
+import { obterVozes, obterCandidatosUrlAudio } from '../../servicos/audio/gerenciadorAudio';
 
 interface PropriedadesPlayerAudio {
   /** ID único da lição (ex: "intro") */
@@ -76,35 +76,52 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
     return () => document.removeEventListener('mousedown', tratarCliqueFora);
   }, []);
 
-  // Atualiza a URL do áudio sempre que o licaoId ou voz muda e verifica se o arquivo de fato existe no servidor
+  // Atualiza a URL do áudio sempre que o licaoId ou voz muda e verifica se o arquivo existe
+  // (CDN/Supabase primeiro; se faltar, tenta public/audios local)
   useEffect(() => {
+    let cancelado = false;
+
     pararAudio();
     setErro(null);
-    setDisponivel(null); // Reseta a disponibilidade enquanto carrega
+    setDisponivel(null);
+    setAudioUrl('');
 
-    const url = obterCaminhoAudioEstatico(licaoId, voz);
-    setAudioUrl(url);
-
-    // Destrói o elemento de áudio antigo
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
 
-    // Faz um HEAD request leve para verificar a existência física do arquivo MP3 no servidor
-    fetch(url, { method: 'HEAD' })
-      .then(res => {
-        if (res.ok) {
-          setDisponivel(true);
-        } else {
-          setDisponivel(false);
-          setErro('Áudio indisponível para esta lição (não gerado).');
+    const candidatos = obterCandidatosUrlAudio(licaoId, voz);
+
+    async function resolverUrlDisponivel() {
+      for (const url of candidatos) {
+        try {
+          const resposta = await fetch(url, { method: 'HEAD' });
+          if (cancelado) {
+            return;
+          }
+          if (resposta.ok) {
+            setAudioUrl(url);
+            setDisponivel(true);
+            return;
+          }
+        } catch {
+          // tenta o próximo candidato (ex.: remoto falhou, sobra local)
         }
-      })
-      .catch(() => {
-        setDisponivel(false);
-        setErro('Áudio indisponível para esta lição (não gerado).');
-      });
+      }
+
+      if (cancelado) {
+        return;
+      }
+      setDisponivel(false);
+      setErro('Áudio indisponível para esta lição (não gerado).');
+    }
+
+    void resolverUrlDisponivel();
+
+    return () => {
+      cancelado = true;
+    };
   }, [licaoId, voz]);
 
   // Persiste a voz selecionada
