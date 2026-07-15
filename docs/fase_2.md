@@ -1,4 +1,4 @@
-# 🧠 Fase 2: Nosso Primeiro Cérebro de IA — Jogo da Velha com Q-Learning
+# 🧠 Fase 2: Nosso Primeiro Cérebro de IA: Jogo da Velha com Q-Learning
 
 > **Nota (verdade documental):** este arquivo em `docs/` é **material de apoio/exportação** e pode estar desatualizado.  
 > **Fonte de verdade do currículo na plataforma:** `src/conteudo/fase-2-q-learning/*.md`.  
@@ -235,7 +235,7 @@ Estado: `('X', ' ', 'X', 'X', ' ', ' ', 'O', 'O', ' ')`
 
 ---
 
-### Cenário C.3: A Convergência — Atingindo o Valor Máximo (IA 100% Treinada)
+### Cenário C.3: A Convergência: Atingindo o Valor Máximo (IA 100% Treinada)
 
 Este cenário usa **exatamente o mesmo tabuleiro** da situação de "Vitória Iminente" (C.2). A diferença aqui não está na jogada, mas no **nível de maestria** da nossa IA.
 

@@ -1,4 +1,4 @@
-# 🧠 Fase 3: O agente no Labirinto — Navegação em Grid World
+# 🧠 Fase 3: O agente no Labirinto: Navegação em Grid World
 
 > **Nota (verdade documental):** este arquivo em `docs/` é **material de apoio/exportação** e pode estar desatualizado.  
 > **Fonte de verdade do currículo na plataforma:** `src/conteudo/fase-3-labirinto/*.md`.  

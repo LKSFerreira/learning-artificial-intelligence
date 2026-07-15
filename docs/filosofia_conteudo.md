@@ -1,4 +1,4 @@
-# 🧭 Filosofia do Conteúdo — Farol Guia
+# 🧭 Filosofia do Conteúdo: Farol Guia
 
 Este documento define as **regras de negócio** do conteúdo educacional da plataforma "Aprendendo IA". Toda criação, revisão ou reestruturação de material deve respeitar estes princípios.
 
@@ -6,7 +6,7 @@ Este documento define as **regras de negócio** do conteúdo educacional da plat
 
 ## Princípio Central
 
-> O aprendizado acontece quando o estudante se sente **conectado** ao problema e à solução — não quando recebe informação solta.
+> O aprendizado acontece quando o estudante se sente **conectado** ao problema e à solução: não quando recebe informação solta.
 
 Conteúdo raso, genérico ou descontextualizado **não serve**. Cada conceito precisa de alma.
 
@@ -31,7 +31,7 @@ Todo conceito ensinado deve seguir esta progressão:
 ### 3. Analogia Honesta
 
 - Traduzir a ideia em algo tangível e intuitivo.
-- A analogia deve ser **precisa** — não simplificada a ponto de ser errada.
+- A analogia deve ser **precisa**: não simplificada a ponto de ser errada.
 - Usar linguagem acessível sem sacrificar o rigor.
 
 ### 4. Interação / Experimentação
@@ -55,7 +55,7 @@ Todo conceito ensinado deve seguir esta progressão:
 
 ### ✅ Abordagem correta (conectado e verificável)
 
-> "Em 1989, o problema era real: como um agente aprende se a recompensa só vem muito depois da ação? Watkins propôs, em sua tese de PhD em Cambridge (*Learning from Delayed Rewards*), que o agente mantivesse um 'caderno' (Q-Table) anotando a qualidade de cada decisão — e atualizasse essas notas a cada experiência."
+> "Em 1989, o problema era real: como um agente aprende se a recompensa só vem muito depois da ação? Watkins propôs, em sua tese de PhD em Cambridge (*Learning from Delayed Rewards*), que o agente mantivesse um 'caderno' (Q-Table) anotando a qualidade de cada decisão: e atualizasse essas notas a cada experiência."
 >
 > [Interação: manipule a Q-Table e veja o agente melhorar em tempo real]
 >
@@ -81,15 +81,15 @@ Todo conceito ensinado deve seguir esta progressão:
 
 - ❌ Um tutorial copiado da internet com linguagem simplória.
 - ❌ Um repositório de fórmulas sem contexto.
-- ❌ Conteúdo "difícil por ser difícil" — complexidade pela complexidade.
+- ❌ Conteúdo "difícil por ser difícil": complexidade pela complexidade.
 - ❌ Fanfic histórica disfarçada de educação.
 
 ## O que este projeto É
 
 - ✅ Uma jornada onde cada conceito tem história, problema, intuição e prática.
-- ✅ Conteúdo com alma — o estudante se sente parte da descoberta.
+- ✅ Conteúdo com alma: o estudante se sente parte da descoberta.
 - ✅ Rigoroso e acessível ao mesmo tempo.
-- ✅ Interativo — aprender fazendo, não lendo.
+- ✅ Interativo: aprender fazendo, não lendo.
 
 ---
 
