@@ -75,36 +75,56 @@ body {
    ========================================================================== */
 
 .markdown-content p {
-  margin-bottom: 1rem;
-  line-height: 1.7;
+  margin-bottom: 1.15rem;
+  line-height: 1.75;
   color: var(--text-theme);
 }
 
 .markdown-content h3 {
   font-weight: 700;
-  font-size: 1.25rem;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+  margin-bottom: 0.85rem;
   color: var(--text-theme-dark);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.markdown-content h3:first-child {
+  margin-top: 0.25rem;
 }
 
 .markdown-content h4 {
   font-weight: 600;
-  font-size: 1.1rem;
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
   color: var(--text-theme-dark);
 }
 
-.markdown-content ul {
+.markdown-content ul,
+.markdown-content ol {
   list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
+  padding-left: 1.35rem;
+  margin-bottom: 1.25rem;
+  margin-top: 0.35rem;
   color: var(--text-theme);
 }
 
+.markdown-content ol {
+  list-style-type: decimal;
+}
+
 .markdown-content li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.65;
+  padding-left: 0.15rem;
+}
+
+.markdown-content li > ul,
+.markdown-content li > ol {
+  margin-top: 0.45rem;
+  margin-bottom: 0.35rem;
 }
 
 .markdown-content strong {
@@ -112,15 +132,28 @@ body {
   font-weight: 600;
 }
 
+.markdown-content em {
+  color: var(--text-theme-dark);
+}
+
 .markdown-content blockquote {
   border-left: 4px solid var(--accent-theme);
-  padding-left: 1rem;
   font-style: italic;
   color: var(--text-muted-theme);
   background: var(--bg-app);
-  padding: 0.5rem 1rem;
-  border-radius: 0 0.5rem 0.5rem 0;
-  margin-bottom: 1rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 0 0.65rem 0.65rem 0;
+  margin-top: 1.15rem;
+  margin-bottom: 1.35rem;
+  line-height: 1.65;
+}
+
+.markdown-content blockquote p {
+  margin-bottom: 0.35rem;
+}
+
+.markdown-content blockquote p:last-child {
+  margin-bottom: 0;
 }
 
 .markdown-content code {
@@ -159,6 +192,67 @@ body {
   background-color: transparent;
   color: inherit;
   padding: 0;
+}
+
+/* ==========================================================================
+   4b. Bibliografia / material complementar (audio-skip)
+   Tipografia menor e mais quieta: não compete com o texto da aula.
+   ========================================================================== */
+
+.secao-referencias {
+  font-size: 0.8125rem; /* ~13px — sensação de nota de rodapé */
+  line-height: 1.55;
+  color: var(--text-muted-theme, #64748b);
+  border-top: 1px solid color-mix(in srgb, var(--border-theme, #e2e8f0) 80%, transparent);
+}
+
+.secao-referencias h3 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 0.65rem 0;
+  color: var(--text-muted-theme, #64748b);
+}
+
+.secao-referencias p {
+  font-size: inherit;
+  line-height: inherit;
+  margin-bottom: 0.6rem;
+  color: inherit;
+}
+
+.secao-referencias ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.secao-referencias li {
+  margin-bottom: 0.55rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent-theme, #6366f1) 35%, transparent);
+  color: inherit;
+}
+
+.secao-referencias strong {
+  font-weight: 600;
+  color: var(--text-theme-dark, #334155);
+  font-size: 0.8125rem;
+}
+
+.secao-referencias a {
+  color: var(--accent-theme, #6366f1);
+  font-weight: 500;
+  font-size: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+
+.secao-referencias a:hover {
+  color: var(--text-theme-dark, #0f172a);
 }
 
 /* ==========================================================================
