@@ -25,16 +25,37 @@ export function obterVozesPorProvedor(provedor: string): VozAudio[] {
 }
 
 /**
- * Resolve o caminho estático do arquivo MP3 correspondente para a lição ativa.
- * Padrão de nomenclatura: /audios/{licaoId}_{voz}.mp3
- * 
- * @param licaoId ID único da lição (ex: "intro")
- * @param voz Nome da voz selecionada (Aoede ou Kore)
+ * Base pública dos MP3 (`VITE_AUDIO_BASE_URL`), sem barra no final.
+ * Vazio = modo local (`public/audios` via caminho relativo `/audios/...`).
+ */
+function obterBaseAudio(): string {
+  const valorBruto = import.meta.env.VITE_AUDIO_BASE_URL;
+  if (typeof valorBruto !== 'string') {
+    return '';
+  }
+  return valorBruto.trim().replace(/\/+$/, '');
+}
+
+/**
+ * Resolve a URL do MP3 da lição + voz.
+ *
+ * Formato:
+ * - Com env: `{VITE_AUDIO_BASE_URL}/{voz}/{licaoId}.mp3`
+ * - Sem env: `/audios/{voz}/{licaoId}.mp3` (pasta `public/audios` no Vite)
+ *
+ * @param licaoId ID único da lição (ex.: "intro")
+ * @param voz Nome da voz (Aoede ou Kore)
  */
 export function obterCaminhoAudioEstatico(
   licaoId: string,
   voz: string
 ): string {
-  return `/audios/${voz}/${licaoId}.mp3`;
-}
+  const caminhoArquivo = `${voz}/${licaoId}.mp3`;
+  const base = obterBaseAudio();
 
+  if (!base) {
+    return `/audios/${caminhoArquivo}`;
+  }
+
+  return `${base}/${caminhoArquivo}`;
+}
