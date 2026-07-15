@@ -5,7 +5,7 @@
  * Delega quiz, tutor IA e navegação para sub-componentes.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -15,7 +15,7 @@ import { useNavegacao, useQuiz } from "../../hooks";
 import { useContextoProgresso } from "../../contextos";
 import { obterQuestoesPorFase, obterQuestoesPorId } from "../../dados";
 import { CONTEUDO_VENN } from "../../dados/conteudoVenn";
-import { SecaoTutorIA, ConteudoMarkdown, ConteudoVideo, CartaoQuiz, PlayerAudioIA } from "../conteudo";
+import { SecaoTutorIA, ConteudoMarkdown, SecaoReferencias, ConteudoVideo, CartaoQuiz, PlayerAudioIA } from "../conteudo";
 import { BotoesNavegacao } from "../navegacao";
 import { TelaQuiz } from "../quiz";
 import { PainelVisual } from "./PainelVisual";
@@ -33,11 +33,17 @@ export function AreaConteudoPrincipal({
   const { estado, avancarFase, iniciarQuiz, setEstado } = useContextoProgresso();
 
   const [vennSelecionado, setVennSelecionado] = useState<string | null>(null);
+  /** Painel esquerdo rolável: ao interagir no Venn, a leitura volta ao topo. */
+  const refPainelLeitura = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const lidarComSelecao = (evento: Event) => {
       const customEvent = evento as CustomEvent;
       setVennSelecionado(customEvent.detail);
+      // Conteúdo da esquerda muda (foco IA/ML/DL ou volta ao principal): leitura no início
+      requestAnimationFrame(() => {
+        refPainelLeitura.current?.scrollTo({ top: 0, behavior: "smooth" });
+      });
     };
     window.addEventListener("aprendendo-ia:venn-circulo-selecionado", lidarComSelecao);
     return () => {
@@ -98,7 +104,11 @@ export function AreaConteudoPrincipal({
 
   const tituloExibido = dadosVenn ? dadosVenn.titulo : navegacao.passoAtual.titulo;
   const markdownExibido = dadosVenn ? dadosVenn.markdown : navegacao.passoAtual.conteudo;
-  const exibirPlayerAudio = !ehVideo && !ehQuiz && !dadosVenn;
+  // Player em conteúdo normal e nos focos do Venn (ia/ml/dl), pronto quando o MP3 existir
+  const exibirPlayerAudio = !ehVideo && !ehQuiz;
+  const licaoIdAudio = dadosVenn ? dadosVenn.licaoId : navegacao.passoAtual.id;
+  const tituloAudio = dadosVenn ? dadosVenn.titulo : navegacao.passoAtual.titulo;
+  const textoAudio = dadosVenn ? dadosVenn.markdown : navegacao.passoAtual.conteudo;
 
   const obterNomeVenn = (tipo: string | null) => {
     if (tipo === "ia") return "Inteligência Artificial";
@@ -124,8 +134,11 @@ export function AreaConteudoPrincipal({
           )}
         </button>
 
-        {/* Painel Esquerdo: Conteúdo */}
-        <div className="w-full md:w-1/2 h-full overflow-y-auto custom-scrollbar bg-[#faf9f6] px-4 md:px-6 py-8 md:py-12 transition-all duration-300">
+        {/* Painel Esquerdo: Conteúdo (ref = container de scroll da leitura) */}
+        <div
+          ref={refPainelLeitura}
+          className="w-full md:w-1/2 h-full overflow-y-auto custom-scrollbar bg-[#faf9f6] px-4 md:px-6 py-8 md:py-12 transition-all duration-300"
+        >
           <div
             className="max-w-4xl mx-auto w-full fade-in pb-20"
             key={dadosVenn ? vennSelecionado! : navegacao.passoAtual.id}
@@ -146,12 +159,12 @@ export function AreaConteudoPrincipal({
             </div>
 
             {exibirPlayerAudio && (
-              <PlayerAudioIA 
-                licaoId={navegacao.passoAtual.id}
+              <PlayerAudioIA
+                licaoId={licaoIdAudio}
                 faseId={navegacao.faseAtual.id}
                 passoIndice={navegacao.indicePasso}
-                texto={navegacao.passoAtual.conteudo} 
-                titulo={navegacao.passoAtual.titulo} 
+                texto={textoAudio}
+                titulo={tituloAudio}
               />
             )}
 
@@ -200,8 +213,11 @@ export function AreaConteudoPrincipal({
             {/* Tutor IA */}
             {!ehQuiz && <SecaoTutorIA />}
 
-            {/* Navegação */}
-            <BotoesNavegacao />
+            {/* Navegação (hierarchy: Venn interativo; Próximo só no último foco DL) */}
+            <BotoesNavegacao vennSelecionado={ehHierarchy ? vennSelecionado : null} />
+
+            {/* Bibliografia no rodapé da lição (depois de Anterior / Próximo) */}
+            {!ehVideo && !ehQuiz && <SecaoReferencias conteudo={markdownExibido} />}
           </div>
         </div>
 
