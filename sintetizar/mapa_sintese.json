@@ -6,5 +6,12 @@
   "hierarchy": {
     "Aoede": true,
     "Kore": true
+  },
+  "ia": {
+    "Aoede": true,
+    "Kore": true
+  },
+  "ml": {
+    "Aoede": true
   }
 }
