@@ -2,6 +2,8 @@
 
 Este documento define as **regras de negócio** do conteúdo educacional da plataforma "Aprendendo IA". Toda criação, revisão ou reestruturação de material deve respeitar estes princípios.
 
+> **Layout da lição (áudio, título, corpo, vídeo, tutor, nav, referências + painel direito):** ver o farol de UI em [`padrao_layout_licao.md`](./padrao_layout_licao.md).
+
 ---
 
 ## Princípio Central
