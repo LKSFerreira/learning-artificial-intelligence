@@ -10,7 +10,11 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
-import { ProvedorProgresso, ProvedorBadges } from './contextos';
+import {
+  ProvedorProgresso,
+  ProvedorBadges,
+  ProvedorHierarquiaVenn,
+} from './contextos';
 
 const elementoRaiz = document.getElementById('root');
 
@@ -25,7 +29,9 @@ raiz.render(
     <BrowserRouter>
       <ProvedorProgresso>
         <ProvedorBadges>
-          <App />
+          <ProvedorHierarquiaVenn>
+            <App />
+          </ProvedorHierarquiaVenn>
         </ProvedorBadges>
       </ProvedorProgresso>
     </BrowserRouter>

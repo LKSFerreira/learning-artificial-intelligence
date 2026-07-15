@@ -37,11 +37,24 @@ function obterCampoFrontmatter(conteudoBruto: string, chave: string): string | n
   return campo ? campo[1].trim() : null;
 }
 
+/** Vídeos oficiais de consolidação do Venn (fonte de verdade + fallback). */
+const URL_VIDEO_VENN: Record<string, string> = {
+  ia: "https://www.youtube.com/watch?v=HNBtdyMjxKU",
+  ml: "https://www.youtube.com/watch?v=0PrOA2JK6GQ",
+  dl: "https://www.youtube.com/watch?v=ggmDI9_fm54",
+};
+
 function montarConteudoVenn(conteudoBruto: string, licaoId: string): ConteudoVennTipo {
+  const urlDoFrontmatter = obterCampoFrontmatter(conteudoBruto, "urlVideo");
+  const urlVideo =
+    (urlDoFrontmatter && urlDoFrontmatter.length > 0
+      ? urlDoFrontmatter
+      : URL_VIDEO_VENN[licaoId]) ?? "";
+
   return {
     licaoId,
     titulo: obterCampoFrontmatter(conteudoBruto, "titulo") ?? licaoId,
-    urlVideo: obterCampoFrontmatter(conteudoBruto, "urlVideo") ?? "",
+    urlVideo,
     markdown: extrairCorpoMarkdown(conteudoBruto),
   };
 }

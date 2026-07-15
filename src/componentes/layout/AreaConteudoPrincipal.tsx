@@ -3,16 +3,20 @@
  *
  * Compõe o layout central: painel de conteúdo (esquerda) + painel visual (direita).
  * Delega quiz, tutor IA e navegação para sub-componentes.
+ *
+ * Ordem canônica da coluna esquerda (não reordenar sem atualizar o farol):
+ * metadados → áudio → título → conteúdo → vídeo → tutor → nav → referências.
+ * @see docs/padrao_layout_licao.md
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
 
 import { useNavegacao, useQuiz } from "../../hooks";
-import { useContextoProgresso } from "../../contextos";
+import { useContextoProgresso, useHierarquiaVenn } from "../../contextos";
 import { obterQuestoesPorFase, obterQuestoesPorId } from "../../dados";
 import { CONTEUDO_VENN } from "../../dados/conteudoVenn";
 import { SecaoTutorIA, ConteudoMarkdown, SecaoReferencias, ConteudoVideo, CartaoQuiz, PlayerAudioIA } from "../conteudo";
@@ -31,30 +35,31 @@ export function AreaConteudoPrincipal({
 }: PropriedadesAreaConteudo): React.ReactElement {
   const navegacao = useNavegacao();
   const { estado, avancarFase, iniciarQuiz, setEstado } = useContextoProgresso();
+  const {
+    foco: vennSelecionado,
+    definirFoco,
+    marcarVideoConcluido,
+  } = useHierarquiaVenn();
 
-  const [vennSelecionado, setVennSelecionado] = useState<string | null>(null);
   /** Painel esquerdo rolável: ao interagir no Venn, a leitura volta ao topo. */
   const refPainelLeitura = useRef<HTMLDivElement>(null);
+  const focoAnteriorRef = useRef<string | null>(null);
 
+  // Scroll ao topo quando o foco do Venn muda
   useEffect(() => {
-    const lidarComSelecao = (evento: Event) => {
-      const customEvent = evento as CustomEvent;
-      setVennSelecionado(customEvent.detail);
-      // Conteúdo da esquerda muda (foco IA/ML/DL ou volta ao principal): leitura no início
-      requestAnimationFrame(() => {
-        refPainelLeitura.current?.scrollTo({ top: 0, behavior: "smooth" });
-      });
-    };
-    window.addEventListener("aprendendo-ia:venn-circulo-selecionado", lidarComSelecao);
-    return () => {
-      window.removeEventListener("aprendendo-ia:venn-circulo-selecionado", lidarComSelecao);
-    };
-  }, []);
+    if (focoAnteriorRef.current === vennSelecionado) return;
+    focoAnteriorRef.current = vennSelecionado;
+    requestAnimationFrame(() => {
+      refPainelLeitura.current?.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }, [vennSelecionado]);
 
-  // Reseta a seleção temporária do Venn ao mudar de lição
+  // Ao sair da lição hierarchy, volta ao mapa (sem foco de círculo)
   useEffect(() => {
-    setVennSelecionado(null);
-  }, [navegacao.passoAtual.id]);
+    if (navegacao.passoAtual.id !== "hierarchy") {
+      definirFoco(null);
+    }
+  }, [navegacao.passoAtual.id, definirFoco]);
 
   const quizId = navegacao.passoAtual.quizId;
   const questoesQuiz = quizId 
@@ -100,7 +105,8 @@ export function AreaConteudoPrincipal({
   }
 
   const ehHierarchy = navegacao.passoAtual.id === "hierarchy";
-  const dadosVenn = ehHierarchy && vennSelecionado ? CONTEUDO_VENN[vennSelecionado] : null;
+  const dadosVenn =
+    ehHierarchy && vennSelecionado ? CONTEUDO_VENN[vennSelecionado] ?? null : null;
 
   const tituloExibido = dadosVenn ? dadosVenn.titulo : navegacao.passoAtual.titulo;
   const markdownExibido = dadosVenn ? dadosVenn.markdown : navegacao.passoAtual.conteudo;
@@ -160,6 +166,7 @@ export function AreaConteudoPrincipal({
 
             {exibirPlayerAudio && (
               <PlayerAudioIA
+                key={`audio-${licaoIdAudio}`}
                 licaoId={licaoIdAudio}
                 faseId={navegacao.faseAtual.id}
                 passoIndice={navegacao.indicePasso}
@@ -189,32 +196,36 @@ export function AreaConteudoPrincipal({
               <ConteudoMarkdown conteudo={markdownExibido} />
             )}
 
-            {/* Se for a lição de hierarquia e houver um tema selecionado, exibe o respectivo vídeo de estudo */}
-            {dadosVenn && (
-              <ConteudoVideo 
-                urlVideo={dadosVenn.urlVideo} 
-                aoConcluir={() => {
-                  window.dispatchEvent(
-                    new CustomEvent("aprendendo-ia:venn-video-concluido", { 
-                      detail: vennSelecionado 
-                    })
-                  );
-                }}
-              />
-            )}
-
-            {/* Vídeo embutido ou link externo com thumbnail (complementar) para outros passos */}
-            {!ehVideo && !dadosVenn && navegacao.passoAtual.urlVideo && (
-              <ConteudoVideo 
-                urlVideo={navegacao.passoAtual.urlVideo} 
-              />
-            )}
+            {/*
+              Vídeo no final do texto (mesmo padrão da intro):
+              - Venn IA/ML/DL: urlVideo do subconteúdo
+              - Outros passos: urlVideo do passo (ex.: intro)
+            */}
+            {dadosVenn?.urlVideo ? (
+              <section className="mt-2 mb-8" aria-label="Vídeo de consolidação">
+                <ConteudoVideo
+                  key={`video-${vennSelecionado}-${dadosVenn.urlVideo}`}
+                  urlVideo={dadosVenn.urlVideo}
+                  aoConcluir={() => {
+                    if (
+                      vennSelecionado === "ia" ||
+                      vennSelecionado === "ml" ||
+                      vennSelecionado === "dl"
+                    ) {
+                      marcarVideoConcluido(vennSelecionado);
+                    }
+                  }}
+                />
+              </section>
+            ) : !ehVideo && !dadosVenn && navegacao.passoAtual.urlVideo ? (
+              <ConteudoVideo urlVideo={navegacao.passoAtual.urlVideo} />
+            ) : null}
 
             {/* Tutor IA */}
             {!ehQuiz && <SecaoTutorIA />}
 
             {/* Navegação (hierarchy: Venn interativo; Próximo só no último foco DL) */}
-            <BotoesNavegacao vennSelecionado={ehHierarchy ? vennSelecionado : null} />
+            <BotoesNavegacao />
 
             {/* Bibliografia no rodapé da lição (depois de Anterior / Próximo) */}
             {!ehVideo && !ehQuiz && <SecaoReferencias conteudo={markdownExibido} />}

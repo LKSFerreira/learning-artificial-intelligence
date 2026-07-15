@@ -1,18 +1,10 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavegacao } from "../../hooks";
+import { useHierarquiaVenn, type FocoVenn } from "../../contextos";
 
 /** Ordem de exploração do Venn (último = único com "Próximo" de tópico). */
-const ORDEM_VENN = ["ia", "ml", "dl"] as const;
-type FocoVenn = (typeof ORDEM_VENN)[number];
-
-interface PropriedadesBotoesNavegacao {
-  /**
-   * Foco atual do diagrama na lição hierarchy (`null` = conteúdo principal).
-   * Só é usado quando o passo atual é hierarchy.
-   */
-  vennSelecionado?: string | null;
-}
+const ORDEM_VENN: FocoVenn[] = ["ia", "ml", "dl"];
 
 /**
  * Navegação entre passos.
@@ -22,18 +14,16 @@ interface PropriedadesBotoesNavegacao {
  * - Só no último foco (DL), com os 3 vídeos concluídos, Próximo libera o próximo tópico.
  * - Anterior no Venn: volta IA←ML←DL ou ao texto principal; no principal, volta o passo.
  */
-export function BotoesNavegacao({
-  vennSelecionado = null,
-}: PropriedadesBotoesNavegacao) {
+export function BotoesNavegacao() {
   const { podeAvancar, podeVoltar, ehQuiz, avancar, voltar, passoAtual } =
     useNavegacao();
+  const { foco: vennSelecionado, definirFoco } = useHierarquiaVenn();
 
   const ehHierarchy = passoAtual.id === "hierarchy";
-  const focoVenn = (
-    ehHierarchy && vennSelecionado && ORDEM_VENN.includes(vennSelecionado as FocoVenn)
+  const focoVenn =
+    ehHierarchy && vennSelecionado && ORDEM_VENN.includes(vennSelecionado)
       ? vennSelecionado
-      : null
-  ) as FocoVenn | null;
+      : null;
 
   const [videosHierarchyCompletos, setVideosHierarchyCompletos] =
     useState(false);
@@ -72,22 +62,11 @@ export function BotoesNavegacao({
     };
   }, [passoAtual]);
 
-  /**
-   * Publica o foco do Venn (conteúdo + diagrama escutam o mesmo evento).
-   */
-  const definirFocoVenn = (foco: FocoVenn | null) => {
-    window.dispatchEvent(
-      new CustomEvent("aprendendo-ia:venn-circulo-selecionado", {
-        detail: foco,
-      }),
-    );
-  };
-
   const handleAnterior = () => {
     if (ehHierarchy && focoVenn) {
       const indice = ORDEM_VENN.indexOf(focoVenn);
       const focoAnterior = indice <= 0 ? null : ORDEM_VENN[indice - 1];
-      definirFocoVenn(focoAnterior);
+      definirFoco(focoAnterior);
       return;
     }
     voltar();
@@ -95,7 +74,7 @@ export function BotoesNavegacao({
 
   const handleProximo = () => {
     if (ehHierarchy && focoVenn === "dl") {
-      definirFocoVenn(null);
+      definirFoco(null);
       avancar();
       return;
     }

@@ -18,6 +18,11 @@ interface PropriedadesConteudoVideo {
 export function ConteudoVideo({ urlVideo, descricao, aoConcluir }: PropriedadesConteudoVideo) {
   const [estaAberto, setEstaAberto] = useState(false);
 
+  // Extrai o ID do vídeo do YouTube (suportando watch, share, embed e shorts)
+  const regexYoutube = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/;
+  const match = urlVideo?.match(regexYoutube);
+  const idVideo = match ? match[1] : "";
+
   const lidarComFechar = () => {
     setEstaAberto(false);
     if (aoConcluir) {
@@ -39,19 +44,17 @@ export function ConteudoVideo({ urlVideo, descricao, aoConcluir }: PropriedadesC
     return () => window.removeEventListener('keydown', lidarComTeclado);
   }, [estaAberto, aoConcluir]);
 
-  // Extrai o ID do vídeo do YouTube (suportando watch, share, embed e shorts)
-  const regexYoutube = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/;
-  const match = urlVideo.match(regexYoutube);
-  const idVideo = match ? match[1] : '';
+  // Sem URL/ID válido: não renderiza thumbnail vazia ("Carregando vídeo...")
+  if (!urlVideo?.trim() || !idVideo) {
+    return null;
+  }
 
   // Monta a URL de embed apropriada usando o domínio nocookie para contornar bloqueios de adblockers e cookies de terceiros.
   // Adiciona o parâmetro autoplay=1 para tocar assim que abrir a modal.
-  const urlEmbed = idVideo ? `https://www.youtube-nocookie.com/embed/${idVideo}?autoplay=1` : urlVideo;
+  const urlEmbed = `https://www.youtube-nocookie.com/embed/${idVideo}?autoplay=1`;
 
   // Thumbnail de alta qualidade do YouTube
-  const urlThumbnail = idVideo 
-    ? `https://img.youtube.com/vi/${idVideo}/maxresdefault.jpg`
-    : '';
+  const urlThumbnail = `https://img.youtube.com/vi/${idVideo}/maxresdefault.jpg`;
 
   return (
     <div className="mb-8">
