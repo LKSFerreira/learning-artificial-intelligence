@@ -1,74 +1,135 @@
-/* Animações aprimoradas para o Diagrama de Venn (HierarquiaVenn) */
+/* ==========================================================================
+ * Onda contínua (CSS puro) — sem setInterval / troca de classes por passo.
+ * Só transform + box-shadow (GPU). Infinite + delays = fase da onda.
+ * ========================================================================== */
 
-@keyframes focus-pulse-ia {
-  0%, 100% {
-    border-color: rgba(148, 163, 184, 0.3);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.01);
+@keyframes onda-brilho-ia {
+  0%,
+  100% {
     transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.03);
   }
   50% {
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-    transform: scale(1.01);
+    transform: scale(1.012);
+    box-shadow: 0 0 28px rgba(255, 255, 255, 0.14);
   }
 }
 
-@keyframes focus-pulse-ml {
-  0%, 100% {
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.05);
+@keyframes onda-brilho-ml {
+  0%,
+  100% {
     transform: scale(1);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.06);
   }
   50% {
-    border-color: rgba(96, 165, 250, 0.7);
-    box-shadow: 0 0 40px rgba(59, 130, 246, 0.25);
-    transform: scale(1.015);
+    transform: scale(1.014);
+    box-shadow: 0 0 34px rgba(59, 130, 246, 0.28);
   }
 }
 
-@keyframes focus-pulse-dl {
-  0%, 100% {
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+@keyframes onda-brilho-dl {
+  0%,
+  100% {
     transform: scale(1);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.12);
   }
   50% {
-    border-color: rgba(129, 140, 248, 0.8);
-    box-shadow: 0 0 50px rgba(99, 102, 241, 0.4);
-    transform: scale(1.03);
+    transform: scale(1.02);
+    box-shadow: 0 0 42px rgba(99, 102, 241, 0.4);
   }
 }
 
-.animate-focus-ia {
-  animation: focus-pulse-ia 3s infinite ease-in-out;
+/*
+ * Período único da onda (todos os anéis no mesmo relógio).
+ * Pico do keyframe = 50% do ciclo → delays em frações do período
+ * alinham IA → ML → DL em sequência perfeita.
+ */
+.onda-anel {
+  --onda-periodo: 2.4s;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation-duration: var(--onda-periodo);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: none;
+  /* Mesmo t0 para todos (evita dessincronizar ao montar) */
+  animation-delay: 0s;
+  will-change: transform, box-shadow;
 }
 
-.animate-focus-ml {
-  animation: focus-pulse-ml 3s infinite ease-in-out;
+.onda-ia {
+  animation-name: onda-brilho-ia;
 }
 
-.animate-focus-dl {
-  animation: focus-pulse-dl 3s infinite ease-in-out;
+.onda-ml {
+  animation-name: onda-brilho-ml;
 }
+
+.onda-dl {
+  animation-name: onda-brilho-dl;
+}
+
+/* --- 3 anéis: picos a cada 1/3 do período (0 → 0.8s → 1.6s) --- */
+.onda-fases-3.onda-ia {
+  animation-delay: 0s;
+}
+.onda-fases-3.onda-ml {
+  animation-delay: calc(var(--onda-periodo) / 3);
+}
+.onda-fases-3.onda-dl {
+  animation-delay: calc(var(--onda-periodo) * 2 / 3);
+}
+
+/* --- 2 anéis (IA+ML): picos alternados a cada 1/2 --- */
+.onda-fases-2.onda-ia {
+  animation-delay: 0s;
+}
+.onda-fases-2.onda-ml {
+  animation-delay: calc(var(--onda-periodo) / 2);
+}
+
+/* --- 1 anel: só respira, sem defasagem --- */
+.onda-fases-1.onda-ia {
+  animation-delay: 0s;
+}
+
+/* Pausa limpa ao selecionar (classe removida no React) — hover abaixo */
 
 /* ==========================================================================
  * HOVER PREMIUM — halo giratório + glow pulsante nas áreas liberadas
  * ========================================================================== */
 @keyframes girar-halo-premium {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulso-glow-hover-ia {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(203,213,225,0), 0 0 20px 0 rgba(148,184,184,0.18); }
-  50% { box-shadow: 0 0 0 4px rgba(203,213,225,0.14), 0 0 42px 4px rgba(199,210,254,0.4); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(203, 213, 225, 0), 0 0 20px 0 rgba(148, 184, 184, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(203, 213, 225, 0.14), 0 0 42px 4px rgba(199, 210, 254, 0.4);
+  }
 }
 @keyframes pulso-glow-hover-ml {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0), 0 0 20px 0 rgba(59,130,246,0.2); }
-  50% { box-shadow: 0 0 0 4px rgba(96,165,250,0.16), 0 0 46px 4px rgba(147,197,253,0.5); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0), 0 0 20px 0 rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.16), 0 0 46px 4px rgba(147, 197, 253, 0.5);
+  }
 }
 @keyframes pulso-glow-hover-dl {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0), 0 0 20px 0 rgba(99,102,241,0.25); }
-  50% { box-shadow: 0 0 0 5px rgba(129,140,248,0.2), 0 0 55px 6px rgba(196,181,253,0.55); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0), 0 0 20px 0 rgba(99, 102, 241, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(129, 140, 248, 0.2), 0 0 55px 6px rgba(196, 181, 253, 0.55);
+  }
 }
 
 .hover-premium::before {
@@ -79,7 +140,7 @@
   padding: 2px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.45s ease;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -93,13 +154,39 @@
 }
 
 .hover-premium-ia::before {
-  background: conic-gradient(from 0deg, transparent 0%, rgba(203,213,225,0.95) 10%, rgba(129,140,248,0.55) 22%, transparent 34%, transparent 100%);
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(203, 213, 225, 0.95) 10%,
+    rgba(129, 140, 248, 0.55) 22%,
+    transparent 34%,
+    transparent 100%
+  );
 }
 .hover-premium-ml::before {
-  background: conic-gradient(from 0deg, transparent 0%, rgba(147,197,253,0.95) 10%, rgba(59,130,246,0.55) 22%, transparent 34%, transparent 100%);
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(147, 197, 253, 0.95) 10%,
+    rgba(59, 130, 246, 0.55) 22%,
+    transparent 34%,
+    transparent 100%
+  );
 }
 .hover-premium-dl::before {
-  background: conic-gradient(from 0deg, transparent 0%, rgba(196,181,253,0.95) 10%, rgba(99,102,241,0.6) 22%, transparent 34%, transparent 100%);
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(196, 181, 253, 0.95) 10%,
+    rgba(99, 102, 241, 0.6) 22%,
+    transparent 34%,
+    transparent 100%
+  );
+}
+
+/* Hover pausa a onda e assume o feedback premium */
+.onda-anel.hover-premium:hover {
+  animation-play-state: paused;
 }
 
 .hover-premium-ia:hover {

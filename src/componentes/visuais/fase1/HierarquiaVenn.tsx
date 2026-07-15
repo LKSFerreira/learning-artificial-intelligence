@@ -5,6 +5,8 @@
  * de conceitos. As subáreas começam bloqueadas e são liberadas
  * de forma gradual à medida que o aluno assiste aos respectivos vídeos.
  *
+ * Onda visual: 100% CSS (infinite + delays). Sem setInterval no React.
+ *
  * **Estado Visual:** ``hierarchy_toolbox``
  */
 
@@ -13,9 +15,6 @@ import { Box, Database, Brain, Lock } from "lucide-react";
 import { useContextoBadges } from "../../../contextos";
 import "./HierarquiaVenn.css";
 
-/**
- * Tipos de círculo suportados.
- */
 type TipoCirculo = "ia" | "ml" | "dl";
 
 /**
@@ -23,14 +22,13 @@ type TipoCirculo = "ia" | "ml" | "dl";
  */
 export function HierarquiaVenn(): React.ReactElement {
   const { registrarCliqueCirculo } = useContextoBadges();
-  
-  // Estado que armazena os vídeos concluídos pelo estudante
+
   const [videosConcluidos, setVideosConcluidos] = useState<string[]>(() => {
     const salvo = localStorage.getItem("aprendendo-ia:videos-hierarchy");
     if (salvo) {
       try {
         return JSON.parse(salvo);
-      } catch (e) {
+      } catch {
         return [];
       }
     }
@@ -40,86 +38,81 @@ export function HierarquiaVenn(): React.ReactElement {
   const [circuloSelecionado, setCirculoSelecionado] =
     useState<TipoCirculo | null>(null);
 
-  // Estados para a varredura automática de foco concêntrico (IA -> ML -> DL)
-  const [focoVarredura, setFocoVarredura] = useState<TipoCirculo | null>("ia");
-  const [varreduraAtiva, setVarreduraAtiva] = useState(true);
-
-  // Estados de desbloqueio progressivo
   const mlDesbloqueado = videosConcluidos.includes("ia");
   const dlDesbloqueado = videosConcluidos.includes("ml");
 
-  // Efeito para escutar a conclusão do vídeo que agora roda no painel esquerdo
+  /** Onda só roda quando nenhum círculo está selecionado (CSS infinite). */
+  const ondaAtiva = circuloSelecionado === null;
+
+  /**
+   * Quantos anéis participam da onda → define as fases (1, 2 ou 3)
+   * para os picos caírem em sequência sem sobrepor.
+   */
+  const quantidadeFasesOnda = !mlDesbloqueado
+    ? 1
+    : !dlDesbloqueado
+      ? 2
+      : 3;
+  const classeFasesOnda = `onda-fases-${quantidadeFasesOnda}`;
+
   useEffect(() => {
     const lidarComVideoConcluido = (evento: Event) => {
       const customEvent = evento as CustomEvent;
       const tipoConcluido = customEvent.detail as TipoCirculo;
-      
+
       setVideosConcluidos((anterior) => {
         if (anterior.includes(tipoConcluido)) return anterior;
         const novo = [...anterior, tipoConcluido];
-        localStorage.setItem("aprendendo-ia:videos-hierarchy", JSON.stringify(novo));
-        
-        // Notifica o componente BotoesNavegacao para reavaliar o desbloqueio do botão "Próximo"
+        localStorage.setItem(
+          "aprendendo-ia:videos-hierarchy",
+          JSON.stringify(novo),
+        );
         window.dispatchEvent(new Event("aprendendo-ia:progresso-video-alterado"));
-        
         return novo;
       });
     };
 
-    window.addEventListener("aprendendo-ia:venn-video-concluido", lidarComVideoConcluido);
+    window.addEventListener(
+      "aprendendo-ia:venn-video-concluido",
+      lidarComVideoConcluido,
+    );
     return () => {
-      window.removeEventListener("aprendendo-ia:venn-video-concluido", lidarComVideoConcluido);
+      window.removeEventListener(
+        "aprendendo-ia:venn-video-concluido",
+        lidarComVideoConcluido,
+      );
     };
   }, []);
 
-  // Efeito para ciclar o foco da animação concêntrica de forma cíclica
+  // Sincroniza seleção quando a navegação (Anterior) ou outro painel publica o foco
   useEffect(() => {
-    if (!varreduraAtiva) return;
-
-    const intervalo = setInterval(() => {
-      setFocoVarredura((anterior) => {
-        if (anterior === "ia") {
-          return mlDesbloqueado ? "ml" : "ia";
-        }
-        if (anterior === "ml") {
-          return dlDesbloqueado ? "dl" : "ia";
-        }
-        return "ia";
-      });
-    }, 3000); // 3 segundos em cada camada para leitura confortável
-
-    return () => clearInterval(intervalo);
-  }, [varreduraAtiva, mlDesbloqueado, dlDesbloqueado]);
-
-  // Efeito para reiniciar a animação automática após período de inatividade
-  useEffect(() => {
-    if (circuloSelecionado !== null) return;
-
-    const timeout = setTimeout(() => {
-      setVarreduraAtiva(true);
-      setFocoVarredura("ia");
-    }, 6000); // Aguarda 6 segundos após desmarcar antes de reiniciar
-
-    return () => clearTimeout(timeout);
-  }, [circuloSelecionado]);
+    const sincronizarSelecao = (evento: Event) => {
+      const foco = (evento as CustomEvent).detail as TipoCirculo | null;
+      setCirculoSelecionado((atual) => (atual === foco ? atual : foco));
+    };
+    window.addEventListener(
+      "aprendendo-ia:venn-circulo-selecionado",
+      sincronizarSelecao,
+    );
+    return () => {
+      window.removeEventListener(
+        "aprendendo-ia:venn-circulo-selecionado",
+        sincronizarSelecao,
+      );
+    };
+  }, []);
 
   const selecionarCirculo = (tipo: TipoCirculo) => {
     if (tipo === "ml" && !mlDesbloqueado) return;
     if (tipo === "dl" && !dlDesbloqueado) return;
 
-    setVarreduraAtiva(false);
-    setFocoVarredura(null);
-    
     setCirculoSelecionado((anterior) => {
       const novo = anterior === tipo ? null : tipo;
-      
-      // Notifica a Área de Conteúdo Principal para atualizar o texto na esquerda
       window.dispatchEvent(
-        new CustomEvent("aprendendo-ia:venn-circulo-selecionado", { 
-          detail: novo 
-        })
+        new CustomEvent("aprendendo-ia:venn-circulo-selecionado", {
+          detail: novo,
+        }),
       );
-      
       return novo;
     });
 
@@ -129,148 +122,128 @@ export function HierarquiaVenn(): React.ReactElement {
   const desmarcarTudo = () => {
     if (circuloSelecionado === null) return;
     setCirculoSelecionado(null);
-    
-    // Notifica a Área de Conteúdo Principal para restaurar o markdown padrão da lição
     window.dispatchEvent(
-      new CustomEvent("aprendendo-ia:venn-circulo-selecionado", { 
-        detail: null 
-      })
+      new CustomEvent("aprendendo-ia:venn-circulo-selecionado", {
+        detail: null,
+      }),
     );
   };
 
-  // Gerenciadores de estilos dinâmicos para a animação sequencial ("passar por dentro")
-  // Importante: NÃO utilizamos a propriedade de CSS 'opacity-*' nos contêineres irmãos,
-  // pois isso destrói a integridade das cores e torna o visual lavado e desbotado.
-  // Em vez disso, controlamos a visibilidade e o foco combinando cores de fundo/borda semitransparentes (/X)
-  // com efeitos de sombra (glow) de alta fidelidade cromática e transições super suaves (duration-[1200ms]).
+  /**
+   * Classes estáveis: sem trocar foco a cada segundo (isso causava o “tranco”).
+   * A onda é só `onda-anel` + fase CSS.
+   */
   const obterEstiloIA = () => {
-    const base = "absolute inset-0 rounded-full border-4 flex flex-col items-center pt-8 transition-all duration-[1200ms] ease-in-out cursor-pointer group backdrop-blur-md hover-premium hover-premium-ia";
+    const base =
+      "absolute inset-0 rounded-full border-4 flex flex-col items-center pt-8 cursor-pointer group backdrop-blur-md hover-premium hover-premium-ia border-slate-500/30 bg-white/[0.02] z-0";
+
     if (circuloSelecionado === "ia") {
-      return `${base} border-slate-400 bg-white/[0.08] scale-[1.02] shadow-[0_15px_45px_rgba(255,255,255,0.06)] z-0`;
+      return `${base} border-slate-400 bg-white/[0.08] scale-[1.02] shadow-[0_15px_45px_rgba(255,255,255,0.06)]`;
     }
     if (circuloSelecionado !== null) {
-      return `${base} border-slate-500/5 bg-transparent text-slate-500/5 z-0`;
+      return `${base} border-slate-500/15 bg-transparent opacity-70`;
     }
-    if (focoVarredura === "ia" && varreduraAtiva) {
-      return `${base} bg-white/[0.04] scale-[1.01] animate-focus-ia z-0`;
+    if (ondaAtiva) {
+      return `${base} onda-anel onda-ia ${classeFasesOnda}`;
     }
-    if (varreduraAtiva) {
-      return `${base} border-slate-500/10 bg-transparent text-slate-500/10 z-0`;
+    if (!videosConcluidos.includes("ia")) {
+      return `${base} border-indigo-500/40 bg-indigo-500/[0.04] shadow-[0_0_35px_rgba(99,102,241,0.12)] ring-1 ring-indigo-400/10`;
     }
-
-    // Se o vídeo de IA ainda não foi assistido, mostramos destaque visual ativo
-    const iaAindaNaoAssistido = !videosConcluidos.includes("ia");
-    if (iaAindaNaoAssistido) {
-      return `${base} border-indigo-500/40 bg-indigo-500/[0.04] shadow-[0_0_35px_rgba(99,102,241,0.12)] ring-1 ring-indigo-400/10 z-0`;
-    }
-
-    return `${base} border-slate-500/30 bg-white/[0.02] z-0`;
+    return base;
   };
 
   const obterEstiloML = () => {
-    const base = "absolute w-[25rem] h-[25rem] rounded-full border-4 flex flex-col items-center pt-8 transition-all duration-[1200ms] ease-in-out z-10 backdrop-blur-md";
+    const base =
+      "absolute w-[25rem] h-[25rem] rounded-full border-4 flex flex-col items-center pt-8 z-10 backdrop-blur-md border-blue-400/30 bg-blue-500/[0.02]";
+
     if (!mlDesbloqueado) {
       return `${base} border-slate-500/10 bg-black/10 text-slate-500/30 cursor-not-allowed`;
     }
-    const baseLiberado = `${base} cursor-pointer group hover-premium hover-premium-ml`;
+
+    const liberado = `${base} cursor-pointer group hover-premium hover-premium-ml`;
+
     if (circuloSelecionado === "ml") {
-      return `${baseLiberado} border-blue-400 bg-blue-500/[0.12] scale-[1.03] shadow-[0_0_35px_rgba(59,130,246,0.3)]`;
+      return `${liberado} border-blue-400 bg-blue-500/[0.12] scale-[1.03] shadow-[0_0_35px_rgba(59,130,246,0.3)]`;
     }
     if (circuloSelecionado !== null) {
-      return `${baseLiberado} border-blue-500/5 bg-transparent text-blue-500/5`;
+      return `${liberado} border-blue-500/15 bg-transparent opacity-70`;
     }
-    if (focoVarredura === "ml" && varreduraAtiva) {
-      return `${baseLiberado} bg-blue-500/[0.04] scale-[1.02] animate-focus-ml`;
+    if (ondaAtiva) {
+      return `${liberado} onda-anel onda-ml ${classeFasesOnda}`;
     }
-    if (varreduraAtiva) {
-      return `${baseLiberado} border-blue-500/10 bg-transparent text-blue-500/10`;
-    }
-    return `${baseLiberado} border-blue-400/30 bg-blue-500/[0.02]`;
+    return liberado;
   };
 
   const obterEstiloDL = () => {
-    const base = "absolute w-48 h-48 rounded-full border-4 flex flex-col items-center justify-center transition-all duration-[1200ms] ease-in-out z-20 text-white backdrop-blur-md";
+    const base =
+      "absolute w-48 h-48 rounded-full border-4 flex flex-col items-center justify-center z-20 text-white backdrop-blur-md border-indigo-500/40 bg-gradient-to-br from-indigo-600/40 to-purple-600/40";
+
     if (!dlDesbloqueado) {
       return `${base} border-slate-500/10 bg-black/20 text-slate-500/20 cursor-not-allowed`;
     }
-    const baseLiberado = `${base} cursor-pointer group hover-premium hover-premium-dl`;
+
+    const liberado = `${base} cursor-pointer group hover-premium hover-premium-dl`;
+
     if (circuloSelecionado === "dl") {
-      return `${baseLiberado} border-indigo-400 bg-gradient-to-br from-indigo-600/90 to-purple-700/90 scale-[1.08] shadow-[0_0_35px_rgba(99,102,241,0.5)]`;
+      return `${liberado} border-indigo-400 bg-gradient-to-br from-indigo-600/90 to-purple-700/90 scale-[1.08] shadow-[0_0_35px_rgba(99,102,241,0.5)]`;
     }
     if (circuloSelecionado !== null) {
-      return `${baseLiberado} border-indigo-500/5 bg-indigo-600/5 text-indigo-300/5`;
+      return `${liberado} border-indigo-500/20 bg-indigo-600/15 opacity-70`;
     }
-    if (focoVarredura === "dl" && varreduraAtiva) {
-      return `${baseLiberado} bg-gradient-to-br from-indigo-600/30 to-purple-600/30 scale-[1.04] animate-focus-dl`;
+    if (ondaAtiva) {
+      return `${liberado} onda-anel onda-dl ${classeFasesOnda}`;
     }
-    if (varreduraAtiva) {
-      return `${baseLiberado} border-indigo-500/20 bg-indigo-600/20 text-white/30`;
-    }
-    return `${baseLiberado} border-indigo-500/40 bg-gradient-to-br from-indigo-600/40 to-purple-600/40 shadow-[0_0_15px_rgba(99,102,241,0.2)]`;
-  };
-
-  const obterLegendaVarredura = () => {
-    if (circuloSelecionado) return "";
-    if (focoVarredura === "ia") {
-      return "Foco Atual: Inteligência Artificial (O campo mais amplo)";
-    }
-    if (focoVarredura === "ml") {
-      return "Foco Atual: Machine Learning (Aprender a partir de dados)";
-    }
-    if (focoVarredura === "dl") {
-      return "Foco Atual: Deep Learning (Redes neurais profundas)";
-    }
-    return "";
+    return liberado;
   };
 
   return (
-    <div 
+    <div
       className="flex flex-col items-center justify-center h-full w-full relative cursor-default"
       onClick={desmarcarTudo}
     >
-      {/* Background Pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
 
-      <div className="relative z-10 flex flex-col items-center gap-6 scale-90 md:scale-100 transition-transform">
+      <div className="relative z-10 flex flex-col items-center gap-6 scale-90 md:scale-100">
         <h3 className="text-xl font-bold text-slate-700">Explore a Oficina</h3>
 
-        {/* Container dos Círculos (Área ampliada para w-[38rem] e h-[38rem]) */}
-        <div className="relative w-[38rem] h-[38rem] flex items-center justify-center select-none">
-          {/* AI Outer Circle */}
+        {/* key por nº de fases: ao desbloquear anel, todos reiniciam no mesmo t0 */}
+        <div
+          key={`onda-sync-${quantidadeFasesOnda}`}
+          className="relative w-[38rem] h-[38rem] flex items-center justify-center select-none"
+        >
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(evento) => {
+              evento.stopPropagation();
               selecionarCirculo("ia");
             }}
             className={obterEstiloIA()}
           >
             <span
-              className={`font-bold uppercase tracking-widest text-xs md:text-sm transition-colors duration-500 ${
-                circuloSelecionado === "ia" || focoVarredura === "ia" 
-                  ? "text-slate-800" 
+              className={`font-bold uppercase tracking-widest text-xs md:text-sm ${
+                circuloSelecionado === "ia"
+                  ? "text-slate-800"
                   : !videosConcluidos.includes("ia")
                     ? "text-indigo-600 font-extrabold"
-                    : "text-slate-400"
+                    : "text-slate-600"
               }`}
             >
               Inteligência Artificial
             </span>
             <Box
               size={26}
-              className={`mt-2 transition-colors duration-500 ${
-                circuloSelecionado === "ia" || focoVarredura === "ia"
+              className={`mt-2 ${
+                circuloSelecionado === "ia"
                   ? "text-slate-600"
                   : !videosConcluidos.includes("ia")
-                    ? "text-indigo-500 scale-110"
-                    : "text-slate-400 group-hover:scale-110"
+                    ? "text-indigo-500"
+                    : "text-slate-500 group-hover:scale-110"
               }`}
             />
           </div>
 
-          {/* ML Middle Circle */}
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(evento) => {
+              evento.stopPropagation();
               selecionarCirculo("ml");
             }}
             className={obterEstiloML()}
@@ -278,16 +251,16 @@ export function HierarquiaVenn(): React.ReactElement {
             {mlDesbloqueado ? (
               <>
                 <span
-                  className={`font-bold uppercase tracking-widest text-xs md:text-sm transition-colors duration-500 ${
-                    circuloSelecionado === "ml" || focoVarredura === "ml" ? "text-blue-800" : "text-blue-400"
+                  className={`font-bold uppercase tracking-widest text-xs md:text-sm ${
+                    circuloSelecionado === "ml" ? "text-blue-800" : "text-blue-500"
                   }`}
                 >
                   Machine Learning
                 </span>
                 <Database
                   size={26}
-                  className={`mt-2 transition-colors duration-500 ${
-                    circuloSelecionado === "ml" || focoVarredura === "ml"
+                  className={`mt-2 ${
+                    circuloSelecionado === "ml"
                       ? "text-blue-600"
                       : "text-blue-400 group-hover:scale-110"
                   }`}
@@ -303,10 +276,9 @@ export function HierarquiaVenn(): React.ReactElement {
             )}
           </div>
 
-          {/* DL Inner Circle */}
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(evento) => {
+              evento.stopPropagation();
               selecionarCirculo("dl");
             }}
             className={obterEstiloDL()}
@@ -315,7 +287,7 @@ export function HierarquiaVenn(): React.ReactElement {
               <>
                 <Brain
                   size={42}
-                  className="group-hover:scale-115 transition-transform"
+                  className="group-hover:scale-110 transition-transform duration-300"
                 />
                 <span className="font-bold text-xs md:text-sm mt-2 text-center leading-tight">
                   Deep
@@ -336,18 +308,8 @@ export function HierarquiaVenn(): React.ReactElement {
           </div>
         </div>
 
-        {/* Legenda de varredura dinâmica */}
-        {!circuloSelecionado && varreduraAtiva ? (
-          <div className="text-xs font-semibold text-indigo-600/90 tracking-wide text-center mt-3 h-4">
-            {obterLegendaVarredura()}
-          </div>
-        ) : (
-          <div className="h-4"></div>
-        )}
-
-        {/* Texto com dica visual */}
         <p
-          className={`text-sm bg-white/80 backdrop-blur px-5 py-2.5 rounded-full border shadow-sm transition-all duration-500 ${
+          className={`text-sm bg-white/80 backdrop-blur px-5 py-2.5 rounded-full border shadow-sm transition-colors duration-300 ${
             !circuloSelecionado
               ? "border-indigo-300 text-indigo-700"
               : "border-slate-200 text-slate-500"
