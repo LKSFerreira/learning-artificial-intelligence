@@ -24,7 +24,7 @@ Esses relatos mostram que a obsessão por mentes artificiais nasceu muito antes 
 
 Essa fascinação mitológica começou a ganhar contornos matemáticos reais no **século XIX**.
 
-Em **1843**, a matemática inglesa **Ada Lovelace**, ao analisar o projeto da Máquina Analítica de Charles Babbage (um computador mecânico gigante à base de engrenagens e cartões perfurados que nunca chegou a ser totalmente construído), escreveu o primeiro algoritmo da história para ser processado por ela.
+Em **1843**, a matemática inglesa **Ada Lovelace**, ao analisar o projeto da **Máquina Analítica** de **Charles Babbage** (um computador mecânico gigante à base de engrenagens e cartões perfurados que nunca chegou a ser totalmente construído), escreveu o primeiro **algoritmo** da história para ser processado por ela.
 
 Lovelace foi pioneira ao perceber que aquela máquina **não servia apenas para realizar contas matemáticas**. Ela previu que, se o comportamento de objetos reais pudesse ser mapeado por regras lógicas e símbolos, a máquina seria capaz de:
 
@@ -36,7 +36,7 @@ Lovelace foi pioneira ao perceber que aquela máquina **não servia apenas para 
 
 Foi necessário mais de um século de evolução industrial e computacional até que o matemático britânico **Alan Turing** desse o próximo passo histórico.
 
-Em **1950**, ele publicou o revolucionário artigo *"Computing Machinery and Intelligence"*. Nele, Turing propôs o **Jogo da Imitação** (que mais tarde ficaria conhecido como o **Teste de Turing**) para contornar a pergunta abstrata *"as máquinas podem pensar?"* por uma mais prática:
+Em **1950**, ele publicou o revolucionário artigo ***Computing Machinery and Intelligence***. Nele, Turing propôs o **Jogo da Imitação** (que mais tarde ficaria conhecido como o **Teste de Turing**) para contornar a pergunta abstrata *"as máquinas podem pensar?"* por uma mais prática:
 
 > *"Uma máquina pode se passar por um ser humano em uma conversa por texto?"*
 
@@ -47,17 +47,17 @@ Mais do que propor um teste, Turing antecipou a própria essência do **Machine 
 
 ### Dartmouth (1956): nasce o nome "Inteligência Artificial"
 
-Seis anos depois, no verão de **1956**, o cientista **John McCarthy** reuniu pesquisadores no Dartmouth College para um simpósio de pesquisa e cunhou oficialmente o termo **"Inteligência Artificial"**.
+Seis anos depois, no verão de **1956**, o cientista **John McCarthy** reuniu pesquisadores no **Dartmouth College** para um simpósio de pesquisa e cunhou oficialmente o termo **Inteligência Artificial (IA)**.
 
 McCarthy e seus contemporâneos acreditavam que qualquer aspecto do aprendizado humano ou da inteligência poderia ser descrito de forma tão precisa que computadores seriam capazes de simulá-los em poucas semanas.
 
-A abordagem da época baseava-se em lógica pura e regras rígidas de programação, no que ficou conhecido como a **"IA Simbólica"**.
+A abordagem da época baseava-se em lógica pura e regras rígidas de programação, no que ficou conhecido como a **IA Simbólica**.
 
 ### O Paradoxo de Moravec
 
 Contudo, o mundo real provou ser muito mais complexo do que a lógica abstrata dos computadores.
 
-Na década de **1980**, pesquisadores de IA e robótica, liderados por **Hans Moravec**, Marvin Minsky e Rodney Brooks, formalizaram uma constatação surpreendente que ficou conhecida como o **Paradoxo de Moravec**:
+Na década de **1980**, pesquisadores de IA e robótica, liderados por **Hans Moravec**, **Marvin Minsky** e **Rodney Brooks**, formalizaram uma constatação surpreendente que ficou conhecida como o **Paradoxo de Moravec**:
 
 *   **Fácil para a máquina (e difícil para o senso comum):** tarefas de alto nível cognitivo, como jogar xadrez profissionalmente ou resolver equações matemáticas avançadas, exigem pouquíssimo poder de processamento e são relativamente fáceis de programar com regras lógicas estáticas.
 *   **Difícil para a máquina (e "fácil" para um bebê):** habilidades motoras e sensoriais básicas que qualquer criança de dois anos realiza sem pensar: andar por uma sala sem colidir, reconhecer rostos sob diferentes luzes, pegar um copo de vidro sem quebrá-lo: são incrivelmente difíceis de reproduzir artificialmente. Exigem trilhões de cálculos de adaptação que as regras tradicionais simplesmente falham em descrever.
@@ -79,19 +79,19 @@ A grande virada de chave ocorreu nas primeiras décadas do **século XXI**, quan
 
 Em vez de ensinarmos regras lógicas explícitas às máquinas, passamos a deixá-las extrair padrões por conta própria a partir de dados reais.
 
-Esse renascimento foi impulsionado pelas **redes neurais artificiais** e pelo *Deep Learning* (Aprendizado Profundo), permitindo avanços gigantescos em:
+Esse renascimento foi impulsionado pelas **redes neurais artificiais** e pelo **Deep Learning** (*Aprendizado Profundo*), permitindo avanços gigantescos em:
 
-*   visão computacional;
+*   **visão computacional**;
 *   processamento de áudio;
-*   robótica.
+*   **robótica**.
 
 ### 2017: "Attention Is All You Need"
 
 Mas o marco técnico decisivo que permitiu a criação das IAs generativas modernas veio em **2017**.
 
-Pesquisadores do Google Brain publicaram o célebre artigo científico **"Attention Is All You Need"** (Atenção é Tudo que Você Precisa), introduzindo a arquitetura dos **Transformers**.
+Pesquisadores do **Google Brain** publicaram o célebre artigo científico ***Attention Is All You Need*** ("Atenção é Tudo que Você Precisa"), introduzindo a arquitetura dos **Transformers**.
 
-Ao substituir arquiteturas anteriores pelo mecanismo de **auto-atenção**: que permite ao computador analisar o contexto completo de uma frase simultaneamente e aprender relações profundas entre palavras distantes: , os Transformers se tornaram a base de todos os Large Language Models (LLMs) atuais, como o GPT da OpenAI e o Claude da Anthropic.
+Ao substituir arquiteturas anteriores pelo mecanismo de **auto-atenção** (que permite ao computador analisar o contexto completo de uma frase simultaneamente e aprender relações profundas entre palavras distantes), os **Transformers** se tornaram a base de todos os **Large Language Models (LLMs)** atuais, como o **GPT** (OpenAI) e o **Claude** (Anthropic).
 
 ### E agora?
 
