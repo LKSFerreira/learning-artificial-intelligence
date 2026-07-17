@@ -25,7 +25,7 @@ export function BarraLateralFases({
   aoDevUnlock,
 }: PropriedadesBarraLateral): React.ReactElement {
   const [tema, setTema] = React.useState<TipoTema>(() => {
-    return (localStorage.getItem("tema-estudo") as TipoTema) || "claro";
+    return (localStorage.getItem("tema-estudo") as TipoTema) || "escuro";
   });
 
   const alterarTema = (novoTema: TipoTema) => {
