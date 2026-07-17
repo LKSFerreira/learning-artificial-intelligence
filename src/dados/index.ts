@@ -46,3 +46,16 @@ export {
   IDS_BADGES,
   TOTAL_BADGES
 } from './badges';
+
+// Simulador ML (passo 03)
+export {
+  ITENS_SIMULADOR_ML,
+  ITENS_TREINO_ML,
+  ITENS_DEMO_REGRA,
+  ESTETICA_ITENS_SIMULADOR_ML,
+  PASTA_IMAGENS_SIMULADOR_ML,
+  obterCaminhoImagemItem,
+  obterItemPorId,
+  avaliarRegraVermelha,
+} from './itensSimuladorML';
+export type { ItemSimuladorML, CorItemRegra } from './itensSimuladorML';
