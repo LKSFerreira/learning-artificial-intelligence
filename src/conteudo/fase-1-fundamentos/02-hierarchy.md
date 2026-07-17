@@ -29,7 +29,7 @@ As três áreas se organizam, no ensino e na indústria, como um **mapa mental d
 
 Grave isto:
 
-> **Nem toda IA é ML. Nem todo ML é DL.**
+> **Nem toda Inteligência Artificial é Machine Learning. Nem todo Machine Learning é Deep Learning.**
 
 Há **IA clássica** (muitas vezes **simbólica**) sem aprendizado de máquina. Há **ML clássico** sem redes profundas. O **diagrama de Venn** ao lado deixa essa inclusão **visível**.
 
