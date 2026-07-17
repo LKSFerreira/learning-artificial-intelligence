@@ -189,32 +189,64 @@
   animation-play-state: paused;
 }
 
+/*
+ * Hover: contraste legível em TODOS os temas.
+ * Antes: forçava #fff / tons claros em * — sumia no modo claro (fundo creme).
+ * Padrão = tema claro (títulos escuros). Temas escuro/dracula sobrescrevem abaixo.
+ */
 .hover-premium-ia:hover {
   animation: pulso-glow-hover-ia 1.8s ease-in-out infinite !important;
-  background-color: rgba(255, 255, 255, 0.14) !important;
-  border-color: rgba(255, 255, 255, 0.7) !important;
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.55) !important;
   transform: scale(1.015) !important;
 }
 .hover-premium-ia:hover * {
-  color: #ffffff !important;
+  color: #1e293b !important; /* slate-800 */
 }
 
 .hover-premium-ml:hover {
   animation: pulso-glow-hover-ml 1.8s ease-in-out infinite !important;
-  background-color: rgba(59, 130, 246, 0.22) !important;
-  border-color: rgba(96, 165, 250, 0.9) !important;
+  background-color: rgba(59, 130, 246, 0.14) !important;
+  border-color: rgba(37, 99, 235, 0.75) !important;
   transform: scale(1.02) !important;
 }
 .hover-premium-ml:hover * {
-  color: #93c5fd !important;
+  color: #1e3a8a !important; /* blue-900 */
 }
 
 .hover-premium-dl:hover {
   animation: pulso-glow-hover-dl 1.8s ease-in-out infinite !important;
-  background-color: rgba(99, 102, 241, 0.4) !important;
-  border-color: rgba(129, 140, 248, 0.95) !important;
+  background-color: rgba(79, 70, 229, 0.45) !important;
+  border-color: rgba(99, 102, 241, 0.95) !important;
   transform: scale(1.04) !important;
 }
+/* DL já tem fundo roxo/índigo: texto claro permanece legível no modo claro */
 .hover-premium-dl:hover * {
-  color: #e0e7ff !important;
+  color: #f8fafc !important; /* slate-50 */
+}
+
+/* Temas escuros: glow mais luminoso + texto claro onde o fundo escurece */
+.theme-escuro .hover-premium-ia:hover,
+.theme-dracula .hover-premium-ia:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(226, 232, 240, 0.65) !important;
+}
+.theme-escuro .hover-premium-ia:hover *,
+.theme-dracula .hover-premium-ia:hover * {
+  color: #f8fafc !important;
+}
+
+.theme-escuro .hover-premium-ml:hover,
+.theme-dracula .hover-premium-ml:hover {
+  background-color: rgba(59, 130, 246, 0.22) !important;
+  border-color: rgba(96, 165, 250, 0.9) !important;
+}
+.theme-escuro .hover-premium-ml:hover *,
+.theme-dracula .hover-premium-ml:hover * {
+  color: #bfdbfe !important; /* blue-200 */
+}
+
+.theme-escuro .hover-premium-dl:hover *,
+.theme-dracula .hover-premium-dl:hover * {
+  color: #e0e7ff !important; /* indigo-100 */
 }
