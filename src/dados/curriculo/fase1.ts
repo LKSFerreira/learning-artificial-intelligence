@@ -65,7 +65,7 @@ Vamos usar ML para que nossa IA aprenda a reconhecer padrões olhando representa
     },
     {
       id: "deep_learning",
-      titulo: "DL: A Linha de Montagem 🏭",
+      titulo: "Redes Neurais: do Inverno ao Deep Learning 🧠",
       conteudo: `Deep Learning usa **Redes Neurais Artificiais**. Pense em uma linha de montagem:
 
 1.  **Entrada:** A imagem do jogo.
