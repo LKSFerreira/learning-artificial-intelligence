@@ -84,7 +84,7 @@ A montagem do Poring fica mais nítida a cada sinal (**blur alto → médio → 
 
 As cores dos neurônios ativos seguem a **família da coluna**, com **tons diferentes** entre nós: a organização em colunas é layout; a “camada” que importa na metáfora é o **conjunto aceso**.
 
-O painel tem **três faixas**: básico (Poring), intermediário e avançado (estes dois ainda a preencher).
+O painel tem **duas faixas**: o básico (Poring) em cerca de **1/3** da altura e, embaixo (**2/3**), o espaço unificado do próximo exemplo (ainda a preencher).
 
 ### O que carregar adiante
 
