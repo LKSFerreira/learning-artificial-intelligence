@@ -1,11 +1,13 @@
 /**
- * Visualização: rede neural em 3 exemplos (básico / intermediário / avançado).
+ * Visualização: rede neural em 2 faixas.
  *
- * Exemplo 1 (Poring):
- * - Entradas em retângulos (“Ligar sinais”)
+ * Exemplo 1 (Poring) — básico:
+ * - Entradas em retângulos
  * - Camada didática = conjunto semi-aleatório de neurônios (espalhados)
  * - Sinal chega à saída com 1+ entradas; imagem do Poring no círculo de saída
  * - Classe PORING só com 3 sinais; blur 85 → 35 → 0
+ *
+ * Exemplo 2 — reserva unificada (2/3 da altura; intermediário+avançado).
  *
  * **Estado Visual:** ``dl_neural_net``
  */
@@ -263,8 +265,12 @@ export function RedeNeuralDL(): React.ReactElement {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 grid grid-rows-3 gap-2 overflow-hidden">
-        {/* ——— Exemplo 1 ——— */}
+      {/* 1/3 Poring · 2/3 próximo exemplo (slots 2+3 unidos) */}
+      <div
+        className="flex-1 min-h-0 grid gap-2 overflow-hidden"
+        style={{ gridTemplateRows: "1fr 2fr" }}
+      >
+        {/* ——— Exemplo 1 · básico (1/3) ——— */}
         <section className="min-h-0 flex flex-col rounded-xl border border-fuchsia-500/35 bg-slate-950/40 overflow-hidden">
           <div className="shrink-0 flex items-center px-2.5 py-1.5 border-b border-slate-800">
             <span className="text-xs font-mono font-bold text-fuchsia-300 tracking-wide">
@@ -416,119 +422,139 @@ export function RedeNeuralDL(): React.ReactElement {
                     width={SAIDA_R * 2 - 8}
                     height={SAIDA_R * 2 - 8}
                   >
+                    {/*
+                      Camadas sobrepostas (qualquer ordem de clique).
+                      Sempre a mesma imagem-base; cada sinal libera um aspecto.
+                    */}
                     <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-slate-950 relative">
-                      {/*
-                        Montagem por sinal (não pela foto inteira cedo demais):
-                        - Arredondado → só forma (cinza), sem rosa
-                        - Rosado → cor (sem forma clara se vier sozinho)
-                        - Forma + cor → bolha rosa
-                        - + rosto / 3 sinais → foto do Poring
-                      */}
                       {!temSinal && (
-                        <span className="text-[9px] text-slate-600 text-center px-1 leading-tight">
+                        <span className="text-[9px] text-slate-600 text-center px-1 leading-tight z-10">
                           saída
                         </span>
                       )}
 
-                      {/* Só forma: silhueta redonda cinza (sem cor) */}
-                      {temForma && !temCor && (
-                        <div
-                          className="absolute inset-[12%] rounded-full border-[3px] border-slate-300/80 bg-slate-600/35 transition-all duration-500"
+                      {/* Camada FORMA: corpo em cinza (sem cor) */}
+                      {temForma && (
+                        <img
+                          src="/imagens/rede-neural/poring.png"
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                           style={{
-                            filter: `blur(${Math.max(0, blurPx * 0.35)}px)`,
-                            boxShadow: "inset 0 -6px 12px rgba(0,0,0,0.25)",
+                            filter: [
+                              "grayscale(1)",
+                              "contrast(1.08)",
+                              `blur(${
+                                reconhecimentoCompleto && poringRevelado
+                                  ? 0
+                                  : Math.max(1, blurPx * (temCor ? 0.3 : 0.5))
+                              }px)`,
+                            ].join(" "),
+                            opacity:
+                              reconhecimentoCompleto && poringRevelado
+                                ? 0
+                                : temCor
+                                  ? 0.4
+                                  : 0.95,
                           }}
+                          draggable={false}
                         />
                       )}
-
-                      {/* Só cor: mancha rosa sem contorno redondo claro */}
-                      {temCor && !temForma && (
-                        <div
-                          className="absolute inset-[8%] rounded-[40%] transition-all duration-500"
-                          style={{
-                            background:
-                              "radial-gradient(circle at 40% 35%, #fda4af, #f472b6 55%, #be185d)",
-                            filter: `blur(${10 + blurPx * 0.5}px)`,
-                            opacity: 0.9,
-                            transform: "scale(1.05) rotate(-8deg)",
-                          }}
-                        />
-                      )}
-
-                      {/* Forma + cor (ainda sem o 3º): bolha rosa — base da revelação */}
-                      {temForma && temCor && !reconhecimentoCompleto && (
-                        <div
-                          className="absolute inset-[10%] rounded-full transition-all duration-500"
-                          style={{
-                            background:
-                              "radial-gradient(circle at 35% 30%, #fda4af, #f472b6 45%, #db2777 90%)",
-                            filter: `blur(${blurPx}px)`,
-                            boxShadow: "0 0 12px rgba(244,114,182,0.35)",
-                          }}
-                        />
-                      )}
-
-                      {/* Rosto sozinho: só “olhos” */}
-                      {temRosto && !temForma && !temCor && (
-                        <div className="absolute inset-0 flex items-center justify-center gap-2 transition-all duration-500">
-                          <span className="w-2.5 h-3 rounded-full bg-white/90 shadow" />
-                          <span className="w-2.5 h-3 rounded-full bg-white/90 shadow" />
-                        </div>
-                      )}
-
-                      {/* Rosto + forma ou cor (sem os 3): foto parcial */}
-                      {temRosto &&
-                        (temForma || temCor) &&
-                        !reconhecimentoCompleto && (
-                          <img
-                            src="/imagens/rede-neural/poring.png"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500"
-                            style={{
-                              filter: [
-                                `blur(${blurPx}px)`,
-                                !temCor ? "grayscale(1)" : "",
-                                !temForma ? "contrast(0.85)" : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" "),
-                              opacity: temForma && temCor ? 1 : 0.9,
-                            }}
-                            draggable={false}
-                          />
-                        )}
 
                       {/*
-                        3º sinal: revelação suave do Poring
-                        (fade + scale + blur saindo), não “troca seca”.
+                        Camada COR:
+                        - com forma: corpo colorido
+                        - sem forma: mancha rosa bem espalhada (look que você gostou)
                       */}
+                      {temCor && (
+                        <img
+                          src="/imagens/rede-neural/poring.png"
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                          style={{
+                            filter: `blur(${
+                              reconhecimentoCompleto && poringRevelado
+                                ? 0
+                                : temForma
+                                  ? Math.max(1, blurPx * 0.4)
+                                  : Math.max(18, blurPx + 16)
+                            }px)`,
+                            opacity:
+                              reconhecimentoCompleto && poringRevelado
+                                ? 0
+                                : temForma
+                                  ? 0.92
+                                  : 0.88,
+                            transform: temForma
+                              ? "scale(1)"
+                              : "scale(1.55)",
+                          }}
+                          draggable={false}
+                        />
+                      )}
+
+                      {/*
+                        Camada ROSTO:
+                        - sem cor: face em cinza
+                        - com cor e sem forma: MESMA mancha rosa + face só um pouco
+                          mais definida (olhos leves), sem matar o blur espalhado
+                      */}
+                      {temRosto && (
+                        <img
+                          src="/imagens/rede-neural/poring.png"
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-contain p-0.5 z-[1] transition-all duration-500 ease-out"
+                          style={{
+                            filter: [
+                              `blur(${
+                                reconhecimentoCompleto && poringRevelado
+                                  ? 0
+                                  : !temForma && temCor
+                                    ? // Levemente definido (não nítido, não some)
+                                      Math.max(3.5, blurPx * 0.55)
+                                    : !temForma
+                                      ? Math.max(3, blurPx * 0.45)
+                                      : Math.max(2, blurPx * 0.35)
+                              }px)`,
+                              temCor ? "" : "grayscale(1)",
+                              !temForma && temCor
+                                ? "contrast(1.12) brightness(1.04)"
+                                : "contrast(1.05)",
+                            ]
+                              .filter(Boolean)
+                              .join(" "),
+                            opacity:
+                              reconhecimentoCompleto && poringRevelado
+                                ? 0
+                                : !temForma && temCor
+                                  ? 0.7
+                                  : 0.95,
+                            // Só a face; resto transparente → a mancha rosa continua embaixo
+                            WebkitMaskImage:
+                              "radial-gradient(circle at 50% 44%, #000 0%, #000 24%, transparent 42%)",
+                            maskImage:
+                              "radial-gradient(circle at 50% 44%, #000 0%, #000 24%, transparent 42%)",
+                          }}
+                          draggable={false}
+                        />
+                      )}
+
+                      {/* 3 sinais: revelação suave da imagem completa */}
                       {reconhecimentoCompleto && (
-                        <>
-                          {/* Base rosa some devagar por baixo */}
-                          <div
-                            className="absolute inset-[10%] rounded-full transition-opacity duration-700 ease-out"
-                            style={{
-                              background:
-                                "radial-gradient(circle at 35% 30%, #fda4af, #f472b6 45%, #db2777 90%)",
-                              opacity: poringRevelado ? 0 : 0.85,
-                            }}
-                          />
-                          <img
-                            src="/imagens/rede-neural/poring.png"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-700 ease-out"
-                            style={{
-                              filter: poringRevelado
-                                ? "blur(0px)"
-                                : "blur(10px)",
-                              opacity: poringRevelado ? 1 : 0.35,
-                              transform: poringRevelado
-                                ? "scale(1)"
-                                : "scale(0.88)",
-                            }}
-                            draggable={false}
-                          />
-                        </>
+                        <img
+                          src="/imagens/rede-neural/poring.png"
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-contain p-0.5 z-10 transition-all duration-700 ease-out"
+                          style={{
+                            filter: poringRevelado
+                              ? "blur(0px)"
+                              : "blur(9px)",
+                            opacity: poringRevelado ? 1 : 0.28,
+                            transform: poringRevelado
+                              ? "scale(1)"
+                              : "scale(0.9)",
+                          }}
+                          draggable={false}
+                        />
                       )}
                     </div>
                   </foreignObject>
@@ -572,30 +598,16 @@ export function RedeNeuralDL(): React.ReactElement {
           </div>
         </section>
 
-        {/* Exemplo 2 */}
+        {/* Exemplo 2 · 2/3 (intermediário + avançado unidos) */}
         <section className="min-h-0 flex flex-col rounded-xl border border-dashed border-slate-600/90 bg-slate-950/25 overflow-hidden">
           <div className="shrink-0 px-2.5 py-1.5 border-b border-slate-800/80">
             <span className="text-xs font-mono font-bold text-slate-500 tracking-wide">
-              EXEMPLO 2 · INTERMEDIÁRIO · (a definir)
+              EXEMPLO 2 · (a definir)
             </span>
           </div>
-          <div className="flex-1 min-h-0 flex items-center justify-center px-3">
-            <p className="text-sm text-slate-600 text-center leading-snug max-w-sm">
-              Reserva para o segundo exemplo.
-            </p>
-          </div>
-        </section>
-
-        {/* Exemplo 3 */}
-        <section className="min-h-0 flex flex-col rounded-xl border border-dashed border-slate-600/90 bg-slate-950/25 overflow-hidden">
-          <div className="shrink-0 px-2.5 py-1.5 border-b border-slate-800/80">
-            <span className="text-xs font-mono font-bold text-slate-500 tracking-wide">
-              EXEMPLO 3 · AVANÇADO · (a definir)
-            </span>
-          </div>
-          <div className="flex-1 min-h-0 flex items-center justify-center px-3">
-            <p className="text-sm text-slate-600 text-center leading-snug max-w-sm">
-              Reserva para o terceiro exemplo.
+          <div className="flex-1 min-h-0 flex items-center justify-center px-4">
+            <p className="text-sm text-slate-600 text-center leading-snug max-w-md">
+              Reserva unificada (2/3 da área).
             </p>
           </div>
         </section>
