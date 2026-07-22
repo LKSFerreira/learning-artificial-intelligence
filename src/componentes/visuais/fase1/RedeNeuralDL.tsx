@@ -1,19 +1,16 @@
 /**
- * Visualização: rede neural em 2 faixas.
+ * Visualização: rede neural em 2 faixas (1/3 + 2/3).
  *
- * Exemplo 1 (Poring) — básico:
- * - Entradas em retângulos
- * - Camada didática = conjunto semi-aleatório de neurônios (espalhados)
- * - Sinal chega à saída com 1+ entradas; imagem do Poring no círculo de saída
- * - Classe PORING só com 3 sinais; blur 85 → 35 → 0
- *
- * Exemplo 2 — reserva unificada (2/3 da altura; intermediário+avançado).
+ * Exemplo 1 (Poring) — básico, grade.
+ * Exemplo 2 (Angeling) — 6 camadas de reconhecimento no “cérebro”.
  *
  * **Estado Visual:** ``dl_neural_net``
  */
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Brain } from "lucide-react";
+
+import { ExemploAngelingCerebro } from "./ExemploAngelingCerebro";
 
 interface SinalEntrada {
   id: string;
@@ -268,7 +265,7 @@ export function RedeNeuralDL(): React.ReactElement {
       {/* 1/3 Poring · 2/3 próximo exemplo (slots 2+3 unidos) */}
       <div
         className="flex-1 min-h-0 grid gap-2 overflow-hidden"
-        style={{ gridTemplateRows: "1fr 2fr" }}
+        style={{ gridTemplateRows: "1fr 1.2fr" }}
       >
         {/* ——— Exemplo 1 · básico (1/3) ——— */}
         <section className="min-h-0 flex flex-col rounded-xl border border-fuchsia-500/35 bg-slate-950/40 overflow-hidden">
@@ -580,8 +577,8 @@ export function RedeNeuralDL(): React.ReactElement {
                     </p>
                   )}
                   {qtd === 2 && (
-                    <p className="text-sm text-slate-300 font-medium leading-snug max-w-[14rem]">
-                      ~50% de chance de ser algo que o modelo já percebeu
+                    <p className="text-sm text-slate-300 font-medium leading-snug">
+                      Baixa confiança (~50%)
                     </p>
                   )}
                   {qtd >= 3 && (
@@ -598,18 +595,9 @@ export function RedeNeuralDL(): React.ReactElement {
           </div>
         </section>
 
-        {/* Exemplo 2 · 2/3 (intermediário + avançado unidos) */}
-        <section className="min-h-0 flex flex-col rounded-xl border border-dashed border-slate-600/90 bg-slate-950/25 overflow-hidden">
-          <div className="shrink-0 px-2.5 py-1.5 border-b border-slate-800/80">
-            <span className="text-xs font-mono font-bold text-slate-500 tracking-wide">
-              EXEMPLO 2 · (a definir)
-            </span>
-          </div>
-          <div className="flex-1 min-h-0 flex items-center justify-center px-4">
-            <p className="text-sm text-slate-600 text-center leading-snug max-w-md">
-              Reserva unificada (2/3 da área).
-            </p>
-          </div>
+        {/* Exemplo 2 · 2/3 — Angeling no cérebro */}
+        <section className="min-h-0 flex flex-col rounded-xl border border-amber-500/30 bg-slate-950/40 overflow-hidden">
+          <ExemploAngelingCerebro />
         </section>
       </div>
     </div>
