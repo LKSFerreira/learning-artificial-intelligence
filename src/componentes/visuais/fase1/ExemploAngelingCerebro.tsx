@@ -4,12 +4,21 @@
  * Mesma estrutura do Poring (entradas → rede → saída).
  * Neurônios em esfera 3D estática; a cor do nó segue o input que o
  * ativou (mesma cor do botão — o aluno associa feature → disparo).
- * A saída só mostra a feature cujo input está ligado.
+ *
+ * Saída: camadas PNG de mesmo tamanho (sem máscara CSS).
+ * Completo = `angeling.png`. Parcial = assets `somente_*` / `formato_*`.
  */
 
 import React, { useEffect, useMemo, useState } from "react";
 
-const ANGELING_SRC = "/imagens/rede-neural/angeling.png";
+const CAMADAS_ANGELING = {
+  completo: "/imagens/rede-neural/angeling.png",
+  formatoSemCor: "/imagens/rede-neural/angeling_formato_sem_cor.png",
+  formatoCorETextura: "/imagens/rede-neural/angeling_formato_cor_e_textura.png",
+  asas: "/imagens/rede-neural/angeling_somente_asas.png",
+  aureola: "/imagens/rede-neural/angeling_somente_aureola.png",
+  rosto: "/imagens/rede-neural/angeling_somente_rosto.png",
+} as const;
 
 interface SinalEntrada {
   id: string;
@@ -118,22 +127,6 @@ interface ArestaEsfera {
   origem: string;
   destino: string;
 }
-
-/** Máscara: só o corpo central — corta asas e auréola. */
-const MASCARA_CORPO =
-  "radial-gradient(ellipse 48% 58% at 50% 54%, #000 0%, #000 62%, transparent 88%)";
-
-/** Máscara: laterais (asas). */
-const MASCARA_ASAS =
-  "linear-gradient(90deg, #000 0%, #000 26%, transparent 36%, transparent 64%, #000 74%, #000 100%)";
-
-/** Máscara: topo (auréola). */
-const MASCARA_AUREOLA =
-  "radial-gradient(ellipse 62% 28% at 50% 10%, #000 0%, #000 48%, transparent 72%)";
-
-/** Máscara: rosto. */
-const MASCARA_ROSTO =
-  "radial-gradient(circle at 50% 52%, #000 0%, #000 24%, transparent 40%)";
 
 function criarGerador(semente: number): () => number {
   let estado = semente >>> 0;
@@ -463,11 +456,20 @@ export function ExemploAngelingCerebro(): React.ReactElement {
   const limiteEsferaDireita = ESFERA_CX + ESFERA_RAIO + 6;
   const pontoSaidaX = SAIDA_X - SAIDA_R + 2;
 
-  /** Camadas parciais: nunca a imagem inteira sem máscara. */
-  const estiloMascaraCorpo: React.CSSProperties = {
-    WebkitMaskImage: MASCARA_CORPO,
-    maskImage: MASCARA_CORPO,
-  };
+  /**
+   * Blur da composição parcial (quando ainda não é o completo).
+   * Contornos sozinho = mais borrado; mais features = mais nítido.
+   */
+  const blurParcial = Math.max(0.5, blurPx);
+  const blurContorno = Math.max(2, blurParcial * (temFormato ? 0.55 : 0.95));
+  const blurFormato = Math.max(1, blurParcial * (temCores ? 0.35 : 0.55));
+  const blurCor = Math.max(
+    1,
+    temForma ? blurParcial * 0.4 : Math.max(12, blurParcial + 10)
+  );
+  const blurDetalhe = Math.max(1.5, blurParcial * 0.4);
+  /** Esconde o stack parcial quando o completo já revelou. */
+  const esconderParcial = reconhecimentoCompleto && angelingRevelado;
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-[inherit] bg-slate-950/40">
@@ -654,31 +656,31 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                   )}
 
                   {/*
-                    Corpo (forma/cores): SEMPRE mascarado no centro.
-                    Assim asas e auréola não vazam sem o input correspondente.
+                    Stack parcial: cada PNG só o que o nome diz.
+                    Mesmo tamanho → object-contain alinha tudo.
+                    Completo revelado → some o stack (evita “fantasma” embaixo).
                   */}
-                  {temForma && (
+                  {temContornos && !temFormato && !temCores && (
                     <img
-                      src={ANGELING_SRC}
+                      src={CAMADAS_ANGELING.formatoSemCor}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
-                        ...estiloMascaraCorpo,
-                        filter: [
-                          "grayscale(1)",
-                          "contrast(1.08)",
-                          `blur(${
-                            reconhecimentoCompleto && angelingRevelado
-                              ? 0
-                              : Math.max(1, blurPx * (temCores ? 0.3 : 0.5))
-                          }px)`,
-                        ].join(" "),
-                        opacity:
-                          reconhecimentoCompleto && angelingRevelado
-                            ? 0
-                            : temCores
-                              ? 0.35
-                              : 0.95,
+                        filter: `blur(${blurContorno}px) contrast(1.12)`,
+                        opacity: esconderParcial ? 0 : 0.9,
+                      }}
+                      draggable={false}
+                    />
+                  )}
+
+                  {temFormato && !temCores && (
+                    <img
+                      src={CAMADAS_ANGELING.formatoSemCor}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      style={{
+                        filter: `blur(${blurFormato}px)`,
+                        opacity: esconderParcial ? 0 : 0.95,
                       }}
                       draggable={false}
                     />
@@ -686,107 +688,71 @@ export function ExemploAngelingCerebro(): React.ReactElement {
 
                   {temCores && (
                     <img
-                      src={ANGELING_SRC}
+                      src={CAMADAS_ANGELING.formatoCorETextura}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
-                        ...estiloMascaraCorpo,
-                        filter: `blur(${
-                          reconhecimentoCompleto && angelingRevelado
-                            ? 0
-                            : temForma
-                              ? Math.max(1, blurPx * 0.4)
-                              : Math.max(14, blurPx + 12)
-                        }px)`,
-                        opacity:
-                          reconhecimentoCompleto && angelingRevelado
-                            ? 0
-                            : temForma
-                              ? 0.92
-                              : 0.85,
-                        transform: temForma ? "scale(1)" : "scale(1.35)",
+                        filter: `blur(${blurCor}px)`,
+                        opacity: esconderParcial ? 0 : temForma ? 0.96 : 0.88,
+                        transform: temForma ? "scale(1)" : "scale(1.2)",
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Asas: só com input Asas */}
                   {temAsas && (
                     <img
-                      src={ANGELING_SRC}
+                      src={CAMADAS_ANGELING.asas}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
-                        WebkitMaskImage: MASCARA_ASAS,
-                        maskImage: MASCARA_ASAS,
                         filter: [
                           temCores ? "" : "grayscale(1)",
-                          `blur(${
-                            reconhecimentoCompleto && angelingRevelado
-                              ? 0
-                              : Math.max(2, blurPx * 0.35)
-                          }px)`,
+                          `blur(${blurDetalhe}px)`,
                         ]
                           .filter(Boolean)
                           .join(" "),
-                        opacity:
-                          reconhecimentoCompleto && angelingRevelado ? 0 : 0.95,
+                        opacity: esconderParcial ? 0 : 0.98,
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Auréola: só com input Auréola */}
                   {temAureola && (
                     <img
-                      src={ANGELING_SRC}
+                      src={CAMADAS_ANGELING.aureola}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
-                        WebkitMaskImage: MASCARA_AUREOLA,
-                        maskImage: MASCARA_AUREOLA,
-                        filter: `blur(${
-                          reconhecimentoCompleto && angelingRevelado
-                            ? 0
-                            : Math.max(2, blurPx * 0.3)
-                        }px)`,
-                        opacity:
-                          reconhecimentoCompleto && angelingRevelado ? 0 : 0.95,
+                        filter: `blur(${blurDetalhe}px)`,
+                        opacity: esconderParcial ? 0 : 0.98,
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Rosto: só com input Rosto */}
                   {temRosto && (
                     <img
-                      src={ANGELING_SRC}
+                      src={CAMADAS_ANGELING.rosto}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 z-[1] transition-all duration-500 ease-out"
                       style={{
-                        WebkitMaskImage: MASCARA_ROSTO,
-                        maskImage: MASCARA_ROSTO,
                         filter: [
-                          `blur(${
-                            reconhecimentoCompleto && angelingRevelado
-                              ? 0
-                              : Math.max(2, blurPx * 0.35)
-                          }px)`,
                           temCores ? "" : "grayscale(1)",
+                          `blur(${blurDetalhe}px)`,
                         ]
                           .filter(Boolean)
                           .join(" "),
-                        opacity:
-                          reconhecimentoCompleto && angelingRevelado ? 0 : 0.95,
+                        opacity: esconderParcial ? 0 : 0.98,
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Imagem completa: só com TODAS as entradas */}
+                  {/* Completo original: só com todas as entradas */}
                   {reconhecimentoCompleto && (
                     <img
-                      src={ANGELING_SRC}
+                      src={CAMADAS_ANGELING.completo}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 z-10 transition-all duration-700 ease-out"
                       style={{
