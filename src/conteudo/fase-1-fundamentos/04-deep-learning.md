@@ -84,7 +84,12 @@ A montagem do Poring fica mais nítida a cada sinal (**blur alto → médio → 
 
 As cores dos neurônios ativos seguem a **família da coluna**, com **tons diferentes** entre nós: a organização em colunas é layout; a “camada” que importa na metáfora é o **conjunto aceso**.
 
-O painel tem **duas faixas**: o básico (Poring) em cerca de **1/3** da altura e, embaixo (**2/3**), o espaço unificado do próximo exemplo (ainda a preencher).
+O painel tem **duas faixas**:
+
+1. **Básico (≈1/3):** Poring — poucas entradas e saída em círculo.
+2. **Avançado (≈2/3):** Angeling — **6 camadas de reconhecimento** (contornos, formato, cores, asas, auréola, rosto). Neurônios **espalhados** num mapa em forma de cérebro (metáfora, não anatomia). A imagem se forma na **zona da imagem** conforme você ativa cada nível.
+
+A classe final (**ANGELING**, confiança 97–99%) só fecha com as **seis** camadas ativas.
 
 ### O que carregar adiante
 
