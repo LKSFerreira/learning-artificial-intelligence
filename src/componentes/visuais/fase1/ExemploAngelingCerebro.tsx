@@ -1,82 +1,139 @@
 /**
- * Exemplo 2: hierarquia visual no “cérebro”.
+ * Exemplo 2: Deep Learning com Angeling.
  *
- * - Processamento em profundidade cumulativo (Deep Learning)
- * - 6 camadas de reconhecimento sequenciais de features
- * - Neurônios espalhados em silhueta de cérebro original
- * - Zona da imagem: Angeling montado por representações em cascata
- *
- * Metáfora visual — não é anatomia literal.
+ * Mesma estrutura do Poring (entradas → rede → saída).
+ * Neurônios em esfera 3D estática; a cor do nó segue o input que o
+ * ativou (mesma cor do botão — o aluno associa feature → disparo).
+ * A saída só mostra a feature cujo input está ligado.
  */
 
 import React, { useEffect, useMemo, useState } from "react";
 
 const ANGELING_SRC = "/imagens/rede-neural/angeling.png";
 
-/** 6 camadas de reconhecimento (o que a rede “enxerga”). */
-interface CamadaReconhecimento {
+interface SinalEntrada {
   id: string;
   rotulo: string;
-  objetivo: string;
-  /** Cor da família ao acender neurônios desta camada */
+  icone: string;
+  padrao: string;
   cor: string;
   corClara: string;
 }
 
-const CAMADAS: CamadaReconhecimento[] = [
+const SINAIS: SinalEntrada[] = [
   {
     id: "contornos",
-    rotulo: "Camada 1 · Contornos",
-    objetivo: "Bordas e silhueta",
-    cor: "#38bdf8",
-    corClara: "#7dd3fc",
+    rotulo: "Contornos",
+    icone: "📐",
+    padrao: "Bordas e silhueta",
+    cor: "#22d3ee",
+    corClara: "#67e8f9",
   },
   {
     id: "formato",
-    rotulo: "Camada 2 · Formato",
-    objetivo: "Corpo arredondado",
-    cor: "#22d3ee",
-    corClara: "#a5f3fc",
+    rotulo: "Formato",
+    icone: "⭕",
+    padrao: "Corpo arredondado",
+    // Azul um pouco mais “cheio” que contornos — legível lado a lado
+    cor: "#3b82f6",
+    corClara: "#93c5fd",
   },
   {
     id: "cores",
-    rotulo: "Camada 3 · Cores",
-    objetivo: "Rosa, branco, amarelo",
+    rotulo: "Cores",
+    icone: "🎨",
+    padrao: "Rosa, branco, amarelo",
     cor: "#f472b6",
     corClara: "#fbcfe8",
   },
   {
     id: "asas",
-    rotulo: "Camada 4 · Asas",
-    objetivo: "Partes laterais",
-    cor: "#e2e8f0",
-    corClara: "#f8fafc",
+    rotulo: "Asas",
+    icone: "🪽",
+    padrao: "Partes laterais",
+    // Cinza-prata legível na esfera escura (ainda “neutro” vs. as outras features)
+    cor: "#94a3b8",
+    corClara: "#e2e8f0",
   },
   {
     id: "aureola",
-    rotulo: "Camada 5 · Auréola",
-    objetivo: "Anel dourado",
+    rotulo: "Auréola",
+    icone: "✨",
+    padrao: "Anel dourado",
     cor: "#fbbf24",
     corClara: "#fde68a",
   },
   {
     id: "rosto",
-    rotulo: "Camada 6 · Rosto",
-    objetivo: "Olhos e expressão",
+    rotulo: "Rosto",
+    icone: "🙂",
+    padrao: "Olhos e expressão",
     cor: "#c084fc",
     corClara: "#e9d5ff",
   },
 ];
 
-interface NeuronioCerebro {
+const LARGURA_SVG = 880;
+const ALTURA_SVG = 460;
+
+/** Esfera grande e densa (estática — sem rotação animada). */
+const ESFERA_CX = 342;
+const ESFERA_CY = ALTURA_SVG / 2 + 2;
+/** Anel externo (casca visual) — não aumentar sem pedido. */
+const ESFERA_RAIO = 238;
+/**
+ * Raio da malha de neurônios: quase encosta na borda da casca
+ * (casca usa ESFERA_RAIO + 3 no traço principal).
+ */
+const MALHA_RAIO = ESFERA_RAIO * 0.99;
+/** Densidade alta na superfície. */
+const QUANTIDADE_NEURONIOS = 560;
+/** Rotação fixa só para dar volume 3D legível — não anima. */
+const ANGULO_Y_FIXO = 0.55;
+const ANGULO_X_FIXO = 0.38;
+
+const SAIDA_R = 54;
+const MARGEM_DIR = 14;
+const SAIDA_X = LARGURA_SVG - MARGEM_DIR - SAIDA_R;
+const SAIDA_Y = ALTURA_SVG / 2;
+
+interface NeuronioEsfera {
   id: string;
-  /** 0..1 no mapa do cérebro */
-  nx: number;
-  ny: number;
-  /** Camada “preferida” (cor); ainda pode acender por outras */
-  camadaPreferida: number;
+  ux: number;
+  uy: number;
+  uz: number;
+  indice: number;
+  /** Nós principais maiores (como no cérebro de referência). */
+  principal: boolean;
+}
+
+interface NeuronioProjetado extends NeuronioEsfera {
+  x: number;
+  y: number;
+  profundidade: number;
   raio: number;
 }
+
+interface ArestaEsfera {
+  origem: string;
+  destino: string;
+}
+
+/** Máscara: só o corpo central — corta asas e auréola. */
+const MASCARA_CORPO =
+  "radial-gradient(ellipse 48% 58% at 50% 54%, #000 0%, #000 62%, transparent 88%)";
+
+/** Máscara: laterais (asas). */
+const MASCARA_ASAS =
+  "linear-gradient(90deg, #000 0%, #000 26%, transparent 36%, transparent 64%, #000 74%, #000 100%)";
+
+/** Máscara: topo (auréola). */
+const MASCARA_AUREOLA =
+  "radial-gradient(ellipse 62% 28% at 50% 10%, #000 0%, #000 48%, transparent 72%)";
+
+/** Máscara: rosto. */
+const MASCARA_ROSTO =
+  "radial-gradient(circle at 50% 52%, #000 0%, #000 24%, transparent 40%)";
 
 function criarGerador(semente: number): () => number {
   let estado = semente >>> 0;
@@ -87,545 +144,655 @@ function criarGerador(semente: number): () => number {
 }
 
 function sementeDeTexto(texto: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < texto.length; i += 1) {
-    h ^= texto.charCodeAt(i);
-    h = Math.imul(h, 16777619);
+  let acumulador = 2166136261;
+  for (let indice = 0; indice < texto.length; indice += 1) {
+    acumulador ^= texto.charCodeAt(indice);
+    acumulador = Math.imul(acumulador, 16777619);
   }
-  return h >>> 0;
+  return acumulador >>> 0;
 }
 
 /**
- * Pontos espalhados em forma de cérebro (vista superior simplificada).
- * Estrutura original restaurada.
+ * Fibonacci sphere densa — malha de superfície no estilo do cérebro de referência.
  */
-function gerarNeuroniosCerebro(): NeuronioCerebro[] {
-  const aleatorio = criarGerador(0xA46E1106);
-  const lista: NeuronioCerebro[] = [];
-  let id = 0;
+function gerarNeuroniosEsfera(quantidade: number): NeuronioEsfera[] {
+  const lista: NeuronioEsfera[] = [];
+  const anguloDourado = Math.PI * (3 - Math.sqrt(5));
+  const aleatorio = criarGerador(sementeDeTexto("esfera-malha-cerebro"));
 
-  const tentar = (
-    cx: number,
-    cy: number,
-    rx: number,
-    ry: number,
-    qtd: number,
-    camadaBase: number
-  ) => {
-    for (let i = 0; i < qtd; i += 1) {
-      let nx = 0;
-      let ny = 0;
-      for (let t = 0; t < 12; t += 1) {
-        const a = aleatorio() * Math.PI * 2;
-        const r = Math.sqrt(aleatorio());
-        nx = cx + Math.cos(a) * rx * r;
-        ny = cy + Math.sin(a) * ry * r;
-        if (nx > 0.06 && nx < 0.94 && ny > 0.08 && ny < 0.92) break;
-      }
-      lista.push({
-        id: `n-${id}`,
-        nx,
-        ny,
-        camadaPreferida: (camadaBase + (id % 2)) % CAMADAS.length,
-        raio: 3.2 + aleatorio() * 1.8,
-      });
-      id += 1;
-    }
-  };
+  for (let indice = 0; indice < quantidade; indice += 1) {
+    const faixa = indice / Math.max(1, quantidade - 1);
+    const uy = 1 - faixa * 2;
+    const raioFatia = Math.sqrt(Math.max(0, 1 - uy * uy));
+    const theta = anguloDourado * indice;
+    // Quase todos na superfície (encostar na borda); poucos internos.
+    const raioInterno =
+      aleatorio() < 0.1 ? 0.88 + aleatorio() * 0.08 : 0.985 + aleatorio() * 0.015;
+    const ux = Math.cos(theta) * raioFatia * raioInterno;
+    const uz = Math.sin(theta) * raioFatia * raioInterno;
+    const uyAjustado = uy * raioInterno;
+    const principal = indice % 8 === 0;
 
-  // Hemisférios / massas originais restauradas
-  tentar(0.32, 0.42, 0.22, 0.28, 14, 0);
-  tentar(0.68, 0.42, 0.22, 0.28, 14, 1);
-  tentar(0.5, 0.38, 0.18, 0.2, 10, 2);
-  tentar(0.28, 0.68, 0.14, 0.14, 8, 3);
-  tentar(0.72, 0.68, 0.14, 0.14, 8, 4);
-  tentar(0.5, 0.78, 0.2, 0.12, 10, 5);
+    lista.push({
+      id: `n-${indice}`,
+      ux,
+      uy: uyAjustado,
+      uz,
+      indice,
+      principal,
+    });
+  }
 
   return lista;
 }
 
-function confiancaFinal(): number {
-  return 97;
+function obterSinal(idSinal: string): SinalEntrada | undefined {
+  return SINAIS.find((sinal) => sinal.id === idSinal);
 }
 
-function blurPorProfundidade(profundidade: number): number {
-  if (profundidade <= 0) return 22;
-  if (profundidade === 1) return 16;
-  if (profundidade === 2) return 11;
-  if (profundidade === 3) return 7;
-  if (profundidade === 4) return 4;
-  if (profundidade === 5) return 2;
+/** Cor do botão = cor do neurônio: o aluno associa input → disparo. */
+function corDoSinal(idSinal: string): { fill: string; stroke: string } {
+  const sinal = obterSinal(idSinal);
+  if (!sinal) return { fill: "#94a3b8", stroke: "#e2e8f0" };
+  return { fill: sinal.corClara, stroke: sinal.cor };
+}
+
+const COR_INATIVA = { fill: "#1e293b", stroke: "#475569" };
+
+function projetarNeuronios(
+  neuronios: NeuronioEsfera[],
+  anguloY: number,
+  anguloX: number
+): NeuronioProjetado[] {
+  const cosY = Math.cos(anguloY);
+  const sinY = Math.sin(anguloY);
+  const cosX = Math.cos(anguloX);
+  const sinX = Math.sin(anguloX);
+
+  return neuronios.map((neuronio) => {
+    const x1 = neuronio.ux * cosY + neuronio.uz * sinY;
+    const z1 = -neuronio.ux * sinY + neuronio.uz * cosY;
+    const y1 = neuronio.uy;
+
+    const y2 = y1 * cosX - z1 * sinX;
+    const z2 = y1 * sinX + z1 * cosX;
+
+    const profundidade = (z2 + 1) / 2;
+    // Quase ortográfica: a malha preenche a casca; fundo só um pouco menor.
+    const escala = MALHA_RAIO * (0.92 + profundidade * 0.08);
+    const x = ESFERA_CX + x1 * escala;
+    const y = ESFERA_CY + y2 * escala;
+    // Nós um pouco menores: mais quantidade sem “bolas” grossas.
+    const raioBase = neuronio.principal ? 3.8 : 1.85;
+    const raio = raioBase + profundidade * (neuronio.principal ? 1.6 : 1.0);
+
+    return {
+      ...neuronio,
+      x,
+      y,
+      profundidade,
+      raio,
+    };
+  });
+}
+
+/** Vizinhos 3D densos — malha tipo wireframe do cérebro. */
+function gerarArestas(
+  neuronios: NeuronioEsfera[],
+  vizinhosPorNo: number
+): ArestaEsfera[] {
+  const arestas: ArestaEsfera[] = [];
+  const chaves = new Set<string>();
+
+  for (const origem of neuronios) {
+    const distancias = neuronios
+      .filter((destino) => destino.id !== origem.id)
+      .map((destino) => {
+        const dx = destino.ux - origem.ux;
+        const dy = destino.uy - origem.uy;
+        const dz = destino.uz - origem.uz;
+        return {
+          destino,
+          distancia: Math.sqrt(dx * dx + dy * dy + dz * dz),
+        };
+      })
+      .sort((a, b) => a.distancia - b.distancia)
+      .slice(0, vizinhosPorNo);
+
+    for (const { destino } of distancias) {
+      const chave =
+        origem.id < destino.id
+          ? `${origem.id}|${destino.id}`
+          : `${destino.id}|${origem.id}`;
+      if (chaves.has(chave)) continue;
+      chaves.add(chave);
+      arestas.push({ origem: origem.id, destino: destino.id });
+    }
+  }
+
+  return arestas;
+}
+
+function neuroniosDoSinal(
+  idSinal: string,
+  neuronios: NeuronioEsfera[]
+): Set<string> {
+  const aleatorio = criarGerador(sementeDeTexto(`${idSinal}|esfera-v2`));
+  const copia = [...neuronios];
+
+  for (let indice = copia.length - 1; indice > 0; indice -= 1) {
+    const troca = Math.floor(aleatorio() * (indice + 1));
+    [copia[indice], copia[troca]] = [copia[troca], copia[indice]];
+  }
+
+  // Cada feature acende ~18–26% dos nós
+  const fracao = 0.18 + (sementeDeTexto(idSinal) % 9) / 100;
+  const quantidade = Math.max(14, Math.floor(neuronios.length * fracao));
+  const escolhidos = new Set<string>();
+
+  for (let indice = 0; indice < quantidade && indice < copia.length; indice += 1) {
+    escolhidos.add(copia[indice].id);
+  }
+
+  return escolhidos;
+}
+
+function blurAngeling(qtdSinais: number): number {
+  if (qtdSinais <= 0) return 20;
+  if (qtdSinais === 1) return 14;
+  if (qtdSinais === 2) return 10;
+  if (qtdSinais === 3) return 7;
+  if (qtdSinais === 4) return 4;
+  if (qtdSinais === 5) return 2;
   return 0;
 }
 
-const LARGURA = 900;
-const ALTURA = 340;
-
-/** Silhueta de cérebro original restaurada. */
-const PATH_CEREBRO =
-  "M 180 90 C 160 40, 250 20, 320 45 C 360 15, 450 20, 500 55 C 560 30, 640 45, 680 95 C 720 130, 730 190, 700 240 C 670 290, 600 310, 520 300 C 480 330, 400 335, 350 310 C 280 330, 200 300, 170 250 C 140 200, 145 130, 180 90 Z";
+function confiancaFinalEstavel(idsAtivos: string[]): number {
+  const semente = sementeDeTexto([...idsAtivos].sort().join("|") + "|angeling");
+  return 97 + (semente % 3);
+}
 
 export function ExemploAngelingCerebro(): React.ReactElement {
-  /**
-   * Profundidade do processamento (0 a 6).
-   * 0 = Input (Imagem Bruta).
-   * 1 a 6 = Camadas correspondentes processadas.
-   */
-  const [profundidade, setProfundidade] = useState<number>(0);
-  const [revelado, setRevelado] = useState(false);
+  const [ativos, setAtivos] = useState<Set<string>>(() => new Set());
+  const [angelingRevelado, setAngelingRevelado] = useState(false);
 
-  const neuronios = useMemo(() => gerarNeuroniosCerebro(), []);
+  const neuroniosBase = useMemo(
+    () => gerarNeuroniosEsfera(QUANTIDADE_NEURONIOS),
+    []
+  );
+
+  const arestas = useMemo(
+    () => gerarArestas(neuroniosBase, 7),
+    [neuroniosBase]
+  );
 
   const mapaCamadas = useMemo(() => {
     const mapa = new Map<string, Set<string>>();
-    CAMADAS.forEach((c, i) => {
-      mapa.set(c.id, idsDaCamada(c.id, neuronios, i));
-    });
+    for (const sinal of SINAIS) {
+      mapa.set(sinal.id, neuroniosDoSinal(sinal.id, neuroniosBase));
+    }
     return mapa;
-  }, [neuronios]);
+  }, [neuroniosBase]);
+
+  /**
+   * Dono didático de cada nó: o 1º sinal que o inclui na malha.
+   * Garante cor estável (e legenda mental: “este nó é do input X”).
+   */
+  const sinalPrimarioPorNeuronio = useMemo(() => {
+    const mapa = new Map<string, string>();
+    for (const sinal of SINAIS) {
+      const conjunto = mapaCamadas.get(sinal.id);
+      if (!conjunto) continue;
+      for (const idNeuronio of conjunto) {
+        if (!mapa.has(idNeuronio)) mapa.set(idNeuronio, sinal.id);
+      }
+    }
+    // Nós que só acendem no reconhecimento completo → espalhar nas features
+    for (const neuronio of neuroniosBase) {
+      if (mapa.has(neuronio.id)) continue;
+      const indiceSinal = neuronio.indice % SINAIS.length;
+      mapa.set(neuronio.id, SINAIS[indiceSinal].id);
+    }
+    return mapa;
+  }, [mapaCamadas, neuroniosBase]);
 
   const neuroniosAtivos = useMemo(() => {
-    if (profundidade <= 0) {
-      return new Set<string>();
+    if (ativos.size >= SINAIS.length) {
+      return new Set(neuroniosBase.map((neuronio) => neuronio.id));
     }
-    if (profundidade >= CAMADAS.length) {
-      return new Set(neuronios.map((n) => n.id));
+    const unidos = new Set<string>();
+    for (const sinal of SINAIS) {
+      if (!ativos.has(sinal.id)) continue;
+      mapaCamadas.get(sinal.id)?.forEach((id) => unidos.add(id));
     }
-    const u = new Set<string>();
-    CAMADAS.forEach((c, index) => {
-      if (profundidade >= index + 1) {
-        mapaCamadas.get(c.id)?.forEach((id) => u.add(id));
+    return unidos;
+  }, [ativos, mapaCamadas, neuroniosBase]);
+
+  /** Qual input “pinta” o nó agora (prioriza o dono se estiver ligado). */
+  const sinalCorPorNeuronio = useMemo(() => {
+    const mapa = new Map<string, string>();
+    for (const idNeuronio of neuroniosAtivos) {
+      const primario = sinalPrimarioPorNeuronio.get(idNeuronio);
+      if (primario && ativos.has(primario)) {
+        mapa.set(idNeuronio, primario);
+        continue;
       }
+      // Sobreposição: pinta com o último input ativo que inclui o nó
+      let escolhido: string | undefined;
+      for (const sinal of SINAIS) {
+        if (!ativos.has(sinal.id)) continue;
+        if (mapaCamadas.get(sinal.id)?.has(idNeuronio)) {
+          escolhido = sinal.id;
+        }
+      }
+      if (escolhido) {
+        mapa.set(idNeuronio, escolhido);
+      } else if (primario) {
+        mapa.set(idNeuronio, primario);
+      }
+    }
+    return mapa;
+  }, [neuroniosAtivos, sinalPrimarioPorNeuronio, ativos, mapaCamadas]);
+
+  /** Projeção estática — sem animação de rotação. */
+  const projetados = useMemo(
+    () => projetarNeuronios(neuroniosBase, ANGULO_Y_FIXO, ANGULO_X_FIXO),
+    [neuroniosBase]
+  );
+
+  const projetadosOrdenados = useMemo(
+    () =>
+      [...projetados].sort(
+        (primeiro, segundo) => primeiro.profundidade - segundo.profundidade
+      ),
+    [projetados]
+  );
+
+  const mapaProjetado = useMemo(() => {
+    const mapa = new Map<string, NeuronioProjetado>();
+    for (const neuronio of projetados) mapa.set(neuronio.id, neuronio);
+    return mapa;
+  }, [projetados]);
+
+  const qtd = ativos.size;
+  const temSinal = qtd >= 1;
+  const reconhecimentoCompleto = qtd >= SINAIS.length;
+  const confianca = reconhecimentoCompleto
+    ? confiancaFinalEstavel([...ativos])
+    : 0;
+  const blurPx = blurAngeling(qtd);
+
+  const temContornos = ativos.has("contornos");
+  const temFormato = ativos.has("formato");
+  const temCores = ativos.has("cores");
+  const temAsas = ativos.has("asas");
+  const temAureola = ativos.has("aureola");
+  const temRosto = ativos.has("rosto");
+  const temForma = temContornos || temFormato;
+
+  const alternar = (id: string) => {
+    setAtivos((anterior) => {
+      const proximo = new Set(anterior);
+      if (proximo.has(id)) proximo.delete(id);
+      else proximo.add(id);
+      return proximo;
     });
-    return u;
-  }, [profundidade, mapaCamadas, neuronios]);
-
-  const completo = profundidade >= CAMADAS.length;
-  const confianca = completo ? confiancaFinal() : 0;
-  const blurPx = blurPorProfundidade(profundidade);
-
-  const tem = (id: string) => {
-    const index = CAMADAS.findIndex((c) => c.id === id);
-    return profundidade >= index + 1;
   };
 
   useEffect(() => {
-    if (!completo) {
-      setRevelado(false);
+    if (!reconhecimentoCompleto) {
+      setAngelingRevelado(false);
       return;
     }
-    setRevelado(false);
-    const id = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => setRevelado(true));
+    setAngelingRevelado(false);
+    const idAnimacao = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setAngelingRevelado(true));
     });
-    return () => window.cancelAnimationFrame(id);
-  }, [completo]);
+    return () => window.cancelAnimationFrame(idAnimacao);
+  }, [reconhecimentoCompleto]);
 
-  const selecionarProfundidade = (nivel: number) => {
-    setProfundidade(nivel);
+  const nosFrente = useMemo(
+    () =>
+      projetados
+        .filter((neuronio) => neuronio.profundidade > 0.52)
+        .sort((a, b) => b.x - a.x)
+        .slice(0, 12),
+    [projetados]
+  );
+
+  const limiteEsferaDireita = ESFERA_CX + ESFERA_RAIO + 6;
+  const pontoSaidaX = SAIDA_X - SAIDA_R + 2;
+
+  /** Camadas parciais: nunca a imagem inteira sem máscara. */
+  const estiloMascaraCorpo: React.CSSProperties = {
+    WebkitMaskImage: MASCARA_CORPO,
+    maskImage: MASCARA_CORPO,
   };
 
-  // Conexões originais restauradas
-  const arestas = useMemo(() => {
-    const lista: { a: string; b: string }[] = [];
-    const pos = new Map(
-      neuronios.map((n) => [
-        n.id,
-        { x: n.nx * LARGURA, y: n.ny * ALTURA },
-      ] as const)
-    );
-    for (let i = 0; i < neuronios.length; i += 1) {
-      for (let j = i + 1; j < neuronios.length; j += 1) {
-        const nA = neuronios[i];
-        const nB = neuronios[j];
-        
-        // Evita conexões que cruzam a fenda central para manter o vão limpo
-        const cruzandoFenda = (nA.nx < 0.49 && nB.nx > 0.51) || (nA.nx > 0.51 && nB.nx < 0.49);
-        if (cruzandoFenda) continue;
-
-        const A = pos.get(nA.id)!;
-        const B = pos.get(nB.id)!;
-        const dx = A.x - B.x;
-        const dy = A.y - B.y;
-        const d = Math.hypot(dx, dy);
-        if (d < 52) {
-          lista.push({ a: nA.id, b: nB.id });
-        }
-      }
-    }
-    return lista;
-  }, [neuronios]);
-
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-      <div className="shrink-0 flex flex-wrap items-center justify-between gap-1 px-2.5 py-1.5 border-b border-slate-800">
-        <span className="text-xs font-mono font-bold text-amber-300/90 tracking-wide">
-          EXEMPLO 2 · DEEP LEARNING (ANGELING) · 6 CAMADAS EM CASCATA
-        </span>
-        <span className="text-[11px] text-slate-500">
-          Metáfora de cérebro — as camadas extraem features cumulativamente
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-[inherit] bg-slate-950/40">
+      <div className="shrink-0 flex items-center px-2.5 py-1.5 border-b border-slate-800">
+        <span className="text-xs font-mono font-bold text-amber-300 tracking-wide">
+          EXEMPLO 2 · DEEP LEARNING · ANGELING
         </span>
       </div>
 
-      <div className="flex-1 min-h-0 flex gap-2 p-2 overflow-hidden">
-        {/* Painel de Profundidade: Fluxo de Camadas Sequenciais */}
-        <div className="shrink-0 w-[11.5rem] flex flex-col justify-center gap-1.5 overflow-y-auto relative pr-2 border-r border-slate-800/60">
-          {/* Linha vertical que une as camadas, simulando o fluxo da rede */}
-          <div className="absolute left-[1.15rem] top-[8%] bottom-[8%] w-[2px] bg-slate-800/80 z-0 pointer-events-none" />
-
-          {/* Indicador de Imagem Bruta (Input) */}
-          <button
-            type="button"
-            onClick={() => selecionarProfundidade(0)}
-            className={`z-10 flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border text-left transition-all ${
-              profundidade === 0
-                ? "bg-slate-700/80 border-slate-400 text-white font-bold shadow-[0_0_8px_rgba(255,255,255,0.1)]"
-                : "bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700"
-            }`}
-          >
-            <span
-              className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
-                profundidade >= 0
-                  ? "bg-white border-white scale-110"
-                  : "bg-slate-800 border-slate-700"
-              }`}
-            />
-            <div className="min-w-0">
-              <span className="block text-[11px] font-bold leading-none">
-                Input (Imagem Bruta)
-              </span>
-            </div>
-          </button>
-
-          {/* As 6 Camadas Consecutivas */}
-          {CAMADAS.map((camada, index) => {
-            const nivelIndex = index + 1;
-            const ativa = profundidade >= nivelIndex;
-            const selecionada = profundidade === nivelIndex;
-
+      <div className="flex-1 min-h-0 flex gap-3 p-2.5 overflow-hidden">
+        <div className="shrink-0 w-[9.5rem] flex flex-col justify-center items-stretch gap-1.5 overflow-y-auto">
+          {SINAIS.map((sinal) => {
+            const ligada = ativos.has(sinal.id);
             return (
               <button
-                key={camada.id}
+                key={sinal.id}
                 type="button"
-                onClick={() => selecionarProfundidade(nivelIndex)}
-                className={`z-10 flex items-start gap-2.5 px-2.5 py-1.5 rounded-lg border text-left transition-all ${
-                  ativa
-                    ? "border-current"
-                    : "bg-slate-900/40 border-slate-800 text-slate-600 hover:border-slate-700"
-                } ${
-                  selecionada
-                    ? "font-bold shadow-[0_0_12px_rgba(251,191,36,0.15)] scale-[1.02]"
-                    : ""
+                title={`Padrão: ${sinal.padrao}`}
+                onClick={() => alternar(sinal.id)}
+                className={`flex items-center justify-center gap-2 px-2 py-1.5 rounded-xl border-2 text-center transition-all ${
+                  ligada
+                    ? "shadow-[0_0_12px_rgba(251,191,36,0.22)]"
+                    : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
                 }`}
                 style={
-                  ativa
+                  ligada
                     ? {
-                        borderColor: camada.cor,
-                        backgroundColor: selecionada ? `${camada.cor}25` : `${camada.cor}12`,
-                        color: camada.corClara,
+                        backgroundColor: `${sinal.cor}22`,
+                        borderColor: sinal.cor,
+                        color: sinal.corClara,
                       }
                     : undefined
                 }
               >
-                {/* Marcador em formato de nó aceso */}
-                <span
-                  className={`w-3.5 h-3.5 rounded-full shrink-0 border transition-all mt-0.5 ${
-                    ativa ? "scale-115" : "bg-slate-800 border-slate-700"
-                  }`}
-                  style={
-                    ativa
-                      ? {
-                          backgroundColor: camada.cor,
-                          borderColor: camada.corClara,
-                          boxShadow: `0 0 6px ${camada.cor}`,
-                        }
-                      : undefined
-                  }
-                />
-                <div className="min-w-0 leading-tight">
-                  <span className="block text-[11px] font-bold">
-                    {camada.rotulo}
+                <span className="text-base leading-none" aria-hidden>
+                  {sinal.icone}
+                </span>
+                <span className="min-w-0 text-left">
+                  <span className="block text-[12px] font-bold leading-tight">
+                    {sinal.rotulo}
                   </span>
-                  <span
-                    className={`block text-[9px] leading-tight ${
-                      ativa ? "opacity-75" : "text-slate-600"
-                    }`}
-                  >
-                    {camada.objetivo}
+                  <span className="block text-[10px] text-slate-500 leading-tight truncate">
+                    {sinal.padrao}
                   </span>
-                </div>
+                </span>
               </button>
             );
           })}
         </div>
 
-        {/* Cérebro + zona da imagem */}
-        <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-lg bg-slate-950/50 overflow-hidden relative">
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-lg border border-slate-700/70 bg-slate-950/50 overflow-hidden">
           <div className="flex-1 min-h-0 relative">
             <svg
-              viewBox={`0 0 ${LARGURA} ${ALTURA}`}
+              viewBox={`0 0 ${LARGURA_SVG} ${ALTURA_SVG}`}
               className="absolute inset-0 w-full h-full"
-              aria-label="Cérebro com neurônios espalhados e zona da imagem"
+              aria-label="Rede em esfera 3D com saída em imagem do Angeling"
             >
-              {/* Silhueta e gradientes originais */}
-              <path
-                d={PATH_CEREBRO}
-                fill="#0f172a"
-                stroke="#334155"
-                strokeWidth={2}
-                opacity={0.95}
-              />
-              <path
-                d={PATH_CEREBRO}
-                fill="url(#brilhoCerebro)"
-                opacity={0.35}
-              />
-              <defs>
-                <linearGradient id="brilhoCerebro" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#1e293b" />
-                  <stop offset="100%" stopColor="#312e81" />
-                </linearGradient>
-              </defs>
-
-              {/* Arestas curtas (teia/grafo de conexões) */}
-              {arestas.map(({ a, b }) => {
-                const nA = neuronios.find((n) => n.id === a)!;
-                const nB = neuronios.find((n) => n.id === b)!;
-
-                // Uma aresta está ativa se ambos os neurônios que ela conecta estão ativos
-                const ativa = neuroniosAtivos.has(a) && neuroniosAtivos.has(b);
-
-                const hemisferioEsquerdo = nA.nx < 0.5;
-                let strokeColor = hemisferioEsquerdo ? "#1e3a8a" : "#831843";
-                let opacity = 0.15;
-                let strokeWidth = 0.6;
-
-                if (ativa) {
-                  strokeColor = hemisferioEsquerdo ? "#38bdf8" : "#ec4899";
-                  opacity = 0.45;
-                  strokeWidth = 1.0;
-                }
-
+              {/* Malha densa — só neurônios + arestas (cor = input) */}
+              {arestas.map(({ origem, destino }) => {
+                const noOrigem = mapaProjetado.get(origem);
+                const noDestino = mapaProjetado.get(destino);
+                if (!noOrigem || !noDestino) return null;
+                const ativa =
+                  neuroniosAtivos.has(origem) && neuroniosAtivos.has(destino);
+                const profundidadeMedia =
+                  (noOrigem.profundidade + noDestino.profundidade) / 2;
+                const idSinalAresta =
+                  sinalCorPorNeuronio.get(origem) ??
+                  sinalCorPorNeuronio.get(destino);
+                const corAresta = idSinalAresta
+                  ? corDoSinal(idSinalAresta).stroke
+                  : "#64748b";
                 return (
                   <line
-                    key={`${a}-${b}`}
-                    x1={nA.nx * LARGURA}
-                    y1={nA.ny * ALTURA}
-                    x2={nB.nx * LARGURA}
-                    y2={nB.ny * ALTURA}
-                    stroke={strokeColor}
-                    strokeWidth={strokeWidth}
-                    strokeOpacity={opacity}
-                    className="transition-all duration-300"
-                    style={
+                    key={`${origem}-${destino}`}
+                    x1={noOrigem.x}
+                    y1={noOrigem.y}
+                    x2={noDestino.x}
+                    y2={noDestino.y}
+                    stroke={ativa ? corAresta : "#1e293b"}
+                    strokeWidth={ativa ? 0.85 : 0.45}
+                    strokeOpacity={
                       ativa
-                        ? {
-                            filter: `drop-shadow(0 0 1px ${strokeColor})`,
-                          }
-                        : undefined
+                        ? 0.28 + profundidadeMedia * 0.45
+                        : 0.1 + profundidadeMedia * 0.18
                     }
+                    className="transition-all duration-300"
                   />
                 );
               })}
 
-              {/* Neurônios (pontos da malha) */}
-              {neuronios.map((n) => {
-                const ativo = neuroniosAtivos.has(n.id);
-                const camada = CAMADAS[n.camadaPreferida];
+              {/* Ligações esfera → saída */}
+              {nosFrente.map((neuronio) => {
+                const ativa = temSinal && neuroniosAtivos.has(neuronio.id);
+                return (
+                  <line
+                    key={`saida-${neuronio.id}`}
+                    x1={Math.min(neuronio.x + 4, limiteEsferaDireita)}
+                    y1={neuronio.y}
+                    x2={pontoSaidaX}
+                    y2={SAIDA_Y}
+                    stroke={ativa ? "#34d399" : "#334155"}
+                    strokeWidth={ativa ? 1.05 : 0.55}
+                    strokeOpacity={ativa ? 0.4 : 0.1}
+                    className="transition-all duration-400"
+                  />
+                );
+              })}
 
-                const hemisferioEsquerdo = n.nx < 0.5;
-                let fillColor = hemisferioEsquerdo ? "#1e293b" : "#471825";
-                let strokeColor = hemisferioEsquerdo ? "#334155" : "#5c1d30";
-                let opacity = 0.3;
-                let r = n.raio;
-
-                if (ativo) {
-                  fillColor = camada.cor;
-                  strokeColor = camada.corClara;
-                  opacity = 1.0;
-                  r = n.raio + 0.8;
-                }
+              {/* Nós: cor = input que ativou (mesma cor do botão) */}
+              {projetadosOrdenados.map((neuronio) => {
+                const ativo = neuroniosAtivos.has(neuronio.id);
+                const idSinal = sinalCorPorNeuronio.get(neuronio.id);
+                const cores =
+                  ativo && idSinal ? corDoSinal(idSinal) : COR_INATIVA;
+                const raio = ativo
+                  ? neuronio.raio * (0.95 + neuronio.profundidade * 0.15)
+                  : neuronio.raio * (0.7 + neuronio.profundidade * 0.12);
 
                 return (
                   <circle
-                    key={n.id}
-                    cx={n.nx * LARGURA}
-                    cy={n.ny * ALTURA}
-                    r={r}
-                    fill={fillColor}
-                    fillOpacity={opacity}
-                    stroke={strokeColor}
-                    strokeOpacity={opacity === 1.0 ? 1.0 : 0.5}
-                    strokeWidth={1.5}
-                    className="transition-all duration-300"
-                    style={
+                    key={neuronio.id}
+                    cx={neuronio.x}
+                    cy={neuronio.y}
+                    r={raio}
+                    fill={cores.fill}
+                    fillOpacity={
                       ativo
-                        ? {
-                            filter: `drop-shadow(0 0 5px ${camada.cor})`,
-                          }
-                        : undefined
+                        ? 0.55 + neuronio.profundidade * 0.4
+                        : 0.22 + neuronio.profundidade * 0.25
                     }
+                    stroke={cores.stroke}
+                    strokeWidth={neuronio.principal ? 1.35 : 0.7}
+                    strokeOpacity={
+                      ativo
+                        ? 0.85 + neuronio.profundidade * 0.15
+                        : 0.25 + neuronio.profundidade * 0.25
+                    }
+                    className="transition-all duration-300"
+                    style={{
+                      filter: ativo
+                        ? `drop-shadow(0 0 ${neuronio.principal ? 5 : 3}px ${cores.stroke})`
+                        : undefined,
+                    }}
                   />
                 );
               })}
 
-              {/* Zona da imagem (metáfora visual — região posterior, posições originais restauradas) */}
-              <ellipse
-                cx={450}
-                cy={268}
-                rx={72}
-                ry={48}
-                fill="#020617"
-                stroke={completo ? "#a855f7" : profundidade > 0 ? CAMADAS[profundidade - 1].cor : "#475569"}
-                strokeWidth={2.5}
+              {/* Anel da saída */}
+              <circle
+                cx={SAIDA_X}
+                cy={SAIDA_Y}
+                r={SAIDA_R}
+                fill="#0f172a"
+                stroke={
+                  reconhecimentoCompleto
+                    ? "#34d399"
+                    : temSinal
+                      ? "#2dd4bf"
+                      : "#475569"
+                }
+                strokeWidth={temSinal ? 2.5 : 1.75}
                 className="transition-all duration-400"
                 style={{
-                  filter: completo
-                    ? "drop-shadow(0 0 10px rgba(168,85,247,0.5))"
-                    : profundidade > 0
-                      ? `drop-shadow(0 0 8px ${CAMADAS[profundidade - 1].cor})`
+                  filter: reconhecimentoCompleto
+                    ? "drop-shadow(0 0 10px rgba(52,211,153,0.45))"
+                    : temSinal
+                      ? "drop-shadow(0 0 6px rgba(45,212,191,0.25))"
                       : undefined,
                 }}
               />
 
-              {/* Conteúdo da zona da imagem - dimensões originais restauradas */}
-              <foreignObject x={450 - 64} y={268 - 42} width={128} height={84}>
-                <div className="w-full h-full rounded-[40%] overflow-hidden flex items-center justify-center relative bg-slate-950">
-                  {profundidade === 0 && (
-                    <span className="text-[10px] text-slate-600 text-center px-1">
-                      zona da imagem
+              <foreignObject
+                x={SAIDA_X - SAIDA_R + 4}
+                y={SAIDA_Y - SAIDA_R + 4}
+                width={SAIDA_R * 2 - 8}
+                height={SAIDA_R * 2 - 8}
+              >
+                <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-slate-950 relative">
+                  {!temSinal && (
+                    <span className="text-[9px] text-slate-600 text-center px-1 leading-tight z-10">
+                      saída
                     </span>
                   )}
 
-                  {/* Contornos / formato: cinza */}
-                  {(tem("contornos") || tem("formato")) && (
+                  {/*
+                    Corpo (forma/cores): SEMPRE mascarado no centro.
+                    Assim asas e auréola não vazam sem o input correspondente.
+                  */}
+                  {temForma && (
                     <img
                       src={ANGELING_SRC}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-1 transition-all duration-500"
+                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
+                        ...estiloMascaraCorpo,
                         filter: [
                           "grayscale(1)",
+                          "contrast(1.08)",
                           `blur(${
-                            completo && revelado
+                            reconhecimentoCompleto && angelingRevelado
                               ? 0
-                              : Math.max(1, blurPx * (tem("cores") ? 0.35 : 0.55))
+                              : Math.max(1, blurPx * (temCores ? 0.3 : 0.5))
                           }px)`,
-                          "contrast(1.1)",
                         ].join(" "),
                         opacity:
-                          completo && revelado
+                          reconhecimentoCompleto && angelingRevelado
                             ? 0
-                            : tem("cores")
+                            : temCores
                               ? 0.35
-                              : 0.92,
+                              : 0.95,
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Cores */}
-                  {tem("cores") && (
+                  {temCores && (
                     <img
                       src={ANGELING_SRC}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-1 transition-all duration-500"
+                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
+                        ...estiloMascaraCorpo,
                         filter: `blur(${
-                          completo && revelado
+                          reconhecimentoCompleto && angelingRevelado
                             ? 0
-                            : tem("formato") || tem("contornos")
+                            : temForma
                               ? Math.max(1, blurPx * 0.4)
-                              : Math.max(12, blurPx + 10)
+                              : Math.max(14, blurPx + 12)
                         }px)`,
-                        opacity: completo && revelado ? 0 : 0.9,
-                        transform:
-                          tem("formato") || tem("contornos")
-                            ? "scale(1)"
-                            : "scale(1.25)",
+                        opacity:
+                          reconhecimentoCompleto && angelingRevelado
+                            ? 0
+                            : temForma
+                              ? 0.92
+                              : 0.85,
+                        transform: temForma ? "scale(1)" : "scale(1.35)",
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Asas — laterais */}
-                  {tem("asas") && (
+                  {/* Asas: só com input Asas */}
+                  {temAsas && (
                     <img
                       src={ANGELING_SRC}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-1 transition-all duration-500"
+                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                       style={{
-                        filter: `blur(${
-                          completo && revelado ? 0 : Math.max(2, blurPx * 0.4)
-                        }px)`,
-                        opacity: completo && revelado ? 0 : 0.95,
-                        WebkitMaskImage:
-                          "linear-gradient(90deg, #000 0%, #000 28%, transparent 38%, transparent 62%, #000 72%, #000 100%)",
-                        maskImage:
-                          "linear-gradient(90deg, #000 0%, #000 28%, transparent 38%, transparent 62%, #000 72%, #000 100%)",
-                      }}
-                      draggable={false}
-                    />
-                  )}
-
-                  {/* Auréola — topo */}
-                  {tem("aureola") && (
-                    <img
-                      src={ANGELING_SRC}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-1 transition-all duration-500"
-                      style={{
-                        filter: `blur(${
-                          completo && revelado ? 0 : Math.max(2, blurPx * 0.35)
-                        }px)`,
-                        opacity: completo && revelado ? 0 : 0.95,
-                        WebkitMaskImage:
-                          "radial-gradient(ellipse 70% 40% at 50% 12%, #000 0%, #000 45%, transparent 70%)",
-                        maskImage:
-                          "radial-gradient(ellipse 70% 40% at 50% 12%, #000 0%, #000 45%, transparent 70%)",
-                      }}
-                      draggable={false}
-                    />
-                  )}
-
-                  {/* Rosto — centro, cinza se sem cores */}
-                  {tem("rosto") && (
-                    <img
-                      src={ANGELING_SRC}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-1 transition-all duration-500"
-                      style={{
+                        WebkitMaskImage: MASCARA_ASAS,
+                        maskImage: MASCARA_ASAS,
                         filter: [
+                          temCores ? "" : "grayscale(1)",
                           `blur(${
-                            completo && revelado
+                            reconhecimentoCompleto && angelingRevelado
                               ? 0
                               : Math.max(2, blurPx * 0.35)
                           }px)`,
-                          tem("cores") ? "" : "grayscale(1)",
-                          "contrast(1.05)",
                         ]
                           .filter(Boolean)
                           .join(" "),
-                        opacity: completo && revelado ? 0 : 0.95,
-                        WebkitMaskImage:
-                          "radial-gradient(circle at 50% 52%, #000 0%, #000 26%, transparent 44%)",
-                        maskImage:
-                          "radial-gradient(circle at 50% 52%, #000 0%, #000 26%, transparent 44%)",
+                        opacity:
+                          reconhecimentoCompleto && angelingRevelado ? 0 : 0.95,
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Revelação final */}
-                  {completo && (
+                  {/* Auréola: só com input Auréola */}
+                  {temAureola && (
+                    <img
+                      src={ANGELING_SRC}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      style={{
+                        WebkitMaskImage: MASCARA_AUREOLA,
+                        maskImage: MASCARA_AUREOLA,
+                        filter: `blur(${
+                          reconhecimentoCompleto && angelingRevelado
+                            ? 0
+                            : Math.max(2, blurPx * 0.3)
+                        }px)`,
+                        opacity:
+                          reconhecimentoCompleto && angelingRevelado ? 0 : 0.95,
+                      }}
+                      draggable={false}
+                    />
+                  )}
+
+                  {/* Rosto: só com input Rosto */}
+                  {temRosto && (
+                    <img
+                      src={ANGELING_SRC}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain p-0.5 z-[1] transition-all duration-500 ease-out"
+                      style={{
+                        WebkitMaskImage: MASCARA_ROSTO,
+                        maskImage: MASCARA_ROSTO,
+                        filter: [
+                          `blur(${
+                            reconhecimentoCompleto && angelingRevelado
+                              ? 0
+                              : Math.max(2, blurPx * 0.35)
+                          }px)`,
+                          temCores ? "" : "grayscale(1)",
+                        ]
+                          .filter(Boolean)
+                          .join(" "),
+                        opacity:
+                          reconhecimentoCompleto && angelingRevelado ? 0 : 0.95,
+                      }}
+                      draggable={false}
+                    />
+                  )}
+
+                  {/* Imagem completa: só com TODAS as entradas */}
+                  {reconhecimentoCompleto && (
                     <img
                       src={ANGELING_SRC}
                       alt=""
                       className="absolute inset-0 w-full h-full object-contain p-0.5 z-10 transition-all duration-700 ease-out"
                       style={{
-                        filter: revelado ? "blur(0px)" : "blur(10px)",
-                        opacity: revelado ? 1 : 0.3,
-                        transform: revelado ? "scale(1)" : "scale(0.9)",
+                        filter: angelingRevelado ? "blur(0px)" : "blur(9px)",
+                        opacity: angelingRevelado ? 1 : 0.28,
+                        transform: angelingRevelado ? "scale(1)" : "scale(0.9)",
                       }}
                       draggable={false}
                     />
@@ -635,36 +802,32 @@ export function ExemploAngelingCerebro(): React.ReactElement {
             </svg>
           </div>
 
-          <div className="shrink-0 border-t border-slate-800 bg-slate-950/80 px-4 py-2.5 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-400 leading-snug min-w-0 flex-1 text-left font-medium">
-              {profundidade === 0 ? (
-                <span>
-                  A imagem bruta entra na rede. As primeiras camadas capturam contornos; as mais profundas montam partes e conceitos.
-                </span>
-              ) : (
-                <span>
-                  Sinal processado até a <span className="font-semibold" style={{ color: CAMADAS[profundidade - 1].corClara }}>{CAMADAS[profundidade - 1].rotulo}</span>. A representação vai se tornando mais rica.
-                </span>
-              )}
+          <div className="shrink-0 border-t border-slate-800 bg-slate-950/80 px-3 py-2 flex items-center justify-between gap-3">
+            <p className="text-xs text-slate-400 leading-snug min-w-0 flex-1 text-left">
+              Cada entrada acende neurônios na{" "}
+              <span className="text-amber-300/90">mesma cor do botão</span>
+              — a rede monta a classificação feature a feature.
             </p>
-            <div className="text-right shrink-0 font-bold">
-              {profundidade === 0 ? (
-                <p className="text-sm text-slate-500 font-medium">Input bruto</p>
-              ) : (
-                <p className="text-sm">
-                  {completo ? (
-                    <>
-                      <span className="text-emerald-400 tracking-wide font-extrabold mr-2">ANGELING</span>
-                      <span className="text-cyan-400 font-extrabold tabular-nums">{confianca}%</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-slate-400 font-medium text-xs">A processar... </span>
-                      <span className="text-cyan-300 font-bold tabular-nums text-xs">
-                        {Math.round((profundidade / CAMADAS.length) * 70) + 10}%
-                      </span>
-                    </>
-                  )}
+            <div className="text-right shrink-0">
+              {qtd === 0 && (
+                <p className="text-sm text-slate-500 font-medium">Sem dados</p>
+              )}
+              {qtd > 0 && qtd < 3 && (
+                <p className="text-sm text-amber-400/90 font-medium">
+                  Dados insuficientes
+                </p>
+              )}
+              {qtd >= 3 && qtd < SINAIS.length && (
+                <p className="text-sm text-slate-300 font-medium leading-snug">
+                  Baixa confiança (~{Math.round((qtd / SINAIS.length) * 70)}%)
+                </p>
+              )}
+              {qtd >= SINAIS.length && (
+                <p className="text-sm font-bold">
+                  <span className="text-emerald-400">ANGELING</span>
+                  <span className="text-cyan-300 tabular-nums ml-2">
+                    {confianca}%
+                  </span>
                 </p>
               )}
             </div>
@@ -673,42 +836,4 @@ export function ExemploAngelingCerebro(): React.ReactElement {
       </div>
     </div>
   );
-}
-
-/** Auxiliar de inicialização de neurônios de forma randômica controlada */
-function idsDaCamada(
-  camadaId: string,
-  neuronios: NeuronioCerebro[],
-  indiceCamada: number
-): Set<string> {
-  const aleatorio = criarGerador(sementeDeTexto(camadaId));
-  const escolhidos = new Set<string>();
-
-  // Preferidos da camada
-  const preferidos = neuronios.filter((n) => n.camadaPreferida === indiceCamada);
-  for (const n of preferidos) {
-    if (aleatorio() < 0.72) escolhidos.add(n.id);
-  }
-
-  // Espalhados no resto do cérebro (realismo misturado)
-  const outros = neuronios.filter((n) => n.camadaPreferida !== indiceCamada);
-  const copia = [...outros];
-  for (let i = copia.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(aleatorio() * (i + 1));
-    [copia[i], copia[j]] = [copia[j], copia[i]];
-  }
-  const extras = Math.max(4, Math.floor(neuronios.length * 0.12));
-  for (let i = 0; i < extras && i < copia.length; i += 1) {
-    escolhidos.add(copia[i].id);
-  }
-
-  // Garante mínimo
-  if (escolhidos.size < 6) {
-    for (const n of neuronios) {
-      escolhidos.add(n.id);
-      if (escolhidos.size >= 8) break;
-    }
-  }
-
-  return escolhidos;
 }

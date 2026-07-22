@@ -595,8 +595,8 @@ export function RedeNeuralDL(): React.ReactElement {
           </div>
         </section>
 
-        {/* Exemplo 2 · 2/3 — Angeling no cérebro */}
-        <section className="min-h-0 flex flex-col rounded-xl border border-amber-500/30 bg-slate-950/40 overflow-hidden">
+        {/* Exemplo 2 · 2/3 — Angeling no cérebro (arte da referência) */}
+        <section className="min-h-0 flex flex-col rounded-xl border border-slate-700/60 bg-[#020617] overflow-hidden shadow-[inset_0_0_0_1px_rgba(51,65,85,0.35)]">
           <ExemploAngelingCerebro />
         </section>
       </div>
