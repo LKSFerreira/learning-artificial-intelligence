@@ -4,6 +4,20 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-22 — Visual Redes Neurais: Poring + Angeling (camadas PNG) ✅
+
+- Reconstrução do painel `dl_neural_net` em `RedeNeuralDL.tsx`: layout em duas faixas (Exemplo 1 Poring · Exemplo 2 Angeling).
+- **Poring (básico):** entradas ligáveis, malha em colunas SVG, saída com imagem progressiva (`public/imagens/rede-neural/poring.png`).
+- **Angeling (deep learning):** malha em **esfera 3D estática** (sem rotação), densidade alta, cor do neurônio = cor do input (didática feature → disparo).
+- Saída do Angeling por **camadas PNG de mesmo tamanho** (sem máscara CSS):
+  - `angeling_formato_sem_cor.png` (contornos / formato)
+  - `angeling_formato_cor_e_textura.png` (cores)
+  - `angeling_somente_asas.png`, `angeling_somente_aureola.png`, `angeling_somente_rosto.png`
+  - completo original: `angeling.png`
+- Blur e composição parcial; com todas as entradas, revelação do `angeling.png` completo.
+- Lição de conteúdo alinhada: `src/conteudo/fase-1-fundamentos/04-deep-learning.md` (estado visual `dl_neural_net`).
+- **Gate B1–B3:** continua aberto no `ROADMAP.md`; este trabalho conta como polimento de interatividade da B1, não como fechamento do gate.
+
 ### 2026-07-13 — Correção de Sobreposição no Dropdown de Vozes do Player ✅
 
 - Correção do Stacking Context no player de áudio (`PlayerAudioIA.tsx`): ajustado o `z-index` do contêiner superior do player de `z-10` para `z-20`. Isso impede que elementos irmãos renderizados depois no DOM (como a linha do tempo e a caixa de alertas de erro de áudio indisponível, que usam `z-10`) sobreponham o menu dropdown de seleção de vozes.

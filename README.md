@@ -35,7 +35,7 @@ O projeto segue um plano de desenvolvimento detalhado. Diferente de tutoriais es
 | **A3:** Infra (Auth, DB, pagamentos) — futuro | **B3:** Navegação (Labirinto) ✅ |
 | **A4:** Sandboxes, tutor avançado, PWA — futuro | **B4+:** Visão, DQN, … (futuro) |
 
-> **Onde estamos:** polir B1–B3 até o gate do autor no `ROADMAP.md`. A2 e B4+ **não** são o próximo passo automático.
+> **Onde estamos:** polir B1–B3 até o gate do autor no `ROADMAP.md` (progresso parcial listado lá; ex.: visual redes neurais Poring/Angeling). A2 e B4+ **não** são o próximo passo automático.
 
 ---
 

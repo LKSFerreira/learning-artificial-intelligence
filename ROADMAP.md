@@ -65,6 +65,17 @@ Esta trilha foca na evolução do código-fonte do projeto `learning-artificial-
 
 > **Leitura operacional:** A2 (gamificação) e novas fases de currículo (B4+) **não** são o próximo passo automático. O próximo passo é polir B1–B3 até o gate acima ser marcado.
 
+#### Progresso de polimento (gate ainda aberto)
+
+Registro honesto do que já avançou **dentro** do gate — não substitui marcar o critério acima.
+
+| Área | Estado | Notas |
+|------|--------|--------|
+| B1 · visual redes neurais (`dl_neural_net`) | Parcial ✅ | Poring + Angeling (esfera 3D, camadas PNG); ver `HISTORY.md` 2026-07-22 |
+| B1 · demais lições / interatividade | Em aberto | Continuar revisão de conteúdo e painéis |
+| B2 · Q-Learning (interatividade) | Em aberto | — |
+| B3 · Labirinto (interatividade) | Em aberto | — |
+
 ### 🎮 Fase A2: Gamificação e Engajamento — BLOQUEADA PELO GATE
 
 **Objetivo:** Implementar mecânicas que tornem o aprendizado viciante.

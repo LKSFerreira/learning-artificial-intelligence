@@ -32,9 +32,11 @@ A plataforma web não é o destino final; é o **veículo e o diário vivo** des
 - Navegação por fases/passos com **React Router** e sincronização de URL.
 - Conteúdo das lições em **Markdown** (`src/conteudo/`) com frontmatter e loader dinâmico.
 - Visuais interativos por fase (registro em `registroVisuais.tsx`).
+  - Destaque B1: `RedeNeuralDL` (`1:dl_neural_net`) — Exemplo 1 Poring + Exemplo 2 Angeling em esfera 3D com camadas PNG em `public/imagens/rede-neural/`.
 - Progresso e preferências em **localStorage**.
-- Temas claro / escuro / dracula.
+- Temas claro / escuro / dracula (padrão: escuro).
 - Quizzes por fase; tutor **base** via **Gemini** (`useTutorIA` / `servicoGemini`) quando `GEMINI_API_KEY` estiver no `.env` (ver `.env.example`).
+- **Player de áudio estático** (`PlayerAudioIA`) com MP3 em `public/audios/` e geração offline em `sintetizar/` (R7).
 - Código de **badges** presente (`ContextoBadges`, `componentes/conquistas/`); UI de conquistas na sidebar **ainda não montada** (item **A2.0** no roadmap).
 - Fallback legado de currículo em `src/dados/curriculo/fase*.ts` — **não** é fonte de verdade; editar só os `.md` em `src/conteudo/`.
 
@@ -42,7 +44,7 @@ A plataforma web não é o destino final; é o **veículo e o diário vivo** des
 
 | Fase | Estado | Conteúdo |
 |---|---|---|
-| **B1 — Fundamentos** | Entregue | Gênese da IA **embutida** na abertura (Talos → Lovelace → Turing → Dartmouth), hierarquia IA/ML/DL/RL, visuais, vídeo, quiz |
+| **B1 — Fundamentos** | Entregue (em polimento) | Gênese da IA **embutida** na abertura, hierarquia IA/ML/DL/RL, visuais (incl. redes neurais Poring/Angeling), vídeo, quiz |
 | **B2 — Q-Learning** | Entregue | Estados, ações, Q-table, Bellman, epsilon-greedy (incl. slider), quiz |
 | **B3 — Labirinto** | Entregue | Grid world, generalização espacial, quiz |
 | **B0 separada** | **Não criar** | Absorvida pela B1 e pela filosofia “história em cada conceito” |
