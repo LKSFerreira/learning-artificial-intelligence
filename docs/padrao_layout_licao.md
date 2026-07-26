@@ -37,7 +37,7 @@
 | 2 | **Áudio** (`PlayerAudioIA`) | Quase sempre | Exceto passo só-vídeo ou quiz puro. `licaoId` = id do passo ou do subconteúdo (`intro`, `hierarchy`, `ia`, `ml`, `dl`…) |
 | 3 | **Título** (`h2`) | Sim | Título do passo ou do subconteúdo ativo |
 | 4 | **Conteúdo** | Sim | Markdown didático, **ou** quiz, **ou** passo tipo vídeo |
-| 5 | **Vídeo de consolidação** (`ConteudoVideo`) | Quando houver `urlVideo` | **Sempre depois do texto**, nunca no meio nem só no topo. Modo Cinema (thumbnail → modal) |
+| 5 | **Vídeo de consolidação** (`ConteudoVideo`) | Quando houver `urlVideo` | **Sempre depois do texto**, nunca no meio nem só no topo. Thumbnail → modal de vídeo ampliado (nome interno de implementação, **não** usar no texto/áudio da lição) |
 | 6 | **Tutor IA** | Sim (exceto quiz) | “Me explique melhor” |
 | 7 | **Navegação** | Sim | Anterior / Próximo (`BotoesNavegacao`) |
 | 8 | **Referências** (`SecaoReferencias`) | Quando existirem no MD | **Depois** dos botões; tipografia menor; bloco `<!-- audio-skip-start/end -->` |
@@ -127,7 +127,7 @@ Frase de fechamento opcional (fora do skip, se quiser no áudio).
 
 | Regra | Detalhe |
 |-------|---------|
-| Componente | Só `ConteudoVideo` (thumbnail + Modo Cinema) |
+| Componente | Só `ConteudoVideo` (thumbnail + modal ampliado) |
 | Posição | **Depois** do markdown, **antes** do tutor |
 | URL | Frontmatter `urlVideo` do passo ou do subconteúdo |
 | Conclusão | Pode desbloquear progresso (ex.: Venn → `marcarVideoConcluido`) |

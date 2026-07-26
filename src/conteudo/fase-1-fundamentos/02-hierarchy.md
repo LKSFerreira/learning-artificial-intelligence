@@ -47,7 +47,7 @@ Nesta lição, a consolidação do conhecimento acontece de forma prática no **
 **Progresso guiado:**
 
 1. Clique no círculo de **Inteligência Artificial** no diagrama.
-2. Leia o texto, assista ao vídeo em **Modo Cinema** e feche o player para registrar o progresso.
+2. Leia o texto, assista ao vídeo (toque na miniatura para ampliar) e feche o player para registrar o progresso.
 3. Isso desbloqueia o círculo de **Machine Learning**. Repita a exploração para destravar o **Deep Learning** no centro.
 4. Ao concluir o vídeo de Deep Learning, o botão **Próximo** libera a ida ao tópico seguinte.
 
