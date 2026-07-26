@@ -1,8 +1,8 @@
 /**
  * Visualização: rede neural em 2 faixas (1/3 + 2/3).
  *
- * Exemplo 1 (Poring) — básico, grade.
- * Exemplo 2 (Angeling) — 6 camadas de reconhecimento no “cérebro”.
+ * Exemplo 1 (Poring): grade + saída em camadas PNG (mesmo padrão do Angeling).
+ * Exemplo 2 (Angeling): esfera 3D + camadas PNG.
  *
  * **Estado Visual:** ``dl_neural_net``
  */
@@ -11,6 +11,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Brain } from "lucide-react";
 
 import { ExemploAngelingCerebro } from "./ExemploAngelingCerebro";
+
+/** Camadas PNG do Poring (mesmo tamanho; sem máscara CSS). */
+const CAMADAS_PORING = {
+  completo: "/imagens/rede-neural/poring.png",
+  formatoSemCor: "/imagens/rede-neural/poring_formato_sem_cor.png",
+  formatoCorETextura: "/imagens/rede-neural/poring_formato_cor_e_textura.png",
+  rosto: "/imagens/rede-neural/poring_somente_rosto.png",
+} as const;
+
+/** Só o sprite (círculo de saída não muda). */
+const ESCALA_MOB_PORING = 0.88;
 
 interface SinalEntrada {
   id: string;
@@ -35,6 +46,7 @@ const COLUNAS = [
 const LARGURA_SVG = 760;
 const ALTURA_SVG = 200;
 /** Círculo de saída (imagem do Poring). */
+/** Saída do Poring (ligeiramente menor para alinhar visualmente ao Angeling). */
 const SAIDA_R = 52;
 const MARGEM_ESQ = 28;
 const MARGEM_DIR = 12;
@@ -420,8 +432,8 @@ export function RedeNeuralDL(): React.ReactElement {
                     height={SAIDA_R * 2 - 8}
                   >
                     {/*
-                      Camadas sobrepostas (qualquer ordem de clique).
-                      Sempre a mesma imagem-base; cada sinal libera um aspecto.
+                      Stack parcial: cada PNG só o que o nome diz (como Angeling).
+                      Completo revelado some o stack (evita fantasma embaixo).
                     */}
                     <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-slate-950 relative">
                       {!temSinal && (
@@ -430,41 +442,30 @@ export function RedeNeuralDL(): React.ReactElement {
                         </span>
                       )}
 
-                      {/* Camada FORMA: corpo em cinza (sem cor) */}
-                      {temForma && (
+                      {temForma && !temCor && (
                         <img
-                          src="/imagens/rede-neural/poring.png"
+                          src={CAMADAS_PORING.formatoSemCor}
                           alt=""
                           className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                           style={{
-                            filter: [
-                              "grayscale(1)",
-                              "contrast(1.08)",
-                              `blur(${
-                                reconhecimentoCompleto && poringRevelado
-                                  ? 0
-                                  : Math.max(1, blurPx * (temCor ? 0.3 : 0.5))
-                              }px)`,
-                            ].join(" "),
+                            filter: `blur(${
+                              reconhecimentoCompleto && poringRevelado
+                                ? 0
+                                : Math.max(1, blurPx * 0.55)
+                            }px)`,
                             opacity:
                               reconhecimentoCompleto && poringRevelado
                                 ? 0
-                                : temCor
-                                  ? 0.4
-                                  : 0.95,
+                                : 0.95,
+                            transform: `scale(${ESCALA_MOB_PORING})`,
                           }}
                           draggable={false}
                         />
                       )}
 
-                      {/*
-                        Camada COR:
-                        - com forma: corpo colorido
-                        - sem forma: mancha rosa bem espalhada (look que você gostou)
-                      */}
                       {temCor && (
                         <img
-                          src="/imagens/rede-neural/poring.png"
+                          src={CAMADAS_PORING.formatoCorETextura}
                           alt=""
                           className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
                           style={{
@@ -473,72 +474,51 @@ export function RedeNeuralDL(): React.ReactElement {
                                 ? 0
                                 : temForma
                                   ? Math.max(1, blurPx * 0.4)
-                                  : Math.max(18, blurPx + 16)
+                                  : Math.max(14, blurPx + 12)
                             }px)`,
                             opacity:
                               reconhecimentoCompleto && poringRevelado
                                 ? 0
                                 : temForma
-                                  ? 0.92
+                                  ? 0.96
                                   : 0.88,
                             transform: temForma
-                              ? "scale(1)"
-                              : "scale(1.55)",
+                              ? `scale(${ESCALA_MOB_PORING})`
+                              : `scale(${ESCALA_MOB_PORING * 1.25})`,
                           }}
                           draggable={false}
                         />
                       )}
 
-                      {/*
-                        Camada ROSTO:
-                        - sem cor: face em cinza
-                        - com cor e sem forma: MESMA mancha rosa + face só um pouco
-                          mais definida (olhos leves), sem matar o blur espalhado
-                      */}
                       {temRosto && (
                         <img
-                          src="/imagens/rede-neural/poring.png"
+                          src={CAMADAS_PORING.rosto}
                           alt=""
                           className="absolute inset-0 w-full h-full object-contain p-0.5 z-[1] transition-all duration-500 ease-out"
                           style={{
                             filter: [
+                              temCor ? "" : "grayscale(1)",
                               `blur(${
                                 reconhecimentoCompleto && poringRevelado
                                   ? 0
-                                  : !temForma && temCor
-                                    ? // Levemente definido (não nítido, não some)
-                                      Math.max(3.5, blurPx * 0.55)
-                                    : !temForma
-                                      ? Math.max(3, blurPx * 0.45)
-                                      : Math.max(2, blurPx * 0.35)
+                                  : Math.max(2, blurPx * 0.35)
                               }px)`,
-                              temCor ? "" : "grayscale(1)",
-                              !temForma && temCor
-                                ? "contrast(1.12) brightness(1.04)"
-                                : "contrast(1.05)",
                             ]
                               .filter(Boolean)
                               .join(" "),
                             opacity:
                               reconhecimentoCompleto && poringRevelado
                                 ? 0
-                                : !temForma && temCor
-                                  ? 0.7
-                                  : 0.95,
-                            // Só a face; resto transparente → a mancha rosa continua embaixo
-                            WebkitMaskImage:
-                              "radial-gradient(circle at 50% 44%, #000 0%, #000 24%, transparent 42%)",
-                            maskImage:
-                              "radial-gradient(circle at 50% 44%, #000 0%, #000 24%, transparent 42%)",
+                                : 0.98,
+                            transform: `scale(${ESCALA_MOB_PORING})`,
                           }}
                           draggable={false}
                         />
                       )}
 
-                      {/* 3 sinais: revelação suave da imagem completa */}
                       {reconhecimentoCompleto && (
                         <img
-                          src="/imagens/rede-neural/poring.png"
+                          src={CAMADAS_PORING.completo}
                           alt=""
                           className="absolute inset-0 w-full h-full object-contain p-0.5 z-10 transition-all duration-700 ease-out"
                           style={{
@@ -547,8 +527,8 @@ export function RedeNeuralDL(): React.ReactElement {
                               : "blur(9px)",
                             opacity: poringRevelado ? 1 : 0.28,
                             transform: poringRevelado
-                              ? "scale(1)"
-                              : "scale(0.9)",
+                              ? `scale(${ESCALA_MOB_PORING})`
+                              : `scale(${ESCALA_MOB_PORING * 0.9})`,
                           }}
                           draggable={false}
                         />

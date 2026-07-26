@@ -101,7 +101,20 @@ const QUANTIDADE_NEURONIOS = 560;
 const ANGULO_Y_FIXO = 0.55;
 const ANGULO_X_FIXO = 0.38;
 
-const SAIDA_R = 54;
+/**
+ * Saída do Angeling ~mesmo tamanho visual do Poring (SAIDA_R=57, viewBox 760×200).
+ * Compensa só a largura do viewBox (880 vs 760). Compensar pela altura (460)
+ * inflava o círculo demais na faixa 2.
+ * Escala do mob leve: asas laterais não podem ser cortadas pelo clip circular.
+ */
+/** Referência visual do Poring (mantém o Angeling estável se o Poring mudar). */
+const SAIDA_R_PORING_REF = 57;
+const LARGURA_VIEWBOX_PORING = 760;
+const SAIDA_R = Math.round(
+  SAIDA_R_PORING_REF * (LARGURA_SVG / LARGURA_VIEWBOX_PORING),
+);
+/** Zoom do sprite (1.0 = object-contain puro; >1 corta asas). */
+const ESCALA_MOB_SAIDA = 1.12;
 const MARGEM_DIR = 14;
 const SAIDA_X = LARGURA_SVG - MARGEM_DIR - SAIDA_R;
 const SAIDA_Y = ALTURA_SVG / 2;
@@ -657,17 +670,17 @@ export function ExemploAngelingCerebro(): React.ReactElement {
 
                   {/*
                     Stack parcial: cada PNG só o que o nome diz.
-                    Mesmo tamanho → object-contain alinha tudo.
-                    Completo revelado → some o stack (evita “fantasma” embaixo).
+                    ESCALA_MOB_SAIDA preenche o círculo (asset tem muito transparente).
                   */}
                   {temContornos && !temFormato && !temCores && (
                     <img
                       src={CAMADAS_ANGELING.formatoSemCor}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain transition-all duration-500 ease-out"
                       style={{
                         filter: `blur(${blurContorno}px) contrast(1.12)`,
                         opacity: esconderParcial ? 0 : 0.9,
+                        transform: `scale(${ESCALA_MOB_SAIDA})`,
                       }}
                       draggable={false}
                     />
@@ -677,10 +690,11 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                     <img
                       src={CAMADAS_ANGELING.formatoSemCor}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain transition-all duration-500 ease-out"
                       style={{
                         filter: `blur(${blurFormato}px)`,
                         opacity: esconderParcial ? 0 : 0.95,
+                        transform: `scale(${ESCALA_MOB_SAIDA})`,
                       }}
                       draggable={false}
                     />
@@ -690,11 +704,13 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                     <img
                       src={CAMADAS_ANGELING.formatoCorETextura}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain transition-all duration-500 ease-out"
                       style={{
                         filter: `blur(${blurCor}px)`,
                         opacity: esconderParcial ? 0 : temForma ? 0.96 : 0.88,
-                        transform: temForma ? "scale(1)" : "scale(1.2)",
+                        transform: temForma
+                          ? `scale(${ESCALA_MOB_SAIDA})`
+                          : `scale(${ESCALA_MOB_SAIDA * 1.15})`,
                       }}
                       draggable={false}
                     />
@@ -704,7 +720,7 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                     <img
                       src={CAMADAS_ANGELING.asas}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain transition-all duration-500 ease-out"
                       style={{
                         filter: [
                           temCores ? "" : "grayscale(1)",
@@ -713,6 +729,7 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                           .filter(Boolean)
                           .join(" "),
                         opacity: esconderParcial ? 0 : 0.98,
+                        transform: `scale(${ESCALA_MOB_SAIDA})`,
                       }}
                       draggable={false}
                     />
@@ -722,10 +739,11 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                     <img
                       src={CAMADAS_ANGELING.aureola}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 transition-all duration-500 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain transition-all duration-500 ease-out"
                       style={{
                         filter: `blur(${blurDetalhe}px)`,
                         opacity: esconderParcial ? 0 : 0.98,
+                        transform: `scale(${ESCALA_MOB_SAIDA})`,
                       }}
                       draggable={false}
                     />
@@ -735,7 +753,7 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                     <img
                       src={CAMADAS_ANGELING.rosto}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 z-[1] transition-all duration-500 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain z-[1] transition-all duration-500 ease-out"
                       style={{
                         filter: [
                           temCores ? "" : "grayscale(1)",
@@ -744,21 +762,23 @@ export function ExemploAngelingCerebro(): React.ReactElement {
                           .filter(Boolean)
                           .join(" "),
                         opacity: esconderParcial ? 0 : 0.98,
+                        transform: `scale(${ESCALA_MOB_SAIDA})`,
                       }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Completo original: só com todas as entradas */}
                   {reconhecimentoCompleto && (
                     <img
                       src={CAMADAS_ANGELING.completo}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-contain p-0.5 z-10 transition-all duration-700 ease-out"
+                      className="absolute inset-0 w-full h-full object-contain z-10 transition-all duration-700 ease-out"
                       style={{
                         filter: angelingRevelado ? "blur(0px)" : "blur(9px)",
                         opacity: angelingRevelado ? 1 : 0.28,
-                        transform: angelingRevelado ? "scale(1)" : "scale(0.9)",
+                        transform: angelingRevelado
+                          ? `scale(${ESCALA_MOB_SAIDA})`
+                          : `scale(${ESCALA_MOB_SAIDA * 0.9})`,
                       }}
                       draggable={false}
                     />
