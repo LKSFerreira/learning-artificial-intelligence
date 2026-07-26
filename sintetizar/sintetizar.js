@@ -30,6 +30,21 @@ const BG_DARK = "\x1b[48;5;234m";
 const INTERVALO_RATE_LIMIT_MS = 30_000;
 const INTERVALO_RATE_LIMIT_SEGUNDOS = INTERVALO_RATE_LIMIT_MS / 1000;
 
+/**
+ * Acima desse limite a qualidade do TTS cai.
+ * O autor marca cortes no .md com `<!-- cut -->` (ignorado na leitura).
+ * Cada fatia é sintetizada e o PCM é unido num único MP3 (sem arquivos extras).
+ */
+const LIMITE_CARACTERES_POR_PARTE = 2500;
+/** Tag de corte manual no Markdown da lição (não é falada; só divide a narração). */
+const PADRAO_TAG_CUT = "<!--\\s*cut\\s*-->";
+const PADRAO_AUDIO_SKIP =
+  "<!--\\s*audio-skip-start\\s*-->[\\s\\S]*?<!--\\s*audio-skip-end\\s*-->";
+const TAXA_AMOSTRAGEM_PCM = 24000;
+const MODELO_TTS = "gemini-3.1-flash-tts-preview";
+const PREFIXO_PROMPT_TTS =
+  "Leia em voz alta, com tom calmo, profissional, didático e natural de professor de computação, o seguinte texto em português do Brasil (leia o texto de forma limpa, direta, sem introduções ou comentários de metadados): ";
+
 // 1. Carrega manualmente o arquivo .env da raiz do projeto para compatibilidade universal
 const envPath = path.join(__dirname, "../.env");
 if (fs.existsSync(envPath)) {
@@ -177,12 +192,14 @@ function converterTabelasMarkdownParaLeitura(markdown) {
   return resultado.join("\n");
 }
 
-// Função para limpar marcações markdown do texto (TTS — não altera o .md da web)
+// Função para limpar marcações markdown do texto (TTS; não altera o .md da web)
 function limparMarkdownParaLeitura(markdown) {
   if (!markdown) return "";
   let texto = markdown;
   // Remove blocos marcados para serem ignorados no áudio (ex: referências)
-  texto = texto.replace(/<!-- audio-skip-start -->[\s\S]*?<!-- audio-skip-end -->/g, "");
+  texto = texto.replace(new RegExp(PADRAO_AUDIO_SKIP, "gi"), "");
+  // Tags de corte: nunca são lidas (o fatiamento já as usou antes)
+  texto = texto.replace(new RegExp(PADRAO_TAG_CUT, "gi"), " ");
   // Tabelas: na web ficam GFM; no áudio viram frases (sem | nem ---)
   texto = converterTabelasMarkdownParaLeitura(texto);
   texto = texto.replace(/```[\s\S]*?```/g, " (exemplo de código omitido) ");
@@ -204,10 +221,12 @@ function limparMarkdownParaLeitura(markdown) {
 
 // Converte bytes PCM para Buffer MP3
 function converterPcmParaMp3Buffer(pcmData, sampleRate) {
-  const buffer = pcmData.buffer;
-  const offset = pcmData.byteOffset;
-  const length = pcmData.byteLength / 2;
-  const amostras = new Int16Array(buffer, offset, length);
+  const length = Math.floor(pcmData.byteLength / 2);
+  const amostras = new Int16Array(
+    pcmData.buffer,
+    pcmData.byteOffset,
+    length,
+  );
 
   const encoder = new Mp3Encoder(1, sampleRate, 128); // 1 canal, 24000Hz, 128kbps
   const mp3Chunks = [];
@@ -227,6 +246,160 @@ function converterPcmParaMp3Buffer(pcmData, sampleRate) {
   }
 
   return Buffer.concat(mp3Chunks);
+}
+
+/**
+ * Monta as partes da narração a partir do Markdown da lição.
+ *
+ * - `<!-- audio-skip-start/end -->`: bloco inteiro fora do áudio
+ * - `<!-- cut -->`: ponto de corte entre partes (tag não é falada)
+ * - Não há corte no meio do texto por pontuação ou limite cego
+ * - Se alguma parte limpa passar de LIMITE_CARACTERES_POR_PARTE → erro pedindo mais cuts
+ */
+function montarPartesNarracao(tituloLimpo, corpoMarkdown) {
+  const corpoBruto = corpoMarkdown || "";
+  const temTagCut = new RegExp(PADRAO_TAG_CUT, "i").test(corpoBruto);
+
+  // 1) Remove skip de áudio antes de fatiar
+  const semSkip = corpoBruto.replace(new RegExp(PADRAO_AUDIO_SKIP, "gi"), "\n");
+
+  // 2) Fatia só nas tags <!-- cut -->
+  const segmentosBrutos = semSkip.split(new RegExp(PADRAO_TAG_CUT, "i"));
+
+  const partes = [];
+  let tituloJaAplicado = false;
+
+  for (const segmento of segmentosBrutos) {
+    let texto = limparMarkdownParaLeitura(segmento);
+    if (!tituloJaAplicado && tituloLimpo) {
+      texto = texto ? `${tituloLimpo}. ${texto}` : `${tituloLimpo}.`;
+      tituloJaAplicado = true;
+    }
+    if (texto) partes.push(texto);
+  }
+
+  if (partes.length === 0) {
+    throw new Error(
+      "Nada para sintetizar após limpar o Markdown (corpo vazio ou só em audio-skip).",
+    );
+  }
+
+  const totalChars = partes.reduce((soma, parte) => soma + parte.length, 0);
+  const partesEstouradas = partes
+    .map((parte, indice) => ({
+      indice: indice + 1,
+      caracteres: parte.length,
+    }))
+    .filter((item) => item.caracteres > LIMITE_CARACTERES_POR_PARTE);
+
+  if (partesEstouradas.length > 0) {
+    const detalhe = partesEstouradas
+      .map((item) => `parte ${item.indice}: ${item.caracteres} chars`)
+      .join("; ");
+    const dica = temTagCut
+      ? `Insira mais <!-- cut --> no .md entre seções naturais (a tag não é lida no áudio).`
+      : `O texto tem ${totalChars} chars (limite ${LIMITE_CARACTERES_POR_PARTE} por parte). Insira <!-- cut --> no .md nos pontos em que a narração pode pausar/continuar. A tag não aparece na web nem é falada.`;
+    throw new Error(
+      `Parte(s) acima de ${LIMITE_CARACTERES_POR_PARTE} caracteres (${detalhe}). ${dica}`,
+    );
+  }
+
+  return {
+    partes,
+    totalChars,
+    temTagCut,
+  };
+}
+
+async function aguardarRateLimit(mensagemOpcional) {
+  const msg =
+    mensagemOpcional ||
+    `Aguardando ${INTERVALO_RATE_LIMIT_SEGUNDOS} segundos para evitar rate limit...`;
+  console.log(`  ${FG_GRAY}${msg}${C_RESET}`);
+  await new Promise((resolve) => setTimeout(resolve, INTERVALO_RATE_LIMIT_MS));
+}
+
+/**
+ * Uma chamada TTS: devolve PCM bruto (Buffer).
+ */
+async function requisitarPcmDaApi(ai, texto, voz) {
+  const resposta = await ai.interactions.create({
+    model: MODELO_TTS,
+    input: `${PREFIXO_PROMPT_TTS}${texto}`,
+    response_format: { type: "audio" },
+    generation_config: {
+      speech_config: [{ voice: voz }],
+    },
+  });
+
+  const audioBase64 = resposta.output_audio?.data;
+  if (!audioBase64) {
+    throw new Error(`Áudio retornado nulo para a voz ${voz}.`);
+  }
+  return Buffer.from(audioBase64, "base64");
+}
+
+/**
+ * Sintetiza uma lista de partes já montadas (via <!-- cut -->).
+ * PCM concatenado → um único MP3.
+ */
+async function sintetizarPartesParaMp3(ai, partes, voz, opcoes = {}) {
+  const { rotuloBase = voz } = opcoes;
+
+  if (!partes || partes.length === 0) {
+    throw new Error("Texto vazio para síntese.");
+  }
+
+  if (partes.length > 1) {
+    console.log(
+      `  • Narração em ${FG_CYAN}${partes.length} partes${C_RESET} (cortes <!-- cut -->; limite ${LIMITE_CARACTERES_POR_PARTE} chars/parte):`,
+    );
+    partes.forEach((parte, indice) => {
+      console.log(
+        `    ${FG_GRAY}parte ${indice + 1}/${partes.length}: ${parte.length} chars${C_RESET}`,
+      );
+    });
+  }
+
+  const pcmPartes = [];
+
+  for (let indice = 0; indice < partes.length; indice += 1) {
+    const parte = partes[indice];
+    const rotulo =
+      partes.length > 1
+        ? `${rotuloBase} · parte ${indice + 1}/${partes.length}`
+        : rotuloBase;
+
+    const spinner = iniciarSpinner(
+      `Requisitando Gemini API (${FG_VIOLET}${rotulo}${C_RESET})...`,
+    );
+
+    try {
+      const pcm = await requisitarPcmDaApi(ai, parte, voz);
+      spinner.parar(true);
+      pcmPartes.push(pcm);
+      console.log(
+        `  ${FG_GREEN}✔ PCM recebido${partes.length > 1 ? ` (parte ${indice + 1}/${partes.length})` : ""}: ${(pcm.length / 1024).toFixed(1)} KB${C_RESET}`,
+      );
+    } catch (erro) {
+      spinner.parar(false);
+      throw erro;
+    }
+
+    if (indice < partes.length - 1) {
+      await aguardarRateLimit(
+        `Aguardando ${INTERVALO_RATE_LIMIT_SEGUNDOS}s entre partes do áudio...`,
+      );
+    }
+  }
+
+  const pcmTotal = Buffer.concat(pcmPartes);
+  const mp3Buffer = converterPcmParaMp3Buffer(pcmTotal, TAXA_AMOSTRAGEM_PCM);
+  return {
+    mp3Buffer,
+    quantidadePartes: partes.length,
+    caracteresPorParte: partes.map((parte) => parte.length),
+  };
 }
 
 // Extrai metadados do frontmatter markdown
@@ -359,6 +532,76 @@ async function perguntarArquivoTeste(rl) {
       `  ${FG_RED}⚠ Arquivo não encontrado no caminho: "${trimmed}". Certifique-se de digitar o caminho correto (ex: sintetizar/sintetizar.md).${C_RESET}`,
     );
   }
+}
+
+/** Ordem canônica das vozes da plataforma. */
+const VOZES_PLATAFORMA = ["Aoede", "Kore"];
+
+/**
+ * Vozes que ainda faltam no conjunto de lições selecionadas
+ * (união do que cada lição tem pendente).
+ */
+function coletarVozesPendentesNasLicoes(licoes) {
+  const encontradas = new Set();
+  for (const licao of licoes) {
+    for (const item of licao.vozes || []) {
+      encontradas.add(item.voz);
+    }
+  }
+  return VOZES_PLATAFORMA.filter((voz) => encontradas.has(voz));
+}
+
+/**
+ * Menu de vozes só com o que ainda falta gerar.
+ * - Se só falta uma (ex.: Kore), escolhe ela automaticamente.
+ * - Se faltam as duas, oferece ambas / só Aoede / só Kore.
+ * @returns {Promise<string[]>} nomes das vozes a gerar
+ */
+async function perguntarVozesPendentesParaGerar(rl, licoesParaProcessar) {
+  const pendentes = coletarVozesPendentesNasLicoes(licoesParaProcessar);
+
+  if (pendentes.length === 0) {
+    return [];
+  }
+
+  if (pendentes.length === 1) {
+    const unica = pendentes[0];
+    console.log(
+      `\n  ${FG_CYAN}ℹ Nas lições selecionadas só falta a voz ${C_BOLD}${unica}${C_RESET}${FG_CYAN}. Seguindo apenas com ela.${C_RESET}`,
+    );
+    return [unica];
+  }
+
+  // Duas (ou mais) vozes pendentes no conjunto
+  console.log(`\n  ${C_BOLD}Escolha as vozes a serem geradas:${C_RESET}`);
+  console.log(
+    `  ${FG_GRAY}(somente opções com áudio ainda pendente nas lições escolhidas)${C_RESET}`,
+  );
+  console.log(
+    `  ┌──────────────────────────────────────────────────────────┐`,
+  );
+  console.log(
+    `  │ [1] Ambas as vozes (Aoede & Kore) - Recomendado          │`,
+  );
+  console.log(
+    `  │ [2] Apenas voz Aoede (Feminina Expressiva)               │`,
+  );
+  console.log(
+    `  │ [3] Apenas voz Kore (Feminina Suave)                     │`,
+  );
+  console.log(
+    `  └──────────────────────────────────────────────────────────┘`,
+  );
+  const modoVozes = await perguntarOpcaoNumerica(
+    rl,
+    `\n  Opção selecionada [Padrão: 1]: `,
+    3,
+    1,
+  );
+
+  if (modoVozes === 2) return ["Aoede"];
+  if (modoVozes === 3) return ["Kore"];
+  return ["Aoede", "Kore"];
 }
 
 // Helper de spinner de terminal animado para UX em requisições demoradas da API do Gemini
@@ -566,7 +809,8 @@ async function main() {
     }
 
     let licoesParaProcessar = [];
-    let modoVozes = 1; // 1 = Ambas, 2 = Apenas Aoede, 3 = Apenas Kore
+    /** Vozes que o usuário quer gerar nesta execução (já filtradas pelo que falta). */
+    let vozesEscolhidas = ["Aoede", "Kore"];
 
     if (opcaoMenu === 1) {
       // MODO AUTOMÁTICO EM LOTE
@@ -589,28 +833,9 @@ async function main() {
       );
 
       licoesParaProcessar = licoesComVozesFaltantes.slice(0, quantidadeLicoes);
-
-      console.log(`\n  ${C_BOLD}Escolha as vozes a serem geradas:${C_RESET}`);
-      console.log(
-        `  ┌──────────────────────────────────────────────────────────┐`,
-      );
-      console.log(
-        `  │ [1] Ambas as vozes (Aoede & Kore) - Recomendado          │`,
-      );
-      console.log(
-        `  │ [2] Apenas voz Aoede (Feminina Expressiva)               │`,
-      );
-      console.log(
-        `  │ [3] Apenas voz Kore (Feminina Suave)                     │`,
-      );
-      console.log(
-        `  └──────────────────────────────────────────────────────────┘`,
-      );
-      modoVozes = await perguntarOpcaoNumerica(
+      vozesEscolhidas = await perguntarVozesPendentesParaGerar(
         rl,
-        `\n  Opção selecionada [Padrão: 1]: `,
-        3,
-        1,
+        licoesParaProcessar,
       );
     } else if (opcaoMenu === 2) {
       // SELECIONAR LIÇÕES ESPECÍFICAS
@@ -651,28 +876,9 @@ async function main() {
         licoesComVozesFaltantes,
       );
       licoesParaProcessar = licoesSelecionadas;
-
-      console.log(`\n  ${C_BOLD}Escolha as vozes a serem geradas:${C_RESET}`);
-      console.log(
-        `  ┌──────────────────────────────────────────────────────────┐`,
-      );
-      console.log(
-        `  │ [1] Ambas as vozes (Aoede & Kore) - Recomendado          │`,
-      );
-      console.log(
-        `  │ [2] Apenas voz Aoede (Feminina Expressiva)               │`,
-      );
-      console.log(
-        `  │ [3] Apenas voz Kore (Feminina Suave)                     │`,
-      );
-      console.log(
-        `  └──────────────────────────────────────────────────────────┘`,
-      );
-      modoVozes = await perguntarOpcaoNumerica(
+      vozesEscolhidas = await perguntarVozesPendentesParaGerar(
         rl,
-        `\n  Opção selecionada [Padrão: 1]: `,
-        3,
-        1,
+        licoesParaProcessar,
       );
     } else if (opcaoMenu === 3) {
       // MODO TESTE AVULSO
@@ -740,38 +946,26 @@ async function main() {
       }
 
       const tituloLimpo = limparEmojis(titulo);
-      const corpoLimpo = limparMarkdownParaLeitura(corpoMarkdown);
-      const textoSintese = tituloLimpo
-        ? `${tituloLimpo}. \n\n ${corpoLimpo}`
-        : corpoLimpo;
-
-      console.log(
-        `  • Caracteres detectados: ${FG_CYAN}${textoSintese.length}${C_RESET}`,
-      );
-      const spinner = iniciarSpinner(`Chamando Gemini com a voz: ${FG_VIOLET}${vozTeste}${C_RESET}...`);
 
       try {
+        const { partes, totalChars } = montarPartesNarracao(
+          tituloLimpo,
+          corpoMarkdown,
+        );
+        console.log(
+          `  • Caracteres na narração: ${FG_CYAN}${totalChars}${C_RESET} · partes: ${FG_CYAN}${partes.length}${C_RESET}`,
+        );
+
         const ai = new GoogleGenAI({ apiKey });
-        const resposta = await ai.interactions.create({
-          model: "gemini-3.1-flash-tts-preview",
-          input: `Leia em voz alta, com tom calmo, profissional, didático e natural de professor de computação, o seguinte texto em português do Brasil (leia o texto de forma limpa, direta, sem introduções ou comentários de metadados): ${textoSintese}`,
-          response_format: { type: "audio" },
-          generation_config: {
-            speech_config: [
-              { voice: vozTeste }
-            ],
-          },
-        });
-
-        spinner.parar(true);
-        const audioBase64 = resposta.output_audio?.data;
-        if (!audioBase64) {
-          throw new Error("A API do Gemini retornou dados de áudio nulos.");
-        }
-
-        const pcmData = Buffer.from(audioBase64, "base64");
-        console.log(`  • Convertendo áudio bruto PCM para MP3...`);
-        const mp3Buffer = converterPcmParaMp3Buffer(pcmData, 24000);
+        console.log(
+          `  • Convertendo PCM para MP3 (partes unidas se necessário)...`,
+        );
+        const { mp3Buffer, quantidadePartes } = await sintetizarPartesParaMp3(
+          ai,
+          partes,
+          vozTeste,
+          { rotuloBase: vozTeste },
+        );
 
         const dirDoArquivo = path.dirname(arquivoTeste);
         const timestamp = Date.now();
@@ -786,10 +980,9 @@ async function main() {
         fs.writeFileSync(caminhoSaida, mp3Buffer);
 
         console.log(
-          `\n  ${FG_GREEN}✔ Sucesso! MP3 de teste gerado em: ${caminhoSaida} (${(mp3Buffer.length / 1024).toFixed(1)} KB)${C_RESET}`,
+          `\n  ${FG_GREEN}✔ Sucesso! MP3 de teste gerado em: ${caminhoSaida} (${(mp3Buffer.length / 1024).toFixed(1)} KB)${quantidadePartes > 1 ? ` · ${quantidadePartes} partes unidas` : ""}${C_RESET}`,
         );
       } catch (err) {
-        spinner.parar(false);
         console.error(
           `\n  ${FG_RED}❌ Erro na síntese do teste: ${err.message || err}${C_RESET}`,
         );
@@ -815,20 +1008,11 @@ async function main() {
       );
 
       const tituloLimpo = limparEmojis(licao.titulo);
-      const corpoLimpo = limparMarkdownParaLeitura(licao.corpoMarkdown);
-      const textoSintese = `${tituloLimpo}. \n\n ${corpoLimpo}`;
 
-      console.log(
-        `  • Caracteres a sintetizar: ${FG_CYAN}${textoSintese.length}${C_RESET}`,
+      // Só vozes pendentes nesta lição E escolhidas no menu (nunca gera o que já existe)
+      const vozesDeFato = licao.vozes.filter((item) =>
+        vozesEscolhidas.includes(item.voz),
       );
-
-      // Filtra as vozes de acordo com a escolha do usuário
-      let vozesDeFato = licao.vozes;
-      if (modoVozes === 2) {
-        vozesDeFato = licao.vozes.filter((v) => v.voz === "Aoede");
-      } else if (modoVozes === 3) {
-        vozesDeFato = licao.vozes.filter((v) => v.voz === "Kore");
-      }
 
       if (vozesDeFato.length === 0) {
         console.log(
@@ -837,56 +1021,52 @@ async function main() {
         continue;
       }
 
+      let partesNarracao;
+      try {
+        const montagem = montarPartesNarracao(tituloLimpo, licao.corpoMarkdown);
+        partesNarracao = montagem.partes;
+        console.log(
+          `  • Caracteres a sintetizar: ${FG_CYAN}${montagem.totalChars}${C_RESET} · partes: ${FG_CYAN}${partesNarracao.length}${C_RESET}${montagem.temTagCut ? " (via <!-- cut -->)" : ""}`,
+        );
+      } catch (erroMontagem) {
+        console.error(
+          `  ${FG_RED}❌ ${erroMontagem.message || erroMontagem}${C_RESET}`,
+        );
+        continue;
+      }
+
       let erroNaLicao = false;
       for (let j = 0; j < vozesDeFato.length; j++) {
         const itemVoz = vozesDeFato[j];
-        const spinner = iniciarSpinner(`Requisitando Gemini API (Voz: ${FG_VIOLET}${itemVoz.voz}${C_RESET})...`);
 
         try {
-          const resposta = await ai.interactions.create({
-            model: "gemini-3.1-flash-tts-preview",
-            input: `Leia em voz alta, com tom calmo, profissional, didático e natural de professor de computação, o seguinte texto em português do Brasil (leia o texto de forma limpa, direta, sem introduções ou comentários de metadados): ${textoSintese}`,
-            response_format: { type: "audio" },
-            generation_config: {
-              speech_config: [
-                { voice: itemVoz.voz }
-              ],
-            },
+          const { mp3Buffer, quantidadePartes } = await sintetizarPartesParaMp3(
+            ai,
+            partesNarracao,
+            itemVoz.voz,
+            { rotuloBase: itemVoz.voz },
+          );
+
+          fs.mkdirSync(path.dirname(itemVoz.caminhoArquivoFinal), {
+            recursive: true,
           });
-
-          spinner.parar(true);
-          const audioBase64 = resposta.output_audio?.data;
-          if (!audioBase64) {
-            throw new Error(`Áudio retornado nulo para a voz ${itemVoz.voz}.`);
-          }
-
-          const pcmData = Buffer.from(audioBase64, "base64");
-          const mp3Buffer = converterPcmParaMp3Buffer(pcmData, 24000);
-
-          fs.mkdirSync(path.dirname(itemVoz.caminhoArquivoFinal), { recursive: true });
           fs.writeFileSync(itemVoz.caminhoArquivoFinal, mp3Buffer);
           console.log(
-            `  ${FG_GREEN}✔ Áudio MP3 gravado: ${itemVoz.voz}/${itemVoz.nomeArquivoFinal} (${(mp3Buffer.length / 1024).toFixed(1)} KB)${C_RESET}`,
+            `  ${FG_GREEN}✔ Áudio MP3 gravado: ${itemVoz.voz}/${itemVoz.nomeArquivoFinal} (${(mp3Buffer.length / 1024).toFixed(1)} KB)${quantidadePartes > 1 ? ` · ${quantidadePartes} partes unidas` : ""}${C_RESET}`,
           );
 
           if (!mapa[licao.id]) mapa[licao.id] = {};
           mapa[licao.id][itemVoz.voz] = true;
           fs.writeFileSync(mapaCaminho, JSON.stringify(mapa, null, 2));
 
-          // Delay de cortesia para a API do Gemini
+          // Delay entre vozes / lições (entre partes já espera dentro de sintetizarPartesParaMp3)
           if (
             j < vozesDeFato.length - 1 ||
             i < licoesParaProcessar.length - 1
           ) {
-            console.log(
-              `  ${FG_GRAY}Aguardando ${INTERVALO_RATE_LIMIT_SEGUNDOS} segundos para evitar rate limit...${C_RESET}`,
-            );
-            await new Promise((resolve) =>
-              setTimeout(resolve, INTERVALO_RATE_LIMIT_MS),
-            );
+            await aguardarRateLimit();
           }
         } catch (err) {
-          spinner.parar(false);
           console.error(
             `  ${FG_RED}❌ Erro na síntese da voz ${itemVoz.voz}: ${err.message || err}${C_RESET}`,
           );
