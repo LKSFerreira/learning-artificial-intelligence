@@ -83,12 +83,108 @@ function limparEmojis(texto) {
     .trim();
 }
 
-// Função para limpar marcações markdown do texto
+/**
+ * Linha de tabela GFM (| célula | célula |).
+ * A renderização web continua intacta; isto só afeta o texto enviado ao TTS.
+ */
+function ehLinhaTabelaMarkdown(linha) {
+  const texto = linha.trim();
+  if (!texto.includes("|")) return false;
+  return texto.startsWith("|") || /\|.+\|/.test(texto);
+}
+
+function ehSeparadorTabelaMarkdown(linha) {
+  const texto = linha.trim();
+  // Ex.: | --- | :---: | ---: |  ou  |:---|:---:|---:|
+  if (!texto.includes("|") || !/-{3,}/.test(texto)) return false;
+  return /^[\s|:\-]+$/.test(texto);
+}
+
+function extrairCelulasTabela(linha) {
+  let texto = linha.trim();
+  if (texto.startsWith("|")) texto = texto.slice(1);
+  if (texto.endsWith("|")) texto = texto.slice(0, -1);
+  return texto.split("|").map((celula) => celula.trim());
+}
+
+/**
+ * Converte blocos de tabela Markdown em frases faláveis.
+ * Remove pipes, traços de alinhamento e a “forma” da tabela no áudio.
+ */
+function converterTabelasMarkdownParaLeitura(markdown) {
+  const linhas = markdown.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  const resultado = [];
+  let indice = 0;
+
+  while (indice < linhas.length) {
+    const linhaAtual = linhas[indice];
+    const proxima = linhas[indice + 1];
+
+    // Início de tabela: linha com | e (opcionalmente) separador na linha seguinte
+    const pareceInicioTabela =
+      ehLinhaTabelaMarkdown(linhaAtual) &&
+      !ehSeparadorTabelaMarkdown(linhaAtual) &&
+      proxima !== undefined &&
+      ehSeparadorTabelaMarkdown(proxima);
+
+    if (!pareceInicioTabela) {
+      resultado.push(linhaAtual);
+      indice += 1;
+      continue;
+    }
+
+    const bloco = [];
+    while (indice < linhas.length && ehLinhaTabelaMarkdown(linhas[indice])) {
+      bloco.push(linhas[indice]);
+      indice += 1;
+    }
+
+    const linhasDados = bloco.filter((linha) => !ehSeparadorTabelaMarkdown(linha));
+    if (linhasDados.length === 0) continue;
+
+    const cabecalhos = extrairCelulasTabela(linhasDados[0]);
+    const linhasCorpo = linhasDados.slice(1).map(extrairCelulasTabela);
+
+    if (linhasCorpo.length === 0) {
+      // Só cabeçalho: lê as células em sequência
+      resultado.push(cabecalhos.filter(Boolean).join(". ") + ".");
+      continue;
+    }
+
+    const frases = [];
+    for (const celulas of linhasCorpo) {
+      const partes = [];
+      for (let coluna = 0; coluna < Math.max(cabecalhos.length, celulas.length); coluna += 1) {
+        const titulo = (cabecalhos[coluna] || "").trim();
+        const valor = (celulas[coluna] || "").trim();
+        if (!valor && !titulo) continue;
+        if (titulo && valor) {
+          partes.push(`${titulo}: ${valor}`);
+        } else if (valor) {
+          partes.push(valor);
+        }
+      }
+      if (partes.length > 0) {
+        frases.push(partes.join(". ") + ".");
+      }
+    }
+
+    if (frases.length > 0) {
+      resultado.push(frases.join(" "));
+    }
+  }
+
+  return resultado.join("\n");
+}
+
+// Função para limpar marcações markdown do texto (TTS — não altera o .md da web)
 function limparMarkdownParaLeitura(markdown) {
   if (!markdown) return "";
   let texto = markdown;
-  // Remove blocos marcados para serem ignorados no áudio (ex: referências, tabelas visuais)
+  // Remove blocos marcados para serem ignorados no áudio (ex: referências)
   texto = texto.replace(/<!-- audio-skip-start -->[\s\S]*?<!-- audio-skip-end -->/g, "");
+  // Tabelas: na web ficam GFM; no áudio viram frases (sem | nem ---)
+  texto = converterTabelasMarkdownParaLeitura(texto);
   texto = texto.replace(/```[\s\S]*?```/g, " (exemplo de código omitido) ");
   texto = texto.replace(/`([^`]+)`/g, "$1");
   texto = texto.replace(/!\[([^\]]*)\]\([^)]+\)/g, "");
