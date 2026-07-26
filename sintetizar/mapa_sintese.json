@@ -14,5 +14,9 @@
   "ml": {
     "Aoede": true,
     "Kore": true
+  },
+  "dl": {
+    "Aoede": true,
+    "Kore": true
   }
 }
