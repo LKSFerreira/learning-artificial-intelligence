@@ -112,7 +112,7 @@ export function ConteudoVideo({ urlVideo, descricao, aoConcluir }: PropriedadesC
         {/* Badge Informativo */}
         <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/10 group-hover:bg-black/80 transition-colors">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          Modo Cinema
+          Ampliar vídeo
         </div>
       </button>
 
@@ -120,7 +120,7 @@ export function ConteudoVideo({ urlVideo, descricao, aoConcluir }: PropriedadesC
         <p className="mt-4 text-slate-600">{descricao}</p>
       )}
 
-      {/* Modal de Exibição Focada (Lightbox / Modo Cinema) */}
+      {/* Modal de exibição focada (lightbox interno) */}
       {estaAberto && (
         <div 
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-modal-fade cursor-pointer"
