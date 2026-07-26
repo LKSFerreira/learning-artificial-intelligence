@@ -7,7 +7,7 @@ ordem: 4
 urlVideo: ""
 ---
 
-No tópico **02** o **Deep Learning** entrou no mapa como fatia do **Machine Learning**: redes com **muitas camadas** aprendendo representações a partir de dados ricos (imagens, áudio, texto). No **02.3** você viu o que é DL e um catálogo de eras. No **03** treinou, na prática, um classificador **supervisionado** com exemplos rotulados.
+Na lição **Inteligência Artificial (IA), Machine Learning (ML) e Deep Learning (DL) em um Diagrama de Venn** o **Deep Learning** entrou no mapa como fatia do **Machine Learning**: redes com **muitas camadas** aprendendo representações a partir de dados ricos (imagens, áudio, texto). Em **Deep Learning (DL)** você viu o que é DL e um catálogo de eras. Em **O Momento em que Paramos de Programar Regras** treinou, na prática, um classificador **supervisionado** com exemplos rotulados.
 
 A pergunta desta lição é histórica e conceitual ao mesmo tempo: **por que** as redes neurais quase saíram de cena, e **por que** voltaram sob o nome *deep*?
 
@@ -37,7 +37,7 @@ Para redes com **várias camadas**, não basta empilhar unidades. É preciso um 
 
 Um marco de popularização é o trabalho de **Rumelhart, Hinton e Williams (1986)**. Com isso, o caminho teórico para redes **profundas** fica bem mais claro. Ainda assim, na prática faltavam, em escala, três combustíveis:
 
-*   **dados** rotulados em volume (no espírito do que você viu no tópico **03**);
+*   **dados** rotulados em volume (no espírito do que você viu em **O Momento em que Paramos de Programar Regras**);
 *   **computação** barata o bastante (em especial **GPUs** para álgebra densa);
 *   **arquiteturas** adequadas ao tipo de dado (por exemplo, convoluções para imagens).
 
@@ -45,7 +45,7 @@ Um marco de popularização é o trabalho de **Rumelhart, Hinton e Williams (198
 
 Em **2012**, no desafio **ImageNet** de classificação de imagens, a rede **AlexNet** (**Krizhevsky, Sutskever e Hinton**) reduziu de forma marcante a taxa de erro em relação aos métodos dominantes da época. Não foi “mágica de um herói isolado”: foi a combinação de **rede profunda**, **treinamento em GPU** e **dados em escala**.
 
-A partir daí, “deep learning” deixa de ser só curiosidade de paper e vira motor industrial em **visão**, depois em **fala** e **linguagem**. No **02.3** você já viu o próximo salto de arquitetura (**Transformer**, 2017). Aqui o foco é outro: **por que a profundidade** importa no arco histórico.
+A partir daí, “deep learning” deixa de ser só curiosidade de paper e vira motor industrial em **visão**, depois em **fala** e **linguagem**. Em **Deep Learning (DL)** você já viu o próximo salto de arquitetura (**Transformer**, 2017). Aqui o foco é outro: **por que a profundidade** importa no arco histórico.
 
 ### O que significa “deep”
 
@@ -55,9 +55,9 @@ A partir daí, “deep learning” deixa de ser só curiosidade de paper e vira 
 *   camadas intermediárias combinam esses padrões (contornos, partes);
 *   camadas mais altas aproximam conceitos mais ricos (objeto, cena, classe).
 
-No inventário do tópico **03**, a regra fixa olhava só `cor === vermelho`. Um modelo raso com poucas pistas também se engana fácil. Uma rede **profunda**, treinada com exemplos rotulados, pode montar a ideia de “parece frasco de poção” a partir de **vários níveis** de padrão, sem você escrever cada `if`.
+No inventário de **O Momento em que Paramos de Programar Regras**, a regra fixa olhava só `cor === vermelho`. Um modelo raso com poucas pistas também se engana fácil. Uma rede **profunda**, treinada com exemplos rotulados, pode montar a ideia de “parece frasco de poção” a partir de **vários níveis** de padrão, sem você escrever cada `if`.
 
-Isso **não** elimina o trabalho humano (dados, objetivo, avaliação). Reduz a dependência de **features** desenhadas à mão, o gargalo do ML clássico que o **02.3** nomeou.
+Isso **não** elimina o trabalho humano (dados, objetivo, avaliação). Reduz a dependência de **features** desenhadas à mão, o gargalo do ML clássico que **Deep Learning (DL)** nomeou.
 
 | Aspecto | **Rede rasa / regra frágil** | **Rede profunda (DL)** |
 | :--- | :--- | :--- |
@@ -70,7 +70,7 @@ Isso **não** elimina o trabalho humano (dados, objetivo, avaliação). Reduz a 
 **Entrada e camada são coisas diferentes:**
 
 *   **Entrada (sinal):** retângulos à esquerda (arredondado, rosado, tem rosto).
-*   **Camada (didática):** o **conjunto de neurônios** que “participam” daquele tipo de padrão — **espalhados** na rede (semi-aleatório estável), **não** a coluna inteira acesa de uma vez.
+*   **Camada (didática):** o **conjunto de neurônios** que “participam” daquele tipo de padrão, **espalhados** na rede (semi-aleatório estável), **não** a coluna inteira acesa de uma vez.
 
 No exemplo básico (Poring):
 
@@ -86,8 +86,8 @@ As cores dos neurônios ativos seguem a **família da coluna**, com **tons difer
 
 O painel tem **duas faixas**:
 
-1. **Básico (≈1/3):** Poring — poucas entradas e saída em círculo.
-2. **Avançado (≈2/3):** Angeling — **6 camadas de reconhecimento** (contornos, formato, cores, asas, auréola, rosto). Neurônios **espalhados** num mapa em forma de cérebro (metáfora, não anatomia). A imagem se forma na **zona da imagem** conforme você ativa cada nível.
+1. **Básico (≈1/3):** Poring, poucas entradas e saída em círculo.
+2. **Avançado (≈2/3):** Angeling, **6 camadas de reconhecimento** (contornos, formato, cores, asas, auréola, rosto). Neurônios **espalhados** num mapa em forma de cérebro (metáfora, não anatomia). A imagem se forma na **zona da imagem** conforme você ativa cada nível.
 
 A classe final (**ANGELING**, confiança 97–99%) só fecha com as **seis** camadas ativas.
 
@@ -96,7 +96,7 @@ A classe final (**ANGELING**, confiança 97–99%) só fecha com as **seis** cam
 *   Redes neurais **não** nasceram em 2012; o **deep em escala** sim consolidou ali o salto público.
 *   Inverno e crítica de *Perceptrons* explicam o freio nas redes **simples**, não a morte eterna da ideia.
 *   **Deep** = profundidade de camadas + representações em cascata + dados e computação.
-*   No mapa do tópico **02**: isso é **DL dentro de ML dentro de IA**. O simulador do **03** era **supervisionado**; redes profundas são, com muita frequência, o **motor** desse supervisionado em visão e linguagem.
+*   No mapa do diagrama de Venn: isso é **DL dentro de ML dentro de IA**. O simulador de **O Momento em que Paramos de Programar Regras** era **supervisionado**; redes profundas são, com muita frequência, o **motor** desse supervisionado em visão e linguagem.
 
 Quando o arco **inverno → deep** estiver claro, o curso muda de família de aprendizado: o **reforço**, em que a experiência chega por **recompensa** no ambiente, não por milhares de rótulos “isto é poção”.
 <!-- audio-skip-start -->
@@ -107,5 +107,5 @@ Quando o arco **inverno → deep** estiver claro, o curso muda de família de ap
 *   **1969 (Minsky & Papert):** [*Perceptrons*](https://mitpress.mit.edu/9780262631112/perceptrons/) (MIT Press): análise das limitações de perceptrons (e o impacto narrativo na área).
 *   **1986 (Rumelhart, Hinton & Williams):** [Learning representations by back-propagating errors](https://doi.org/10.1038/323533a0): marco na popularização da retropropagação.
 *   **2012 (Krizhevsky, Sutskever & Hinton):** [ImageNet Classification with Deep Convolutional Neural Networks](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks) (NeurIPS): *AlexNet* e o salto do deep em visão.
-*   **2016 (Goodfellow, Bengio & Courville):** [*Deep Learning*](https://www.deeplearningbook.org/) (MIT Press): referência do campo (também no tópico 02.3).
+*   **2016 (Goodfellow, Bengio & Courville):** [*Deep Learning*](https://www.deeplearningbook.org/) (MIT Press): referência do campo (também em **Deep Learning (DL)**).
 <!-- audio-skip-end -->
