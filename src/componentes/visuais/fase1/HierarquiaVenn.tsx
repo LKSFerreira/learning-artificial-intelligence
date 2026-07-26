@@ -257,24 +257,28 @@ export function HierarquiaVenn(): React.ReactElement {
           >
             {dlDesbloqueado ? (
               <>
-                <Brain
-                  size={42}
-                  className="group-hover:scale-110 transition-transform duration-300"
-                />
-                <span className="font-bold text-xs md:text-sm mt-2 text-center leading-tight">
-                  Deep
-                  <br />
-                  Learning
+                <span
+                  className={`font-bold uppercase tracking-widest text-xs md:text-sm text-center px-1 ${
+                    foco === "dl" ? "text-white" : "text-indigo-100"
+                  }`}
+                >
+                  Deep Learning
                 </span>
+                <Brain
+                  size={26}
+                  className={`mt-2 transition-transform duration-300 ${
+                    foco === "dl"
+                      ? "text-white"
+                      : "text-indigo-200 group-hover:scale-110"
+                  }`}
+                />
               </>
             ) : (
               <div className="flex flex-col items-center opacity-60">
-                <Lock size={32} className="text-slate-400" />
-                <span className="font-bold text-xs mt-2 text-center leading-tight text-slate-400">
-                  Deep
-                  <br />
-                  Learning
+                <span className="font-bold uppercase tracking-widest text-xs md:text-sm text-center px-1 text-slate-400">
+                  Deep Learning
                 </span>
+                <Lock size={26} className="mt-2 text-slate-400" />
               </div>
             )}
           </div>
