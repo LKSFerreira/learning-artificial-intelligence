@@ -26,6 +26,10 @@ const FG_DARK_GRAY = "\x1b[38;5;238m";
 const BG_VIOLET = "\x1b[48;5;99m\x1b[38;5;255m";
 const BG_DARK = "\x1b[48;5;234m";
 
+/** Pausa entre requisições Gemini TTS (evita rate limit). */
+const INTERVALO_RATE_LIMIT_MS = 30_000;
+const INTERVALO_RATE_LIMIT_SEGUNDOS = INTERVALO_RATE_LIMIT_MS / 1000;
+
 // 1. Carrega manualmente o arquivo .env da raiz do projeto para compatibilidade universal
 const envPath = path.join(__dirname, "../.env");
 if (fs.existsSync(envPath)) {
@@ -779,9 +783,11 @@ async function main() {
             i < licoesParaProcessar.length - 1
           ) {
             console.log(
-              `  ${FG_GRAY}Aguardando 2 segundos para evitar rate limit...${C_RESET}`,
+              `  ${FG_GRAY}Aguardando ${INTERVALO_RATE_LIMIT_SEGUNDOS} segundos para evitar rate limit...${C_RESET}`,
             );
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await new Promise((resolve) =>
+              setTimeout(resolve, INTERVALO_RATE_LIMIT_MS),
+            );
           }
         } catch (err) {
           spinner.parar(false);
