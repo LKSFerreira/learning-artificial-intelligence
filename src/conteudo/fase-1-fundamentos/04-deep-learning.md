@@ -13,23 +13,21 @@ A pergunta desta lição é histórica e conceitual ao mesmo tempo: **por que** 
 
 ### Do entusiasmo ao primeiro freio
 
-Modelos formais de “neurônio” artificial existem pelo menos desde **McCulloch e Pitts (1943)**. No fim dos anos **1950**, **Frank Rosenblatt** popularizou o **Perceptron**: uma unidade (e, em montagens da época, sistemas associados) que **ajustava pesos** a partir de exemplos e reconhecia padrões simples.
+A ideia de um “neurônio” artificial em matemática já aparece em **McCulloch e Pitts (1943)**. No fim dos anos **1950**, **Frank Rosenblatt** popularizou o **Perceptron**: um modelo que **ajusta pesos** com exemplos e reconhece padrões simples (por exemplo, formas ou letras bem controladas).
 
-A imprensa e parte da comunidade reagiram com otimismo extremo. A ideia de máquinas que aprendem com a experiência parecia finalmente “encaixar” em hardware real.
+A imprensa e parte da comunidade comemoraram demais. Parecia que “máquina que aprende com experiência” finalmente cabia em computador real.
 
-Havia, porém, um limite duro nos modelos **rasos** (poucas camadas, pouca expressividade): certas funções lógicas simples, como o **XOR**, **não** são separáveis por um hiperplano. Em outras palavras: um classificador linear de uma camada **não** resolve tudo o que a intuição pedia.
+Só que o Perceptron **simples** (poucas camadas, resposta quase linear) tinha um teto baixo. Um exemplo clássico de sala de aula é o **XOR** (ou exclusivo): uma regra lógica fácil de dizer em palavras, mas que esse tipo de classificador **não** separa bem com uma única linha reta no espaço das entradas. Em resumo: **uma camada rasa não resolve tudo** o que a empolgação da época prometia.
 
-### O livro *Perceptrons* e o que ele (não) matou
+### O livro *Perceptrons*: freio, não sentença de morte
 
-Em **1969**, **Marvin Minsky** e **Seymour Papert** publicaram *Perceptrons*. O livro analisou com rigor o que redes do tipo perceptron **conseguiam** e **não conseguiam** fazer. O impacto na narrativa da área foi enorme: o financiamento e o prestígio das redes neurais minguaram em vários centros.
+Em **1969**, **Marvin Minsky** e **Seymour Papert** publicaram o livro *Perceptrons*. Eles mostraram, com rigor, o que redes do tipo perceptron **conseguiam** e o que **não** conseguiam. O efeito prático foi forte: em vários lugares, o **dinheiro** e o **prestígio** das redes neurais caíram. Muita gente conta isso como se o livro tivesse “matado” a área. A história é mais cuidadosa:
 
-Três matizes importam para não virar lenda:
+1. O alvo principal era a **limitação de arquiteturas simples**, sobretudo de **uma** camada. Não era um carimbo dizendo “rede multicamada nunca vai funcionar”.
+2. O **inverno da IA** (fases de menos investimento e menos hype) **não** tem uma data só nem uma causa só: promessas infladas, cortes de verba e limites técnicos se somaram. Houve **mais de um** inverno ao longo das décadas.
+3. A pesquisa em redes **não** sumiu. Um grupo menor, em linhas ligadas a **Geoffrey Hinton** e colegas, seguiu estudando redes com **várias camadas** e formas de **treiná-las**.
 
-1. O alvo principal era a **capacidade limitada** de arquiteturas **simples** (em especial de **uma** camada), não a proibição eterna de “qualquer rede futura”.
-2. O **inverno** da IA **não** tem uma única data nem uma única causa: cortes de verba, promessas exageradas e limites técnicos se somaram (e houve **mais de um** inverno ao longo das décadas).
-3. A pesquisa em redes **não** morreu por completo. Uma minoria, entre elas linhas associadas a **Geoffrey Hinton** e colegas, manteve o trabalho em redes multicamadas e em como **treinar** essas redes.
-
-> **Âncora:** o inverno esfriou o *hype* e o financiamento das redes rasas da época. Não apagou a matemática da ideia de “aprender pesos”.
+> **Âncora:** o inverno esfriou o entusiasmo e o financiamento das redes rasas da época. A ideia de “aprender pesos com exemplos” **não** morreu.
 
 ### O que faltava para voltar: treino em profundidade
 
@@ -67,38 +65,42 @@ Isso **não** elimina o trabalho humano (dados, objetivo, avaliação). Reduz a 
 
 ### Oficina interativa (painel ao lado)
 
-**Entrada e camada são coisas diferentes:**
+O painel direito é um laboratório em **duas partes**.
 
-*   **Entrada (sinal):** retângulos à esquerda (arredondado, rosado, tem rosto).
-*   **Camada (didática):** o **conjunto de neurônios** que “participam” daquele tipo de padrão, **espalhados** na rede (semi-aleatório estável), **não** a coluna inteira acesa de uma vez.
+**1. Exemplo básico: Poring**
 
-No exemplo básico (Poring):
+À esquerda você liga **sinais** (entradas). Cada um acende um grupo de neurônios e a imagem da saída fica mais nítida.
 
-| Sinal | Tipo de padrão (didática) |
-| --- | --- |
-| **Arredondado** | Bordas e formatos |
-| **Rosado** | Cores e tonalidades |
-| **Tem rosto** | Partes e elementos |
+| Sinal | O que a rede “olha” (metáfora) |
+| :--- | :--- |
+| **Arredondado** | Formas e bordas |
+| **Rosado** | Cores |
+| **Tem rosto** | Partes do personagem |
 
-A montagem do Poring fica mais nítida a cada sinal (**blur alto → médio → zero**). A **classe PORING** só aparece com os **três** sinais (com 1 ou 2 ainda dá para confundir com outras coisas).
+Com **um** ou **dois** sinais, a imagem ainda fica confusa (dá para imaginar outra coisa). Só com os **três** a saída fecha como **PORING**.
 
-As cores dos neurônios ativos seguem a **família da coluna**, com **tons diferentes** entre nós: a organização em colunas é layout; a “camada” que importa na metáfora é o **conjunto aceso**.
+**2. Exemplo avançado: Angeling**
 
-O painel tem **duas faixas**:
+Aqui a ideia de **deep** fica mais clara: **várias camadas de reconhecimento** (contornos, formato, cores, asas, auréola, rosto). Os neurônios ficam numa **esfera** (metáfora de rede densa, não um cérebro de verdade). Cada botão acende um conjunto de nós e monta **só a parte da imagem** daquele nível. A classificação **ANGELING** só completa quando **todas** as camadas estão ligadas.
 
-1. **Básico (≈1/3):** Poring, poucas entradas e saída em círculo.
-2. **Avançado (≈2/3):** Angeling, **6 camadas de reconhecimento** (contornos, formato, cores, asas, auréola, rosto). Neurônios **espalhados** num mapa em forma de cérebro (metáfora, não anatomia). A imagem se forma na **zona da imagem** conforme você ativa cada nível.
+> **Como usar:** clique nos sinais, observe quais neurônios acendem e o que muda na saída. O texto desta coluna explica o *porquê*; o painel mostra o *como se sente*.
 
-A classe final (**ANGELING**, confiança 97–99%) só fecha com as **seis** camadas ativas.
+> ### Aviso:
+>
+> O painel **Poring / Angeling** é uma **forma abstrata de ensinar o conceito**. Serve para você *sentir* entradas, neurônios acendendo, camadas e uma classificação na saída.
+>
+> **Na prática de verdade** a rede não recebe botões com nomes de feature já prontos. Em geral ela recebe dados brutos (por exemplo pixels), os padrões **emergem no treino**, e a saída é um cálculo matemático (pesos, ativações, probabilidades), não a montagem de um desenho por camadas de imagem.
+>
+> Use o painel para **intuição**. Não use como manual de implementação de uma rede em produção.
 
-### O que carregar adiante
+### O que levar desta lição
 
-*   Redes neurais **não** nasceram em 2012; o **deep em escala** sim consolidou ali o salto público.
-*   Inverno e crítica de *Perceptrons* explicam o freio nas redes **simples**, não a morte eterna da ideia.
-*   **Deep** = profundidade de camadas + representações em cascata + dados e computação.
-*   No mapa do diagrama de Venn: isso é **DL dentro de ML dentro de IA**. O simulador de **O Momento em que Paramos de Programar Regras** era **supervisionado**; redes profundas são, com muita frequência, o **motor** desse supervisionado em visão e linguagem.
+*   Redes neurais são antigas; o **deep em escala** (muitos dados, muita conta, muitas camadas) é o salto que o público viu com força a partir de **2012**.
+*   O livro *Perceptrons* e o **inverno da IA** frearam as redes **simples** da época. Não apagaram a ideia de aprender com pesos.
+*   **Deep** = **muitas camadas** formando representações em cascata, com dados e computação suficientes.
+*   No diagrama de Venn: **DL** fica dentro de **ML**, que fica dentro de **IA**. O simulador de **O Momento em que Paramos de Programar Regras** era **supervisionado** (exemplos com rótulo). Redes profundas costumam ser o **motor** desse tipo de aprendizado em imagem e texto.
 
-Quando o arco **inverno → deep** estiver claro, o curso muda de família de aprendizado: o **reforço**, em que a experiência chega por **recompensa** no ambiente, não por milhares de rótulos “isto é poção”.
+Na próxima etapa o curso muda de família: o **aprendizado por reforço**, em que a experiência chega por **recompensa** no ambiente, e não por milhares de rótulos do tipo “isto é poção”.
 <!-- audio-skip-start -->
 ### 📚 Referências Científicas & Leituras Recomendadas
 
