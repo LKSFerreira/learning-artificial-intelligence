@@ -51,8 +51,6 @@ Nesta lição, a consolidação do conhecimento acontece de forma prática no **
 3. Isso desbloqueia o círculo de **Machine Learning**. Repita a exploração para destravar o **Deep Learning** no centro.
 4. Ao concluir o vídeo de Deep Learning, o botão **Próximo** libera a ida ao tópico seguinte.
 
-Cada clique no diagrama troca o texto desta coluna e rola a leitura de volta ao topo do tema escolhido.
-
 <!-- audio-skip-start -->
 ### 📚 Referências Científicas & Leituras Recomendadas
 
