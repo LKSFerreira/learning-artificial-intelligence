@@ -59,8 +59,8 @@ No inventário do tópico **03**, a regra fixa olhava só `cor === vermelho`. Um
 
 Isso **não** elimina o trabalho humano (dados, objetivo, avaliação). Reduz a dependência de **features** desenhadas à mão, o gargalo do ML clássico que o **02.3** nomeou.
 
-| | **Rede rasa / regra frágil** | **Rede profunda (DL)** |
-| --- | --- | --- |
+| Aspecto | **Rede rasa / regra frágil** | **Rede profunda (DL)** |
+| :--- | :--- | :--- |
 | Representação | Poucas pistas, muitas vezes manuais | Cascata aprendida nas camadas |
 | Brilha quando | Padrões simples, poucos casos | Imagens, áudio, texto em escala |
 | Sofre quando | XOR da vida real, variações | Dados ruins, custo, caixa-preta |

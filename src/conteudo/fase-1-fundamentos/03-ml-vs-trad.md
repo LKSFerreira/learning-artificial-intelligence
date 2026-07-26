@@ -29,8 +29,8 @@ Cada exceção pede **outra regra**. O código vira uma árvore frágil de `if`s
 
 ### Regras versus Machine Learning
 
-| | **Programação por regras** | **Machine Learning** |
-| --- | --- | --- |
+| Aspecto | **Programação por regras** | **Machine Learning** |
+| :--- | :--- | :--- |
 | Você escreve | Ramos `SE` / `ENTÃO` | Modelo + processo de treino |
 | De onde vem o “saber” | Da cabeça de quem programa | Dos **exemplos** (ou da interação com o ambiente) |
 | Brilha quando | Poucos casos, lógica clara | Muitas variações, padrões difíceis de listar |
