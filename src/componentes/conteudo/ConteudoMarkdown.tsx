@@ -3,6 +3,9 @@
  *
  * Blocos `<!-- audio-skip-start/end -->` (bibliografia) ficam fora do corpo
  * da aula. Use `SecaoReferencias` abaixo da navegação para renderizá-los.
+ *
+ * Tags `<!-- cut -->` (corte de narração TTS) são removidas na tela: o
+ * react-markdown sem HTML cru exibiria o comentário como texto.
  */
 
 import type {
@@ -29,17 +32,30 @@ interface PartesMarkdown {
 const REGEX_AUDIO_SKIP =
   /<!--\s*audio-skip-start\s*-->\s*([\s\S]*?)\s*<!--\s*audio-skip-end\s*-->/i;
 
+/** Corte de narração no sintetizador: não deve aparecer na UI. */
+const REGEX_TAG_CUT = /<!--\s*cut\s*-->/gi;
+
+/**
+ * Remove tags de controle de áudio que não fazem parte do texto da aula.
+ */
+function removerTagsControleAudio(texto: string): string {
+  return texto.replace(REGEX_TAG_CUT, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /**
  * Separa o texto da aula do bloco de bibliografia / skip de áudio.
  */
 export function separarPartesMarkdown(conteudo: string): PartesMarkdown {
   const match = conteudo.match(REGEX_AUDIO_SKIP);
   if (!match) {
-    return { corpo: conteudo, secaoSecundaria: null };
+    return {
+      corpo: removerTagsControleAudio(conteudo),
+      secaoSecundaria: null,
+    };
   }
 
-  const secaoSecundaria = match[1].trim();
-  const corpo = conteudo.replace(REGEX_AUDIO_SKIP, "").trim();
+  const secaoSecundaria = removerTagsControleAudio(match[1]);
+  const corpo = removerTagsControleAudio(conteudo.replace(REGEX_AUDIO_SKIP, ""));
 
   return { corpo, secaoSecundaria };
 }
