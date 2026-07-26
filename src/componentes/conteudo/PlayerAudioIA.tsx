@@ -27,10 +27,10 @@ interface PropriedadesPlayerAudio {
 }
 
 // Constantes de Configuração de Velocidade (Clean Code - Sem números mágicos)
-const VELOCIDADE_MINIMA = 0.80;
-const VELOCIDADE_MAXIMA = 3.0;
-const PASSO_VELOCIDADE = 0.20;
-const VELOCIDADE_PADRAO = 1.0;
+const VELOCIDADE_MINIMA = 0.7;
+const VELOCIDADE_MAXIMA = 2.0;
+const PASSO_VELOCIDADE = 0.05;
+const VELOCIDADE_PADRAO = 1.2;
 
 export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: PropriedadesPlayerAudio) {
   // Lista de vozes estáticas
@@ -59,17 +59,25 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
 
   // Estados de Controle de Menus Popover
   const [vozesAberto, setVozesAberto] = useState<boolean>(false);
+  const [velocidadeAberta, setVelocidadeAberta] = useState<boolean>(false);
 
   // Referências para o elemento de áudio e menus
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const menuVozesRef = useRef<HTMLDivElement | null>(null);
+  const menuVelocidadeRef = useRef<HTMLDivElement | null>(null);
 
-  // Efeito para fechar popover se clicar fora dele
+  // Efeito para fechar popovers se clicar fora
   useEffect(() => {
     function tratarCliqueFora(event: MouseEvent) {
       const target = event.target as Node;
       if (menuVozesRef.current && !menuVozesRef.current.contains(target)) {
         setVozesAberto(false);
+      }
+      if (
+        menuVelocidadeRef.current &&
+        !menuVelocidadeRef.current.contains(target)
+      ) {
+        setVelocidadeAberta(false);
       }
     }
     document.addEventListener('mousedown', tratarCliqueFora);
@@ -324,31 +332,75 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
         {/* Direita: Configurações de Voz & Download */}
         <div className="flex items-center gap-3.5 w-full md:w-auto justify-center md:justify-end flex-wrap md:flex-nowrap">
           
-          {/* Seletor de Velocidade Inline (+ / -) */}
-          <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl px-1.5 h-9 shrink-0 gap-1.5 shadow-inner">
-            <button 
-              onClick={() => setVelocidade(v => Math.max(VELOCIDADE_MINIMA, Number((v - PASSO_VELOCIDADE).toFixed(2))))} 
-              className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all select-none font-bold text-sm"
-              title="Diminuir velocidade"
+          {/* Velocidade: clique abre slider (range) */}
+          <div className="relative shrink-0" ref={menuVelocidadeRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setVelocidadeAberta((aberto) => !aberto);
+                setVozesAberto(false);
+              }}
+              className={`h-9 min-w-[4.5rem] px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                velocidadeAberta
+                  ? 'bg-indigo-600/10 border-indigo-500/40 text-indigo-400'
+                  : 'bg-slate-900 border border-slate-800 text-slate-200 hover:text-white'
+              }`}
+              title="Ajustar velocidade"
+              aria-expanded={velocidadeAberta}
+              aria-haspopup="dialog"
             >
-              -
+              <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+                Vel
+              </span>
+              <span className="font-mono font-bold text-indigo-400 tabular-nums">
+                {velocidade.toFixed(2)}x
+              </span>
             </button>
-            <span className="text-xs font-mono font-bold text-indigo-400 min-w-[38px] text-center select-none">
-              {velocidade.toFixed(2)}x
-            </span>
-            <button 
-              onClick={() => setVelocidade(v => Math.min(VELOCIDADE_MAXIMA, Number((v + PASSO_VELOCIDADE).toFixed(2))))} 
-              className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-all select-none font-bold text-sm"
-              title="Aumentar velocidade"
-            >
-              +
-            </button>
+
+            {velocidadeAberta && (
+              <div
+                className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-52 rounded-2xl bg-slate-900 border border-slate-800/80 p-3 shadow-2xl z-50 backdrop-blur-md animate-[fadeIn_0.15s_ease-out]"
+                role="dialog"
+                aria-label="Controle de velocidade de reprodução"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider select-none">
+                    Velocidade
+                  </span>
+                  <span className="text-xs font-mono font-bold text-indigo-400 tabular-nums">
+                    {velocidade.toFixed(2)}x
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={VELOCIDADE_MINIMA}
+                  max={VELOCIDADE_MAXIMA}
+                  step={PASSO_VELOCIDADE}
+                  value={velocidade}
+                  onChange={(evento) => {
+                    setVelocidade(Number(evento.target.value));
+                  }}
+                  className="player-audio-velocidade w-full cursor-pointer"
+                  aria-valuemin={VELOCIDADE_MINIMA}
+                  aria-valuemax={VELOCIDADE_MAXIMA}
+                  aria-valuenow={velocidade}
+                  aria-label="Velocidade de reprodução"
+                />
+                <div className="flex justify-between mt-1.5 text-[9px] text-slate-600 font-mono select-none">
+                  <span>{VELOCIDADE_MINIMA.toFixed(1)}x</span>
+                  <span>{VELOCIDADE_MAXIMA.toFixed(1)}x</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Dropdown de Vozes Gemini Customizado (Abertura para baixo) */}
           <div className="relative" ref={menuVozesRef}>
             <button 
-              onClick={() => setVozesAberto(!vozesAberto)}
+              onClick={() => {
+                setVozesAberto(!vozesAberto);
+                setVelocidadeAberta(false);
+              }}
               className={`h-9 w-44 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between gap-1.5 transition-all duration-200 whitespace-nowrap ${
                 vozesAberto 
                   ? 'bg-indigo-600/10 border-indigo-500/40 text-indigo-400' 
@@ -431,25 +483,88 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
               setTempoAtual(t); 
               if(audioRef.current) audioRef.current.currentTime = t; 
             }} 
-            className="w-full h-1 bg-slate-950 rounded-full appearance-none cursor-pointer border border-slate-900 group-hover:h-[6px] transition-all duration-150" 
+            className="player-audio-timeline w-full h-1 bg-slate-950 rounded-full appearance-none cursor-pointer border border-slate-900 group-hover:h-[6px] transition-all duration-150" 
             style={{ 
               background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${(tempoAtual / (duracao || 1)) * 100}%, #090d16 ${(tempoAtual / (duracao || 1)) * 100}%, #090d16 100%)` 
             }} 
           />
           <style>{`
-            input[type='range']::-webkit-slider-thumb {
+            /* Timeline: bolinha só no hover (não mexe em outros ranges) */
+            .player-audio-timeline {
               -webkit-appearance: none;
-              width: 0px;
-              height: 0px;
+              appearance: none;
+            }
+            .player-audio-timeline::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 0;
+              height: 0;
               border-radius: 50%;
               background: #818cf8;
               cursor: pointer;
               transition: all 0.15s ease-in-out;
               box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
             }
-            .group:hover input[type='range']::-webkit-slider-thumb {
+            .group:hover .player-audio-timeline::-webkit-slider-thumb {
               width: 12px;
               height: 12px;
+            }
+            .player-audio-timeline::-moz-range-thumb {
+              width: 0;
+              height: 0;
+              border: none;
+              border-radius: 50%;
+              background: #818cf8;
+              cursor: pointer;
+            }
+            .group:hover .player-audio-timeline::-moz-range-thumb {
+              width: 12px;
+              height: 12px;
+            }
+
+            /* Velocidade: bolinha sempre visível e arrastável */
+            .player-audio-velocidade {
+              -webkit-appearance: none;
+              appearance: none;
+              height: 6px;
+              border-radius: 9999px;
+              background: #334155;
+              outline: none;
+            }
+            .player-audio-velocidade::-webkit-slider-runnable-track {
+              height: 6px;
+              border-radius: 9999px;
+              background: #334155;
+            }
+            .player-audio-velocidade::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 16px;
+              height: 16px;
+              margin-top: -5px;
+              border-radius: 50%;
+              background: #818cf8;
+              border: 2px solid #e0e7ff;
+              box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28);
+              cursor: grab;
+            }
+            .player-audio-velocidade::-webkit-slider-thumb:active {
+              cursor: grabbing;
+              background: #a5b4fc;
+            }
+            .player-audio-velocidade::-moz-range-track {
+              height: 6px;
+              border-radius: 9999px;
+              background: #334155;
+            }
+            .player-audio-velocidade::-moz-range-thumb {
+              width: 16px;
+              height: 16px;
+              border-radius: 50%;
+              background: #818cf8;
+              border: 2px solid #e0e7ff;
+              box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28);
+              cursor: grab;
             }
           `}</style>
         </div>
