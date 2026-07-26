@@ -382,16 +382,22 @@ export const ITENS_TREINO_ML: ItemSimuladorML[] = IDS_ITENS_TREINO_ML.map(
  * Grade 3×3 da demo da regra (sempre 9 itens).
  * Mistura: acerto (OK), falso positivo (FP), falso negativo (FN), rejeição correta.
  */
+/**
+ * Selos (ponto de vista "achar poção", 3 categorias):
+ * - ACERTO: marcou poção e é poção
+ * - ENGANO: marcou poção e não é
+ * - ERRADO: não marcou poção (perdeu poção real ou item que não é poção, ex. espada)
+ */
 const IDS_ITENS_DEMO_REGRA = [
-  "pocao-vermelha", // ACERTOU — poção vermelha (frasco redondo)
-  "tonico-roxo", // ERRADO — poção, cor ≠ vermelho
-  "elixir-verde", // ERRADO — poção, cor ≠ vermelho
+  "pocao-vermelha", // ACERTO
+  "tonico-roxo", // ERRADO
+  "elixir-verde", // ERRADO
   "frasco-azul", // ERRADO
-  "elixir-vermelho", // ACERTOU — poção vermelha (frasco alto; 2º verdadeiro)
-  "maca-vermelha", // ENGANO — vermelho, não é poção
+  "elixir-vermelho", // ACERTO
+  "maca-vermelha", // ENGANO
   "cogumelo-vermelho", // ENGANO
   "capa-vermelha", // ENGANO
-  "espada-ferro", // ACERTOU — não vermelha, não poção
+  "espada-ferro", // ERRADO
 ] as const;
 
 export const ITENS_DEMO_REGRA: ItemSimuladorML[] = IDS_ITENS_DEMO_REGRA.map(

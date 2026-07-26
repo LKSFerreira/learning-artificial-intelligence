@@ -8,7 +8,15 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Database, Play, RotateCcw, Zap } from "lucide-react";
+import {
+  Bot,
+  Database,
+  HelpCircle,
+  Play,
+  RotateCcw,
+  X,
+  Zap,
+} from "lucide-react";
 
 import {
   ITENS_DEMO_REGRA,
@@ -20,6 +28,12 @@ import {
 } from "../../../dados/itensSimuladorML";
 
 type EstagioML = "coding" | "training" | "testing";
+
+/** Chave: usuário já abriu a ajuda de breakpoints (some o brilho do ?). */
+const CHAVE_AJUDA_BREAKPOINTS_VISTA =
+  "aprendendo-ia:simulador-ml:ajuda-breakpoints-vista";
+
+const ATRASO_PASSO_MS = 750;
 
 /** Cor do texto da string de cor (mesma ideia de 'vermelho' em vermelho no código). */
 function classeCorDaCor(cor: CorItemRegra): string {
@@ -66,14 +80,14 @@ interface ResultadoTeste {
   /** Classificação mostrada ao aluno (poção ou não). */
   classificouComoPocao: boolean;
   /**
-   * Confiança didática (0–100).
+   * Confiança didática (0-100).
    * Em modelos reais costuma ser a probabilidade da classe escolhida.
-   * Aqui é estável e explicável — não é sorteio aleatório.
+   * Aqui é estável e explicável, não é sorteio aleatório.
    */
   confiancaPercentual: number;
 }
 
-/** Embaralha uma cópia do catálogo (Fisher–Yates) — como o shuffle de um epoch. */
+/** Embaralha uma cópia do catálogo (Fisher-Yates), como o shuffle de um epoch. */
 function embaralharItens(itens: ItemSimuladorML[]): ItemSimuladorML[] {
   const copia = [...itens];
   for (let indice = copia.length - 1; indice > 0; indice -= 1) {
@@ -95,7 +109,7 @@ function embaralharItens(itens: ItemSimuladorML[]): ItemSimuladorML[] {
  * Não confundir com **precisão** (métrica do modelo no conjunto de teste).
  */
 function estimarConfiancaDidatica(item: ItemSimuladorML): number {
-  // Variação estável 0–4 a partir do id (evita 100% em tudo, sem parecer aleatório)
+  // Variação estável 0-4 a partir do id (evita 100% em tudo, sem parecer aleatório)
   let hash = 0;
   for (let i = 0; i < item.id.length; i += 1) {
     hash = (hash + item.id.charCodeAt(i) * (i + 1)) % 5;
@@ -263,7 +277,7 @@ function MiniaturaItem({
         {selo && (
           <span
             className={`absolute top-1 right-1 z-20 text-xs font-extrabold tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${
-              selo === "ACERTOU"
+              selo === "ACERTO"
                 ? "text-emerald-400"
                 : selo === "ENGANO"
                   ? "text-yellow-400"
@@ -308,9 +322,33 @@ export function SimuladorML(): React.ReactElement {
     "Pronto. Toque em Executar regra para ver o código rodar linha a linha."
   );
   const [resultadoRegra, setResultadoRegra] = useState<boolean | null>(null);
+  /** Rodando entre linhas (não está parado em BP). */
   const [executando, setExecutando] = useState(false);
+  /** Parado em breakpoint (estilo IDE; aguarda Continuar). */
+  const [pausadoEmBreakpoint, setPausadoEmBreakpoint] = useState(false);
+  const [breakpoints, setBreakpoints] = useState<Set<IdLinhaCodigo>>(
+    () => new Set()
+  );
+  const [modalAjudaAberto, setModalAjudaAberto] = useState(false);
+  const [ajudaBreakpointsVista, setAjudaBreakpointsVista] = useState(() => {
+    try {
+      return localStorage.getItem(CHAVE_AJUDA_BREAKPOINTS_VISTA) === "1";
+    } catch {
+      return false;
+    }
+  });
   const cancelarDemoRef = useRef(false);
   const timerTreinoRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  /** Índice do próximo passo a executar no array de caminhos. */
+  const indiceProximoPassoRef = useRef(0);
+  const passosExecucaoRef = useRef<IdLinhaCodigo[]>([]);
+  const itemEmExecucaoRef = useRef<ItemSimuladorML>(ITENS_DEMO_REGRA[0]);
+  const visitadasRef = useRef<Set<IdLinhaCodigo>>(new Set());
+  const breakpointsRef = useRef(breakpoints);
+
+  useEffect(() => {
+    breakpointsRef.current = breakpoints;
+  }, [breakpoints]);
 
   const limparTimerTreino = useCallback(() => {
     if (timerTreinoRef.current !== null) {
@@ -343,63 +381,152 @@ export function SimuladorML(): React.ReactElement {
         return "A regra devolve false (a cor não é vermelho).";
       case "fecha_funcao":
         return "Fim da função.";
+      case "fecha_if":
+        return "Fecha o bloco do if.";
       default:
         return "";
     }
   };
 
-  const executarDemoRegra = async (item: ItemSimuladorML) => {
-    if (executando) return;
-    cancelarDemoRef.current = false;
-    setExecutando(true);
-    setItemDemo(item);
-    setResultadoRegra(null);
+  const finalizarExecucaoComResultado = (item: ItemSimuladorML) => {
+    const passou = avaliarRegraVermelha(item);
+    setResultadoRegra(passou);
     setLinhaAtiva(null);
-    setLinhasVisitadas(new Set());
-    setNarracao("Rodando a regra...");
+    setPausadoEmBreakpoint(false);
+    setExecutando(false);
+    indiceProximoPassoRef.current = 0;
+    passosExecucaoRef.current = [];
 
-    const passos = montarPassosExecucao(item);
-    const visitadas = new Set<IdLinhaCodigo>();
+    if (passou && item.ehPocao) {
+      setNarracao(
+        "ACERTO: a regra achou poção e o gabarito confirma (é poção e é vermelha)."
+      );
+    } else if (passou && !item.ehPocao) {
+      setNarracao(
+        "ENGANO: a regra disse que era poção, mas não é. A cor vermelha enganou a regra."
+      );
+    } else if (!passou && item.ehPocao) {
+      setNarracao(
+        "ERRADO: é poção de verdade, mas a regra só aceita color === 'vermelho'."
+      );
+    } else {
+      setNarracao(
+        "ERRADO: a regra não marcou como poção (e de fato não é, mas o teste frágil só olha a cor)."
+      );
+    }
+  };
 
-    for (const linha of passos) {
-      if (cancelarDemoRef.current) break;
-      visitadas.add(linha);
+  /**
+   * Roda a partir de `indiceProximoPassoRef` até o fim ou até um breakpoint.
+   * Comportamento de IDE: para na linha com BP; Continuar segue da próxima.
+   */
+  const rodarTrechoExecucao = async () => {
+    const item = itemEmExecucaoRef.current;
+    const passos = passosExecucaoRef.current;
+    let indice = indiceProximoPassoRef.current;
+
+    while (indice < passos.length) {
+      if (cancelarDemoRef.current) {
+        setExecutando(false);
+        setPausadoEmBreakpoint(false);
+        return;
+      }
+
+      const linha = passos[indice];
+      visitadasRef.current.add(linha);
       setLinhaAtiva(linha);
-      setLinhasVisitadas(new Set(visitadas));
+      setLinhasVisitadas(new Set(visitadasRef.current));
       setNarracao(narrarLinha(linha, item));
-      await new Promise((resolver) => setTimeout(resolver, 750));
+
+      await new Promise((resolver) => setTimeout(resolver, ATRASO_PASSO_MS));
+
+      if (cancelarDemoRef.current) {
+        setExecutando(false);
+        setPausadoEmBreakpoint(false);
+        return;
+      }
+
+      // Para na linha marcada (após destacar e narrar, como pausa no debugger)
+      if (breakpointsRef.current.has(linha)) {
+        indiceProximoPassoRef.current = indice + 1;
+        setPausadoEmBreakpoint(true);
+        setExecutando(false);
+        setNarracao(
+          `${narrarLinha(linha, item)} · Breakpoint: leia o painel do item e toque em Continuar execução.`
+        );
+        return;
+      }
+
+      indice += 1;
+      indiceProximoPassoRef.current = indice;
     }
 
     if (!cancelarDemoRef.current) {
-      const passou = avaliarRegraVermelha(item);
-      setResultadoRegra(passou);
-      setLinhaAtiva(null);
+      finalizarExecucaoComResultado(item);
+    } else {
+      setExecutando(false);
+      setPausadoEmBreakpoint(false);
+    }
+  };
 
-      if (passou && !item.ehPocao) {
-        setNarracao(
-          "ENGANO: a regra disse que era poção, mas não é. A cor vermelha enganou a regra."
-        );
-      } else if (!passou && item.ehPocao) {
-        setNarracao(
-          "ERRADO: é poção de verdade, mas a regra só aceita color === 'vermelho'."
-        );
-      } else if (passou && item.ehPocao) {
-        setNarracao(
-          "ACERTOU: a regra e a verdade batem (é poção e é vermelha)."
-        );
-      } else {
-        setNarracao(
-          "ACERTOU: a regra e a verdade batem (não é poção)."
-        );
-      }
+  /** Executar regra (do zero) ou Continuar (após BP). */
+  const executarOuContinuarDemo = async (item: ItemSimuladorML) => {
+    if (executando) return;
+
+    cancelarDemoRef.current = false;
+
+    if (!pausadoEmBreakpoint) {
+      // Início limpo (F5 / Run)
+      setItemDemo(item);
+      itemEmExecucaoRef.current = item;
+      setResultadoRegra(null);
+      setLinhaAtiva(null);
+      visitadasRef.current = new Set();
+      setLinhasVisitadas(new Set());
+      setNarracao("Rodando a regra...");
+      passosExecucaoRef.current = montarPassosExecucao(item);
+      indiceProximoPassoRef.current = 0;
+    } else {
+      // Continuar: já estamos além da linha do BP
+      setNarracao("Continuando a execução...");
     }
 
-    setExecutando(false);
+    setPausadoEmBreakpoint(false);
+    setExecutando(true);
+    await rodarTrechoExecucao();
   };
+
+  const alternarBreakpoint = (idLinha: IdLinhaCodigo) => {
+    if (executando) return;
+    setBreakpoints((anterior) => {
+      const proximo = new Set(anterior);
+      if (proximo.has(idLinha)) proximo.delete(idLinha);
+      else proximo.add(idLinha);
+      return proximo;
+    });
+  };
+
+  const abrirAjudaBreakpoints = () => {
+    setModalAjudaAberto(true);
+    if (!ajudaBreakpointsVista) {
+      setAjudaBreakpointsVista(true);
+      try {
+        localStorage.setItem(CHAVE_AJUDA_BREAKPOINTS_VISTA, "1");
+      } catch {
+        // storage indisponível: só some o brilho nesta sessão
+      }
+    }
+  };
+
+  const fecharAjudaBreakpoints = () => setModalAjudaAberto(false);
 
   const treinarModelo = () => {
     if (timerTreinoRef.current) return;
     cancelarDemoRef.current = true;
+    setPausadoEmBreakpoint(false);
+    setExecutando(false);
+    indiceProximoPassoRef.current = 0;
+    passosExecucaoRef.current = [];
 
     // Nova ordem a cada treino (como embaralhar o dataset em cada epoch)
     const ordemEmbaralhada = embaralharItens(ITENS_TREINO_ML);
@@ -446,29 +573,55 @@ export function SimuladorML(): React.ReactElement {
     setItemDemo(ITENS_DEMO_REGRA[0]);
     setLinhaAtiva(null);
     setLinhasVisitadas(new Set());
+    visitadasRef.current = new Set();
     setResultadoRegra(null);
     setNarracao(
       "Pronto. Toque em Executar regra para ver o código rodar linha a linha."
     );
     setExecutando(false);
+    setPausadoEmBreakpoint(false);
+    indiceProximoPassoRef.current = 0;
+    passosExecucaoRef.current = [];
+    // Breakpoints e “já vi a ajuda” permanecem (como na IDE)
   };
 
   /** Só seleciona o item; a execução fica no botão do rodapé. */
   const selecionarItemDemo = (item: ItemSimuladorML) => {
     if (executando) return;
+    // Trocar item cancela uma pausa em BP (nova execução do zero)
+    if (pausadoEmBreakpoint) {
+      cancelarDemoRef.current = true;
+      setPausadoEmBreakpoint(false);
+      indiceProximoPassoRef.current = 0;
+      passosExecucaoRef.current = [];
+    }
     setItemDemo(item);
     setResultadoRegra(null);
     setLinhaAtiva(null);
     setLinhasVisitadas(new Set());
+    visitadasRef.current = new Set();
     setNarracao("Item escolhido. Toque em Executar regra.");
   };
 
+  const ocupadoNaRegra = executando;
+  const rotuloBotaoRegra = executando
+    ? "Executando..."
+    : pausadoEmBreakpoint
+      ? "Continuar execução"
+      : "Executar regra";
+
+  /**
+   * Três selos (leitura humana, do ponto de vista "achar poção"):
+   * ACERTO = marcou poção e é poção
+   * ENGANO = marcou poção e não é
+   * ERRADO = não marcou poção (seja poção de outra cor ou item que não é poção)
+   */
   const textoResultadoCurto = (): string | null => {
     if (resultadoRegra === null) return null;
     const passou = resultadoRegra;
+    if (passou && itemDemo.ehPocao) return "ACERTO";
     if (passou && !itemDemo.ehPocao) return "ENGANO";
-    if (!passou && itemDemo.ehPocao) return "ERRADO";
-    return "ACERTOU";
+    return "ERRADO";
   };
 
   /**
@@ -506,9 +659,9 @@ export function SimuladorML(): React.ReactElement {
   /** Selo curto no card após a execução. */
   const obterSeloDemo = (item: ItemSimuladorML): string => {
     const regra = avaliarRegraVermelha(item);
+    if (regra && item.ehPocao) return "ACERTO";
     if (regra && !item.ehPocao) return "ENGANO";
-    if (!regra && item.ehPocao) return "ERRADO";
-    return "ACERTOU";
+    return "ERRADO";
   };
 
   return (
@@ -545,29 +698,51 @@ export function SimuladorML(): React.ReactElement {
             estagio === "coding" ? "opacity-100" : "opacity-40"
           }`}
         >
-          <div className="flex justify-between items-center shrink-0">
+          <div className="flex justify-between items-center shrink-0 gap-2">
             <span className="text-[10px] font-mono text-pink-400 font-bold tracking-wide">
               PROGRAMAÇÃO POR REGRAS
             </span>
-            <span className="text-[9px] bg-red-900/50 text-red-300 px-2 py-0.5 rounded">
-              REGRAS FIXAS
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] bg-red-900/50 text-red-300 px-2 py-0.5 rounded">
+                REGRAS FIXAS
+              </span>
+              <button
+                type="button"
+                onClick={abrirAjudaBreakpoints}
+                title="Como usar breakpoints"
+                aria-label="Ajuda: breakpoints no código"
+                className={`relative w-7 h-7 rounded-full flex items-center justify-center border transition-all ${
+                  ajudaBreakpointsVista
+                    ? "border-slate-600 text-slate-400 hover:text-white hover:border-slate-400"
+                    : "border-pink-400/70 text-pink-300 shadow-[0_0_12px_rgba(244,114,182,0.45)] animate-pulse"
+                }`}
+              >
+                <HelpCircle size={15} strokeWidth={2.25} />
+                {!ajudaBreakpointsVista && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-pink-400 ring-2 ring-slate-900"
+                    aria-hidden
+                  />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Código: cresce e deixa área vazia (como o retângulo do mock) */}
+          {/* Código + gutter de breakpoints (estilo IDE) */}
           <div
-            className="flex-1 min-h-0 flex flex-col bg-slate-950 rounded-lg px-3 py-2.5 font-mono text-xs md:text-sm leading-relaxed shadow-inner"
+            className="flex-1 min-h-0 flex flex-col bg-slate-950 rounded-lg py-2.5 font-mono text-xs md:text-sm leading-relaxed shadow-inner overflow-hidden"
             role="region"
             aria-label="Código da regra isPotion"
           >
-            <div className="shrink-0">
+            <div className="shrink-0 px-1">
               {LINHAS_CODIGO.map((linha) => {
                 const ativa = linhaAtiva === linha.id;
                 const visitada = linhasVisitadas.has(linha.id);
+                const temBreakpoint = breakpoints.has(linha.id);
                 return (
                   <div
                     key={linha.id}
-                    className={`px-2 py-0.5 rounded transition-all duration-300 ${
+                    className={`flex items-stretch gap-0 rounded transition-all duration-300 ${
                       ativa
                         ? "bg-amber-500/25 ring-1 ring-amber-400/80 text-white"
                         : visitada
@@ -575,25 +750,55 @@ export function SimuladorML(): React.ReactElement {
                           : ""
                     }`}
                   >
-                    {linha.html}
+                    <button
+                      type="button"
+                      disabled={ocupadoNaRegra}
+                      onClick={() => alternarBreakpoint(linha.id)}
+                      title={
+                        temBreakpoint
+                          ? "Remover breakpoint"
+                          : "Adicionar breakpoint"
+                      }
+                      aria-label={
+                        temBreakpoint
+                          ? `Remover breakpoint na linha ${linha.id}`
+                          : `Adicionar breakpoint na linha ${linha.id}`
+                      }
+                      aria-pressed={temBreakpoint}
+                      className={`group/gutter w-7 shrink-0 flex items-center justify-center select-none border-r border-slate-800/80 ${
+                        ocupadoNaRegra
+                          ? "cursor-not-allowed opacity-40"
+                          : "cursor-pointer hover:bg-slate-900/80"
+                      }`}
+                    >
+                      {/* Bolinha vermelha de breakpoint (estilo IDE) */}
+                      <span
+                        className={`inline-block w-2.5 h-2.5 rounded-full transition-all ${
+                          temBreakpoint
+                            ? "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.9)] scale-110"
+                            : "bg-transparent border border-red-500/25 group-hover/gutter:border-red-400/70 group-hover/gutter:bg-red-500/35"
+                        }`}
+                        aria-hidden
+                      />
+                    </button>
+                    <div className="flex-1 min-w-0 px-2 py-0.5">{linha.html}</div>
                   </div>
                 );
               })}
             </div>
-            {/* Espaço vazio sob o código — empurra inventário para baixo sem aumentar os itens */}
             <div className="flex-1 min-h-6" aria-hidden />
           </div>
 
           {/*
-            Status: imagem maior + zoom no PNG (corta o fundo vazio do asset)
-            para o item preencher o quadro; texto ao lado com altura alinhada.
+            Status: imagem com zoom leve no PNG (corta fundo vazio do asset).
           */}
           <div className="flex gap-4 items-stretch shrink-0 rounded-xl border border-slate-700/80 bg-slate-950/60 px-3 py-2.5 min-h-[5.75rem]">
             <span className="relative w-[5.5rem] h-[5.5rem] shrink-0 self-center overflow-hidden rounded-xl border border-slate-600 bg-slate-900">
               <img
                 src={obterCaminhoImagemItem(itemDemo)}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover origin-center scale-[1.55]"
+                className="absolute inset-0 h-full w-full object-cover origin-center scale-[1.25]"
+                draggable={false}
               />
             </span>
             <div className="flex-1 min-w-0 flex flex-col justify-center gap-1 py-0.5">
@@ -618,7 +823,7 @@ export function SimuladorML(): React.ReactElement {
                   <span className="text-slate-500 mx-1.5">·</span>
                   <span
                     className={
-                      textoResultadoCurto() === "ACERTOU"
+                      textoResultadoCurto() === "ACERTO"
                         ? "text-emerald-400"
                         : textoResultadoCurto() === "ENGANO"
                           ? "text-yellow-400"
@@ -643,7 +848,9 @@ export function SimuladorML(): React.ReactElement {
                 <span className="whitespace-nowrap">
                   2) Toque em{" "}
                   <span className="text-pink-300 font-semibold">
-                    Executar regra
+                    {pausadoEmBreakpoint
+                      ? "Continuar execução"
+                      : "Executar regra"}
                   </span>
                 </span>
               </p>
@@ -653,7 +860,7 @@ export function SimuladorML(): React.ReactElement {
                     key={item.id}
                     item={item}
                     selecionado={itemDemo.id === item.id}
-                    desabilitado={executando}
+                    desabilitado={ocupadoNaRegra}
                     onClick={() => selecionarItemDemo(item)}
                     selo={
                       itemDemo.id === item.id && resultadoRegra !== null
@@ -665,7 +872,7 @@ export function SimuladorML(): React.ReactElement {
               </div>
               <p className="text-sm sm:text-base text-slate-400 text-center tracking-tight py-0.5 whitespace-nowrap">
                 Resultados possíveis:{" "}
-                <span className="text-emerald-400 font-semibold">ACERTOU</span>
+                <span className="text-emerald-400 font-semibold">ACERTO</span>
                 {" · "}
                 <span className="text-yellow-400 font-semibold">ENGANO</span>
                 {" · "}
@@ -677,17 +884,21 @@ export function SimuladorML(): React.ReactElement {
           {estagio === "coding" && (
             <button
               type="button"
-              disabled={executando}
-              onClick={() => void executarDemoRegra(itemDemo)}
-              className="shrink-0 w-full py-2.5 rounded-lg bg-gradient-to-r from-pink-700 to-rose-600 hover:from-pink-600 hover:to-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg"
+              disabled={ocupadoNaRegra}
+              onClick={() => void executarOuContinuarDemo(itemDemo)}
+              className={`shrink-0 w-full py-2.5 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                pausadoEmBreakpoint
+                  ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500"
+                  : "bg-gradient-to-r from-pink-700 to-rose-600 hover:from-pink-600 hover:to-rose-500"
+              }`}
             >
               <Play size={16} />
-              {executando ? "Executando..." : "Executar regra"}
+              {rotuloBotaoRegra}
             </button>
           )}
         </div>
 
-        {/* —— Machine Learning —— */}
+        {/* Machine Learning */}
         <div
           className={`flex-1 min-w-0 rounded-xl border-2 border-cyan-500/30 bg-slate-800/50 p-3 flex flex-col min-h-0 relative ${
             estagio !== "coding"
@@ -701,7 +912,7 @@ export function SimuladorML(): React.ReactElement {
             </span>
             <span
               className="text-[9px] bg-cyan-900/50 text-cyan-300 px-2 py-0.5 rounded shrink-0"
-              title="Exemplos com rótulo (poção / não) — aprendizado supervisionado"
+              title="Exemplos com rótulo (poção / não): aprendizado supervisionado"
             >
               SUPERVISIONADO · ROTULADO
             </span>
@@ -897,6 +1108,110 @@ export function SimuladorML(): React.ReactElement {
           )}
         </div>
       </div>
+
+      {/* Modal: ajuda de breakpoints */}
+      {modalAjudaAberto && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-ajuda-breakpoints"
+          onClick={fecharAjudaBreakpoints}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-slate-700/80 bg-slate-950 shadow-2xl shadow-pink-950/20 overflow-hidden"
+            onClick={(evento) => evento.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3 border-b border-slate-800">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-pink-400/90 mb-1">
+                  Programação por regras
+                </p>
+                <h3
+                  id="titulo-ajuda-breakpoints"
+                  className="text-lg font-bold text-white leading-snug"
+                >
+                  Breakpoints no código
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={fecharAjudaBreakpoints}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                aria-label="Fechar ajuda"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4 text-sm text-slate-300 leading-relaxed">
+              <p>
+                Um{" "}
+                <strong className="text-white">breakpoint</strong> pausa a
+                execução em uma linha, como no debugger de uma IDE. Assim você
+                lê com calma o que a regra está vendo no item (nome, cor,
+                verdade).
+              </p>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <span
+                    className="mt-1 inline-block w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 shadow-[0_0_6px_rgba(239,68,68,0.8)]"
+                    aria-hidden
+                  />
+                  <p>
+                    <strong className="text-white">Colocar / remover:</strong>{" "}
+                    clique na coluna à esquerda da linha (a bolinha vermelha).
+                    Uma por linha; quantas quiser.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Play
+                    size={14}
+                    className="mt-0.5 text-pink-400 shrink-0"
+                    aria-hidden
+                  />
+                  <p>
+                    <strong className="text-white">Executar regra:</strong>{" "}
+                    roda linha a linha e{" "}
+                    <strong className="text-white">para</strong> na primeira
+                    linha com breakpoint.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Play
+                    size={14}
+                    className="mt-0.5 text-amber-400 shrink-0"
+                    aria-hidden
+                  />
+                  <p>
+                    <strong className="text-white">Continuar execução:</strong>{" "}
+                    segue até o próximo breakpoint ou até o fim (resultado
+                    ACERTO / ENGANO / ERRADO).
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500">
+                Dica: coloque um breakpoint no{" "}
+                <span className="font-mono text-slate-400">if</span> ou no{" "}
+                <span className="font-mono text-slate-400">return</span> e
+                compare itens vermelhos com frascos de outras cores.
+              </p>
+            </div>
+
+            <div className="px-5 pb-5">
+              <button
+                type="button"
+                onClick={fecharAjudaBreakpoints}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-700 to-rose-600 hover:from-pink-600 hover:to-rose-500 text-white text-sm font-bold transition-colors"
+              >
+                Entendi, quero testar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
