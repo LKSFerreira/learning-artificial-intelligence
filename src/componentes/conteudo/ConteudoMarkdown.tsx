@@ -7,8 +7,10 @@
 
 import type {
   AnchorHTMLAttributes,
+  BlockquoteHTMLAttributes,
   HTMLAttributes,
   ReactElement,
+  ReactNode,
   TableHTMLAttributes,
 } from "react";
 import ReactMarkdown from "react-markdown";
@@ -42,6 +44,18 @@ export function separarPartesMarkdown(conteudo: string): PartesMarkdown {
   return { corpo, secaoSecundaria };
 }
 
+/** Extrai texto plano de nós React (para detectar callouts no Markdown). */
+function extrairTextoPlano(no: ReactNode): string {
+  if (no === null || no === undefined || typeof no === "boolean") return "";
+  if (typeof no === "string" || typeof no === "number") return String(no);
+  if (Array.isArray(no)) return no.map(extrairTextoPlano).join("");
+  if (typeof no === "object" && "props" in no) {
+    const elemento = no as ReactElement<{ children?: ReactNode }>;
+    return extrairTextoPlano(elemento.props.children);
+  }
+  return "";
+}
+
 const componentesMarkdown = {
   a: ({
     node: _node,
@@ -63,6 +77,26 @@ const componentesMarkdown = {
   }: HTMLAttributes<HTMLTableCellElement> & { node?: unknown }) => (
     <th scope="col" {...props} />
   ),
+  blockquote: ({
+    node: _node,
+    children,
+    ...props
+  }: BlockquoteHTMLAttributes<HTMLQuoteElement> & {
+    node?: unknown;
+    children?: ReactNode;
+  }) => {
+    const texto = extrairTextoPlano(children);
+    const ehAviso =
+      /aviso\s*:/i.test(texto) || /met[aá]fora,\s*n[aã]o o motor/i.test(texto);
+    return (
+      <blockquote
+        {...props}
+        className={ehAviso ? "markdown-aviso-chamativo" : undefined}
+      >
+        {children}
+      </blockquote>
+    );
+  },
 };
 
 /**
