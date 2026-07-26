@@ -18,5 +18,13 @@
   "dl": {
     "Aoede": true,
     "Kore": true
+  },
+  "ml_vs_trad": {
+    "Aoede": true,
+    "Kore": true
+  },
+  "deep_learning": {
+    "Aoede": true,
+    "Kore": true
   }
 }
