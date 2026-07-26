@@ -5,8 +5,14 @@
  * da aula. Use `SecaoReferencias` abaixo da navegação para renderizá-los.
  */
 
-import type { AnchorHTMLAttributes, ReactElement } from "react";
+import type {
+  AnchorHTMLAttributes,
+  HTMLAttributes,
+  ReactElement,
+  TableHTMLAttributes,
+} from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface PropriedadesConteudoMarkdown {
   /** Conteúdo em Markdown para renderizar */
@@ -43,6 +49,20 @@ const componentesMarkdown = {
   }: AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => (
     <a target="_blank" rel="noopener noreferrer" {...props} />
   ),
+  table: ({
+    node: _node,
+    ...props
+  }: TableHTMLAttributes<HTMLTableElement> & { node?: unknown }) => (
+    <div className="tabela-markdown-wrapper">
+      <table {...props} />
+    </div>
+  ),
+  th: ({
+    node: _node,
+    ...props
+  }: HTMLAttributes<HTMLTableCellElement> & { node?: unknown }) => (
+    <th scope="col" {...props} />
+  ),
 };
 
 /**
@@ -55,7 +75,9 @@ export function ConteudoMarkdown({
 
   return (
     <div className="markdown-content text-lg text-slate-600 leading-relaxed mb-8">
-      <ReactMarkdown components={componentesMarkdown}>{corpo}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentesMarkdown}>
+        {corpo}
+      </ReactMarkdown>
     </div>
   );
 }
@@ -78,7 +100,7 @@ export function SecaoReferencias({
       className="secao-referencias mt-10 pt-5"
       aria-label="Referências e leituras recomendadas"
     >
-      <ReactMarkdown components={componentesMarkdown}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentesMarkdown}>
         {secaoSecundaria}
       </ReactMarkdown>
     </aside>

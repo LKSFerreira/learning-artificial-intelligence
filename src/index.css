@@ -194,6 +194,53 @@ body {
   padding: 0;
 }
 
+/* Tabelas GFM (remark-gfm) */
+.markdown-content .tabela-markdown-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 0 0 1.25rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--border-theme, #e2e8f0) 90%, transparent);
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.markdown-content thead th {
+  text-align: left;
+  font-weight: 700;
+  padding: 0.7rem 0.85rem;
+  background: color-mix(in srgb, var(--accent-theme, #6366f1) 10%, transparent);
+  color: var(--text-theme-dark, #0f172a);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-theme, #e2e8f0) 100%, transparent);
+  white-space: nowrap;
+}
+
+.markdown-content tbody td {
+  padding: 0.65rem 0.85rem;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-theme, #e2e8f0) 70%, transparent);
+  color: var(--text-theme, #475569);
+}
+
+.markdown-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown-content tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--border-theme, #e2e8f0) 18%, transparent);
+}
+
+.markdown-content tbody td:first-child {
+  font-weight: 600;
+  color: var(--text-theme-dark, #0f172a);
+  white-space: nowrap;
+}
+
 /* ==========================================================================
    4b. Bibliografia / material complementar (audio-skip)
    Tipografia menor e mais quieta: não compete com o texto da aula.
@@ -374,6 +421,27 @@ aside .opacity-40 {
 }
 
 /* Estilos de Markdown para Temas Escuros */
+.theme-escuro .markdown-content .tabela-markdown-wrapper,
+.theme-dracula .markdown-content .tabela-markdown-wrapper {
+  border-color: color-mix(in srgb, var(--border-theme, #334155) 90%, transparent);
+}
+
+.theme-escuro .markdown-content thead th,
+.theme-dracula .markdown-content thead th {
+  background: color-mix(in srgb, var(--accent-theme, #6366f1) 16%, transparent);
+  color: var(--text-theme-dark, #f8fafc);
+}
+
+.theme-escuro .markdown-content tbody td,
+.theme-dracula .markdown-content tbody td {
+  border-bottom-color: color-mix(in srgb, var(--border-theme, #334155) 80%, transparent);
+}
+
+.theme-escuro .markdown-content tbody td:first-child,
+.theme-dracula .markdown-content tbody td:first-child {
+  color: var(--text-theme-dark, #f8fafc);
+}
+
 .theme-escuro .markdown-content strong,
 .theme-dracula .markdown-content strong {
   color: var(--text-theme-dark) !important;
