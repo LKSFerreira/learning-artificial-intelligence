@@ -133,8 +133,8 @@ export function TreinadorRL(): React.ReactElement {
       setEtapa("avaliar");
       setNarracao(
         escolhida === acaoComando
-          ? `O cão fez ${ROTULOS[escolhida]} — acertou o comando! Dê o petisco ou retenha.`
-          : `O cão fez ${ROTULOS[escolhida]}, mas o comando era ${ROTULOS[acaoComando]}. Dê o petisco ou retenha.`,
+          ? `O cão fez ${ROTULOS[escolhida]} — acertou o comando! Dê o petisco ou recuse a dar o petisco.`
+          : `O cão fez ${ROTULOS[escolhida]}, mas o comando era ${ROTULOS[acaoComando]}. Dê o petisco ou não.`,
       );
     }, 400);
   };
