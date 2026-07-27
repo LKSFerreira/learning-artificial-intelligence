@@ -18,6 +18,9 @@ import { HierarquiaVenn } from "./fase1/HierarquiaVenn";
 import { SimuladorML } from "./fase1/SimuladorML";
 import { RedeNeuralDL } from "./fase1/RedeNeuralDL";
 import { TreinadorRL } from "./fase1/TreinadorRL";
+import { PilaresRL } from "./fase1/PilaresRL";
+import { CicloRL } from "./fase1/CicloRL";
+import { ExploracaoVsExplotacao } from "./fase1/ExploracaoVsExplotacao";
 
 // Fase 2
 import { IntroducaoFase2 } from "./fase2/IntroducaoFase2";
@@ -95,9 +98,9 @@ export const REGISTRO_VISUAIS: Record<string, FabricaVisual> = {
   "1:ml_examples": () => <SimuladorML />,
   "1:dl_neural_net": () => <RedeNeuralDL />,
   "1:rl_dog_training": () => <TreinadorRL />,
-  "1:rl_components_interactive": () => <TreinadorRL />,
-  "1:rl_cycle_animation": () => <TreinadorRL />,
-  "1:exploration_exploitation": () => <TreinadorRL />,
+  "1:rl_components_interactive": () => <PilaresRL />,
+  "1:rl_cycle_animation": () => <CicloRL />,
+  "1:exploration_exploitation": () => <ExploracaoVsExplotacao />,
   "1:video_static": () => <VideoVisual />,
   "1:quiz_static": () => <QuizVisualFase1 />,
 

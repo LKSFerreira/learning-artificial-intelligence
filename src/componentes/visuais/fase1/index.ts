@@ -7,3 +7,5 @@ export { HierarquiaVenn } from "./HierarquiaVenn";
 export { SimuladorML } from "./SimuladorML";
 export { RedeNeuralDL } from "./RedeNeuralDL";
 export { TreinadorRL } from "./TreinadorRL";
+export { PilaresRL } from "./PilaresRL";
+export { CicloRL } from "./CicloRL";

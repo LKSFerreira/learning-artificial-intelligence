@@ -13,6 +13,7 @@
     "@google/genai": "^2.11.0",
     "lamejs": "^1.2.1",
     "lucide-react": "^0.561.0",
+    "mermaid": "^11.16.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "9",

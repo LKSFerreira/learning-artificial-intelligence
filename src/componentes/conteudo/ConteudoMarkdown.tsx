@@ -8,16 +8,17 @@
  * react-markdown sem HTML cru exibiria o comentário como texto.
  */
 
-import type {
-  AnchorHTMLAttributes,
-  BlockquoteHTMLAttributes,
-  HTMLAttributes,
-  ReactElement,
-  ReactNode,
-  TableHTMLAttributes,
+import React, {
+  type AnchorHTMLAttributes,
+  type BlockquoteHTMLAttributes,
+  type HTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+  type TableHTMLAttributes,
 } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { DiagramaMermaid } from "./DiagramaMermaid";
 
 interface PropriedadesConteudoMarkdown {
   /** Conteúdo em Markdown para renderizar */
@@ -112,6 +113,34 @@ const componentesMarkdown = {
         {children}
       </blockquote>
     );
+  },
+  code: ({
+    node: _node,
+    className,
+    children,
+    ...props
+  }: HTMLAttributes<HTMLElement> & { node?: unknown }) => {
+    const match = /language-(\w+)/.exec(className || "");
+    const ehMermaid = match && match[1] === "mermaid";
+
+    if (ehMermaid) {
+      return <DiagramaMermaid codigo={String(children).replace(/\n$/, "")} />;
+    }
+
+    return (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }: { children?: ReactNode }) => {
+    if (
+      React.isValidElement(children) &&
+      children.type === DiagramaMermaid
+    ) {
+      return children;
+    }
+    return <pre>{children}</pre>;
   },
 };
 

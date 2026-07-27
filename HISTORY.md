@@ -4,6 +4,25 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-26 — Reconstrução Completa do TreinadorRL com Mascotes Ilustrados (`CenarioTreinadorDog.tsx`) ✅
+
+- **Substituição dos Vetores por Mascotes Ilustrados Profissionais:**
+  - Carregados assets ilustrados de alta fidelidade em `public/imagens/treinador/dog.png` (mascote cãozinho fofo estilo Duolingo) e `public/imagens/treinador/tutor.png` (tutor amigável com bolsa na cintura).
+- **Redesign UI/UX Minimalista:** Palco glassmorphic limpo, microanimações fluidas sem deformações manuais em código e validação da convergência da política de reforço (+50% ao recompensar).
+- **Validação:** Typecheck (`npx tsc --noEmit`) sem erros e validação em browser com screenshots.
+
+### 2026-07-26 — Redesign Didático e Visual das Lições de RL (Fase 1: 05, 06, 07 e 08) ✅
+
+- **Reconstrução do visual dos 5 Pilares (`PilaresRL.tsx`):** Removidos sliders numéricos confusos e logs de código abstratos. Criado um Mapa Interativo dos 5 Pilares com foco visual por abas, cena 2D com Robô e Célula de Energia, recompensas flutuantes animadas (`+10` / `-1`) e barras de preferência limpas.
+- **Reconstrução do motor do Ciclo RL (`CicloRL.tsx`):** Substituído a interface no estilo debugger de código por um diagrama de loop de 5 etapas com pulso luminoso, transição de cenários 2D em tempo real e controle manual por micro-passo.
+- **Novo visual dedicado para Exploração vs. Explotação (`ExploracaoVsExplotacao.tsx`):** Criado simulador interativo de caça-níqueis (*Multi-Armed Bandit*) com controle de Épsilon ($\epsilon$), alavancas e gráficos de retorno em tempo real.
+- **Revisão e Enriquecimento das 4 Lições:**
+  - `05-rl-intro.md`: Polimento fino para reforçar a Lei do Efeito (Thorndike/Skinner).
+  - `06-rl-components.md`: Reestruturação com tabela, cards pedagógicos e diagramas Mermaid alinhados ao `PilaresRL`.
+  - `07-rl-cycle.md`: Detalhamento passo a passo da quádrupla $(s_t, a_t, r_t, s_{t+1})$.
+  - `08-concepts-extra.md`: Expandido de 29 linhas para artigo completo com embasamento Sutton & Barto (Cap. 2), metáfora dos cassinos e formalização da política $\epsilon$-greedy.
+- **Validação:** Typecheck (`npx tsc --noEmit`) e Build Vite (`npm run build`) validados com 0 erros.
+
 ### 2026-07-22 — Visual Redes Neurais: Poring + Angeling (camadas PNG) ✅
 
 - Reconstrução do painel `dl_neural_net` em `RedeNeuralDL.tsx`: layout em duas faixas (Exemplo 1 Poring · Exemplo 2 Angeling).
