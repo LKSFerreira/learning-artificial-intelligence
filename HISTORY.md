@@ -26,9 +26,9 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 - **Transição de Vídeo Seletiva (`VideoCaoChroma.tsx`):**
   - Permitida a solicitação de novas ações durante a animação `dog_idle.mp4` (que aguardam o fim do loop do idle para transicionar).
   - Bloqueadas completamente quaisquer interrupções durante a reprodução de vídeos **não-idle** (`sentando`, `pulando`, `deitando`, `petisco`, `sem_petisco`), garantindo que ações e feedbacks sejam executados 100% até o fim.
-- **Redesign dos 5 Pilares do RL (`PilaresRL.tsx` / `06-rl-components.md`):**
-  - Reformulado o componente interativo com abas de inspeção dedicadas para destacar visualmente cada pilar (Agente, Ambiente, Estado, Ação, Recompensa) no mapa com anéis fluorescentes, explicações focadas e diário do loop RL (`s_t ➔ a_t ➔ s_{t+1} | r_t`).
-  - Sincronizada a lição teórica em `06-rl-components.md` cobrindo detalhadamente os 5 pilares e a oficina prática.
+- **Reformulação Didática dos 5 Pilares do RL (`PilaresRL.tsx` / `06-rl-components.md`):**
+  - Eliminação total da notação matemática e fórmulas ($s, a, r, s_t \to a_t$).
+  - Reconstrução completa da lição e do simulador interativo com a narrativa intuitiva do **Robô Aspirador Bibi na Sala de Estar 🤖**, apresentando diário de bordo humanizado e ações claras sem jargões.
 - **Validação:** Typecheck (`npx tsc --noEmit`) aprovado com 0 erros.
 
 ### 2026-07-26 — Reconstrução Completa do TreinadorRL com Mascotes Ilustrados (`CenarioTreinadorDog.tsx`) ✅
