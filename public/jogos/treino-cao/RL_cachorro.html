@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferência por Ação (Política do Agente)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js Library for 3D Realism -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070a13;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #dog-canvas-container {
+            width: 100%;
+            height: 100%;
+            min-height: 380px;
+            cursor: grab;
+        }
+
+        #dog-canvas-container:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#070a13] flex flex-col justify-between items-center p-4 sm:p-6 md:p-8 select-none">
+
+    <!-- Central Area: Ultra-Realistic 3D Animated Caramel Dog Viewport -->
+    <div class="flex-1 w-full max-w-5xl flex flex-col items-center justify-center relative my-auto min-h-[380px] sm:min-h-[440px]">
+        <div id="dog-canvas-container" class="relative w-full h-full flex items-center justify-center">
+            <!-- Three.js WebGL Canvas inserted dynamically here -->
+        </div>
+    </div>
+
+    <!-- Bottom Panel Container -->
+    <div class="w-full max-w-6xl flex flex-col gap-5 mt-auto">
+        
+        <!-- Top Section: Agent Policy Probabilities Box -->
+        <div class="bg-[#0b101d] border border-[#172036] rounded-xl p-4 sm:p-5 shadow-2xl">
+            <!-- Header Row -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-4">
+                <h2 class="text-xs sm:text-sm font-bold text-slate-300 tracking-wider uppercase">
+                    PREFERÊNCIA POR AÇÃO (POLÍTICA DO AGENTE)
+                </h2>
+                <span class="text-[11px] sm:text-xs text-slate-500 font-normal">
+                    Valores aproximam a distribuição de probabilidades
+                </span>
+            </div>
+
+            <!-- 4 Action Probability Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                
+                <!-- Action 1: Sentar -->
+                <div class="bg-[#0f1525] border border-[#1b253e] rounded-lg p-3 flex flex-col justify-between gap-2.5">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="font-semibold text-slate-200" id="label-sentar">Sentar</span>
+                        <span class="font-bold text-slate-300 text-xs" id="val-sentar">25%</span>
+                    </div>
+                    <div class="w-full bg-[#182138] h-2 rounded-full overflow-hidden">
+                        <div id="bar-sentar" class="bg-[#584de3] h-full rounded-full transition-all duration-300 ease-out" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <!-- Action 2: Pular -->
+                <div class="bg-[#0f1525] border border-[#1b253e] rounded-lg p-3 flex flex-col justify-between gap-2.5">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="font-semibold text-slate-200" id="label-pular">Pular</span>
+                        <span class="font-bold text-slate-300 text-xs" id="val-pular">25%</span>
+                    </div>
+                    <div class="w-full bg-[#182138] h-2 rounded-full overflow-hidden">
+                        <div id="bar-pular" class="bg-[#584de3] h-full rounded-full transition-all duration-300 ease-out" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <!-- Action 3: Latir -->
+                <div class="bg-[#0f1525] border border-[#1b253e] rounded-lg p-3 flex flex-col justify-between gap-2.5">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="font-semibold text-slate-200" id="label-latir">Latir</span>
+                        <span class="font-bold text-slate-300 text-xs" id="val-latir">25%</span>
+                    </div>
+                    <div class="w-full bg-[#182138] h-2 rounded-full overflow-hidden">
+                        <div id="bar-latir" class="bg-[#584de3] h-full rounded-full transition-all duration-300 ease-out" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <!-- Action 4: Deitar -->
+                <div class="bg-[#0f1525] border border-[#1b253e] rounded-lg p-3 flex flex-col justify-between gap-2.5">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="font-semibold text-slate-200" id="label-deitar">Deitar</span>
+                        <span class="font-bold text-slate-300 text-xs" id="val-deitar">25%</span>
+                    </div>
+                    <div class="w-full bg-[#182138] h-2 rounded-full overflow-hidden">
+                        <div id="bar-deitar" class="bg-[#584de3] h-full rounded-full transition-all duration-300 ease-out" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Bottom Section: Command Selection -->
+        <div class="flex flex-col gap-3 mt-1">
+            
+            <!-- Label with Sparkle Icon -->
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-sm sm:text-base">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current text-amber-400" viewBox="0 0 24 24">
+                    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+                <span>Selecione o Comando para o Cão:</span>
+            </div>
+
+            <!-- 4 Command Action Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <button id="btn-sentar" onclick="selectCommand('sentar')" class="btn-command bg-[#5547e8] hover:bg-[#483ad3] active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-150 text-center text-sm sm:text-base shadow-lg shadow-[#5547e8]/20">
+                    Sentar
+                </button>
+                <button id="btn-pular" onclick="selectCommand('pular')" class="btn-command bg-[#5547e8] hover:bg-[#483ad3] active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-150 text-center text-sm sm:text-base shadow-lg shadow-[#5547e8]/20">
+                    Pular
+                </button>
+                <button id="btn-latir" onclick="selectCommand('latir')" class="btn-command bg-[#5547e8] hover:bg-[#483ad3] active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-150 text-center text-sm sm:text-base shadow-lg shadow-[#5547e8]/20">
+                    Latir
+                </button>
+                <button id="btn-deitar" onclick="selectCommand('deitar')" class="btn-command bg-[#5547e8] hover:bg-[#483ad3] active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-150 text-center text-sm sm:text-base shadow-lg shadow-[#5547e8]/20">
+                    Deitar
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Global variables for UI logic
+        let selectedAction = null;
+
+        function selectCommand(actionKey) {
+            const actions = ['sentar', 'pular', 'latir', 'deitar'];
+
+            if (selectedAction === actionKey) {
+                // Toggle back to equal 25% distribution if clicked again
+                selectedAction = null;
+                actions.forEach(act => {
+                    updateProbabilityBar(act, 25);
+                });
+                setDogPose('idle');
+            } else {
+                selectedAction = actionKey;
+                actions.forEach(act => {
+                    if (act === actionKey) {
+                        updateProbabilityBar(act, 70);
+                    } else {
+                        updateProbabilityBar(act, 10);
+                    }
+                });
+                setDogPose(actionKey);
+            }
+        }
+
+        function updateProbabilityBar(actionKey, percent) {
+            const valElem = document.getElementById(`val-${actionKey}`);
+            const barElem = document.getElementById(`bar-${actionKey}`);
+            
+            if (valElem && barElem) {
+                valElem.textContent = `${percent}%`;
+                barElem.style.width = `${percent}%`;
+            }
+        }
+
+        // High-Quality Procedural Texture Generator for Ultra-Cute Golden Caramel Fur & Wet Nose
+        function createFurTexture(baseColorHex, darkColorHex, highlightColorHex, streakCount) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+
+            // Fill Base Caramel Gradient
+            const gradient = ctx.createRadialGradient(512, 512, 100, 512, 512, 512);
+            gradient.addColorStop(0, highlightColorHex);
+            gradient.addColorStop(0.6, baseColorHex);
+            gradient.addColorStop(1, darkColorHex);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add fine organic fur directional strands
+            ctx.lineWidth = 1.1;
+            for (let i = 0; i < streakCount; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const length = 12 + Math.random() * 22;
+                const angle = (Math.random() - 0.5) * 0.35 + Math.PI / 2;
+
+                const randVal = Math.random();
+                ctx.strokeStyle = randVal > 0.6 ? highlightColorHex : (randVal > 0.3 ? darkColorHex : baseColorHex);
+                ctx.globalAlpha = 0.07 + Math.random() * 0.12;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length);
+                ctx.stroke();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function createNoseBumpTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, 256, 256);
+
+            for (let i = 0; i < 3500; i++) {
+                const x = Math.random() * 256;
+                const y = Math.random() * 256;
+                const radius = 0.6 + Math.random() * 1.4;
+                const val = Math.floor(100 + Math.random() * 155);
+                ctx.fillStyle = `rgb(${val},${val},${val})`;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        let scene, camera, renderer;
+        let dogGroup, headGroup, chestGroup, bodyGroup, neckGroup;
+        let snoutGroup, mouthGroup, jawGroup, tongueGroup;
+        let leftEarGroup, rightEarGroup;
+        let tailSeg1, tailSeg2, tailSeg3;
+        let frontLegL, frontLegR, backLegL, backLegR;
+        let eyeL, eyeR, browL, browR;
+
+        // Mouse tracking position & physics
+        let targetMouse = { x: 0, y: 0 };
+        let currentMouse = { x: 0, y: 0 };
+        let prevMouseX = 0;
+
+        // Current pose state
+        let currentPoseState = 'idle';
+        let targetPose = {
+            bodyRotX: 0, bodyPosY: 0, bodyPosZ: 0,
+            headRotX: 0, headRotY: 0, headPosY: 1.25,
+            jawRotX: 0,
+            tailRotZ: 0, tailSpeed: 14,
+            frontLegLRotX: 0, frontLegRRotX: 0,
+            backLegLRotX: 0, backLegRRotX: 0
+        };
+
+        let currentPose = { ...targetPose };
+
+        function init3DScene() {
+            const container = document.getElementById('dog-canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Create Scene
+            scene = new THREE.Scene();
+
+            // Camera Setup
+            camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+            camera.position.set(0, 1.22, 5.0);
+            camera.lookAt(0, 0.88, 0);
+
+            // Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.15;
+
+            container.appendChild(renderer.domElement);
+
+            // Studio Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0x222d45, 1.5);
+            scene.add(ambientLight);
+
+            // Golden Warm Key Light
+            const keyLight = new THREE.DirectionalLight(0xfff5e6, 2.6);
+            keyLight.position.set(3.5, 5.5, 4.2);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 2048;
+            keyLight.shadow.mapSize.height = 2048;
+            keyLight.shadow.camera.near = 0.5;
+            keyLight.shadow.camera.far = 12;
+            keyLight.shadow.bias = -0.00015;
+            keyLight.shadow.radius = 2.5;
+            scene.add(keyLight);
+
+            // Soft Cool Fill Light
+            const fillLight = new THREE.DirectionalLight(0x6080b0, 1.0);
+            fillLight.position.set(-4, 3, 2.5);
+            scene.add(fillLight);
+
+            // Warm Caramel Rim Light (Golden Backlight Glow)
+            const rimLight = new THREE.DirectionalLight(0xffa844, 2.8);
+            rimLight.position.set(0, 4.5, -4.5);
+            scene.add(rimLight);
+
+            // Soft Floor Contact Shadow Receiver
+            const floorGeo = new THREE.PlaneGeometry(10, 10);
+            const floorMat = new THREE.ShadowMaterial({ opacity: 0.52 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = 0;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            build3DDogAnatomy();
+
+            // Track Mouse for Head & Eye Following
+            window.addEventListener('mousemove', (e) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                targetMouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                targetMouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    targetMouse.x = ((e.touches[0].clientX - rect.left) / rect.width) * 2 - 1;
+                    targetMouse.y = -((e.touches[0].clientY - rect.top) / rect.height) * 2 + 1;
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function build3DDogAnatomy() {
+            // Textures
+            const furMainTexture = createFurTexture('#e08631', '#9e4e0a', '#f5be7a', 90000);
+            const furDarkTexture = createFurTexture('#924508', '#592401', '#cc6e1d', 70000);
+            const furCreamTexture = createFurTexture('#fcecdb', '#e0c2a2', '#ffffff', 50000);
+            const noseBumpTexture = createNoseBumpTexture();
+
+            // Materials
+            const matFurMain = new THREE.MeshStandardMaterial({
+                map: furMainTexture,
+                roughness: 0.76,
+                metalness: 0.02,
+                bumpMap: furMainTexture,
+                bumpScale: 0.012
+            });
+
+            const matFurDark = new THREE.MeshStandardMaterial({
+                map: furDarkTexture,
+                roughness: 0.78,
+                metalness: 0.02,
+                bumpMap: furDarkTexture,
+                bumpScale: 0.012
+            });
+
+            const matFurCream = new THREE.MeshStandardMaterial({
+                map: furCreamTexture,
+                roughness: 0.82,
+                metalness: 0.01,
+                bumpMap: furCreamTexture,
+                bumpScale: 0.008
+            });
+
+            const matEyeLiner = new THREE.MeshStandardMaterial({
+                color: 0x120803,
+                roughness: 0.4
+            });
+
+            const matEyeIris = new THREE.MeshStandardMaterial({
+                color: 0x472209,
+                roughness: 0.15
+            });
+
+            const matEyeCornea = new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.9,
+                roughness: 0.01,
+                transmission: 0.96,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.01,
+                ior: 1.45
+            });
+
+            const matNose = new THREE.MeshStandardMaterial({
+                color: 0x111111,
+                roughness: 0.18,
+                metalness: 0.08,
+                bumpMap: noseBumpTexture,
+                bumpScale: 0.025
+            });
+
+            const matTongue = new THREE.MeshStandardMaterial({
+                color: 0xff6b8b,
+                roughness: 0.3,
+                metalness: 0.02
+            });
+
+            const matCollar = new THREE.MeshStandardMaterial({
+                color: 0xd92626,
+                roughness: 0.35,
+                metalness: 0.15
+            });
+
+            const matTag = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                roughness: 0.15,
+                metalness: 0.9
+            });
+
+            // Master Dog Root Group
+            dogGroup = new THREE.Group();
+            scene.add(dogGroup);
+
+            // Body Main Group
+            bodyGroup = new THREE.Group();
+            dogGroup.add(bodyGroup);
+
+            // Chest / Ribcage
+            const chestGeo = new THREE.SphereGeometry(0.48, 32, 32);
+            chestGeo.scale(0.86, 1.12, 1.28);
+            const chestMesh = new THREE.Mesh(chestGeo, matFurMain);
+            chestMesh.position.set(0, 0.82, 0.1);
+            chestMesh.castShadow = true;
+            chestMesh.receiveShadow = true;
+            bodyGroup.add(chestMesh);
+
+            // Fluffy Cream Chest Patch
+            const chestPatchGeo = new THREE.SphereGeometry(0.42, 28, 28);
+            chestPatchGeo.scale(0.68, 1.05, 0.82);
+            const chestPatchMesh = new THREE.Mesh(chestPatchGeo, matFurCream);
+            chestPatchMesh.position.set(0, 0.81, 0.33);
+            bodyGroup.add(chestPatchMesh);
+
+            // Abdomen / Torso
+            const abdomenGeo = new THREE.SphereGeometry(0.42, 32, 32);
+            abdomenGeo.scale(0.78, 0.88, 1.28);
+            const abdomenMesh = new THREE.Mesh(abdomenGeo, matFurMain);
+            abdomenMesh.position.set(0, 0.8, -0.42);
+            abdomenMesh.castShadow = true;
+            bodyGroup.add(abdomenMesh);
+
+            // Neck Group
+            neckGroup = new THREE.Group();
+            neckGroup.position.set(0, 1.06, 0.28);
+            bodyGroup.add(neckGroup);
+
+            const neckGeo = new THREE.CylinderGeometry(0.27, 0.37, 0.44, 28);
+            const neckMesh = new THREE.Mesh(neckGeo, matFurMain);
+            neckMesh.rotation.x = 0.22;
+            neckMesh.castShadow = true;
+            neckGroup.add(neckMesh);
+
+            // Collar & Heart Tag
+            const collarGeo = new THREE.TorusGeometry(0.31, 0.038, 16, 32);
+            const collarMesh = new THREE.Mesh(collarGeo, matCollar);
+            collarMesh.rotation.x = Math.PI / 2 + 0.22;
+            collarMesh.position.set(0, -0.05, 0.05);
+            collarMesh.castShadow = true;
+            neckGroup.add(collarMesh);
+
+            const tagGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.012, 24);
+            const tagMesh = new THREE.Mesh(tagGeo, matTag);
+            tagMesh.rotation.x = Math.PI / 2;
+            tagMesh.position.set(0, -0.22, 0.35);
+            neckGroup.add(tagMesh);
+
+            // Head Group
+            headGroup = new THREE.Group();
+            headGroup.position.set(0, 1.26, 0.42);
+            bodyGroup.add(headGroup);
+
+            // Head Skull
+            const headGeo = new THREE.SphereGeometry(0.38, 32, 32);
+            headGeo.scale(0.96, 0.92, 0.98);
+            const headMesh = new THREE.Mesh(headGeo, matFurMain);
+            headMesh.castShadow = true;
+            headGroup.add(headMesh);
+
+            // Chubby Fluffy Cheeks
+            const cheekGeo = new THREE.SphereGeometry(0.2, 20, 20);
+            const cheekL = new THREE.Mesh(cheekGeo, matFurMain);
+            cheekL.position.set(-0.22, -0.06, 0.12);
+            headGroup.add(cheekL);
+
+            const cheekR = new THREE.Mesh(cheekGeo, matFurMain);
+            cheekR.position.set(0.22, -0.06, 0.12);
+            headGroup.add(cheekR);
+
+            // Brow Light Accent Spots (Sweet Eyebrows)
+            const browGeo = new THREE.SphereGeometry(0.08, 16, 16);
+            browGeo.scale(1.2, 0.6, 0.5);
+
+            browL = new THREE.Mesh(browGeo, matFurCream);
+            browL.position.set(-0.14, 0.2, 0.28);
+            browL.rotation.z = -0.15;
+            headGroup.add(browL);
+
+            browR = new THREE.Mesh(browGeo, matFurCream);
+            browR.position.set(0.14, 0.2, 0.28);
+            browR.rotation.z = 0.15;
+            headGroup.add(browR);
+
+            // Snout / Muzzle Group
+            snoutGroup = new THREE.Group();
+            snoutGroup.position.set(0, -0.05, 0.28);
+            headGroup.add(snoutGroup);
+
+            const snoutGeo = new THREE.ConeGeometry(0.21, 0.42, 28);
+            snoutGeo.scale(0.92, 0.74, 0.98);
+            const snoutMesh = new THREE.Mesh(snoutGeo, matFurCream);
+            snoutMesh.rotation.x = Math.PI / 2;
+            snoutMesh.position.set(0, 0, 0.16);
+            snoutMesh.castShadow = true;
+            snoutGroup.add(snoutMesh);
+
+            // Wet Nose with Nostrils
+            const noseGeo = new THREE.SphereGeometry(0.072, 20, 20);
+            noseGeo.scale(1.22, 0.82, 0.88);
+            const noseMesh = new THREE.Mesh(noseGeo, matNose);
+            noseMesh.position.set(0, 0.08, 0.36);
+            noseMesh.castShadow = true;
+            snoutGroup.add(noseMesh);
+
+            // Lower Jaw & Mouth
+            jawGroup = new THREE.Group();
+            jawGroup.position.set(0, -0.12, 0.22);
+            headGroup.add(jawGroup);
+
+            const jawGeo = new THREE.BoxGeometry(0.17, 0.055, 0.26);
+            const jawMesh = new THREE.Mesh(jawGeo, matFurCream);
+            jawMesh.position.set(0, -0.02, 0.09);
+            jawGroup.add(jawMesh);
+
+            // Pink Panting Tongue
+            tongueGroup = new THREE.Group();
+            tongueGroup.position.set(0, 0.01, 0.11);
+            jawGroup.add(tongueGroup);
+
+            const tongueGeo = new THREE.BoxGeometry(0.095, 0.022, 0.22);
+            const tongueMesh = new THREE.Mesh(tongueGeo, matTongue);
+            tongueMesh.position.set(0, 0, 0.08);
+            tongueMesh.rotation.x = 0.18;
+            tongueGroup.add(tongueMesh);
+
+            // Cute Glossy Eyes with Eyeliner Rim
+            const createEye = (posX) => {
+                const eyeGroup = new THREE.Group();
+                eyeGroup.position.set(posX, 0.08, 0.27);
+
+                // Dark Eyeliner Socket
+                const socketMesh = new THREE.Mesh(new THREE.SphereGeometry(0.078, 20, 20), matEyeLiner);
+                socketMesh.scale.set(1.05, 1.05, 0.95);
+
+                // Glossy Iris
+                const irisMesh = new THREE.Mesh(new THREE.SphereGeometry(0.055, 20, 20), matEyeIris);
+                irisMesh.position.z = 0.022;
+
+                // Shiny Pupil Catchlight Reflection
+                const catchlightGeo = new THREE.SphereGeometry(0.015, 12, 12);
+                const catchlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const catchlightMesh = new THREE.Mesh(catchlightGeo, catchlightMat);
+                catchlightMesh.position.set(0.02, 0.02, 0.062);
+
+                // Cornea
+                const corneaMesh = new THREE.Mesh(new THREE.SphereGeometry(0.076, 20, 20), matEyeCornea);
+
+                eyeGroup.add(socketMesh);
+                eyeGroup.add(irisMesh);
+                eyeGroup.add(catchlightMesh);
+                eyeGroup.add(corneaMesh);
+                return eyeGroup;
+            };
+
+            eyeL = createEye(-0.16);
+            eyeR = createEye(0.16);
+            headGroup.add(eyeL);
+            headGroup.add(eyeR);
+
+            // Floppy Soft Ears with Natural Curvature
+            const earGeo = new THREE.CylinderGeometry(0.075, 0.16, 0.46, 20);
+            earGeo.scale(0.38, 1.0, 0.82);
+
+            leftEarGroup = new THREE.Group();
+            leftEarGroup.position.set(-0.31, 0.15, 0.04);
+            leftEarGroup.rotation.set(0.18, 0.08, 0.35);
+            const earLMesh = new THREE.Mesh(earGeo, matFurDark);
+            earLMesh.position.set(0, -0.2, 0);
+            earLMesh.castShadow = true;
+            leftEarGroup.add(earLMesh);
+            headGroup.add(leftEarGroup);
+
+            rightEarGroup = new THREE.Group();
+            rightEarGroup.position.set(0.31, 0.15, 0.04);
+            rightEarGroup.rotation.set(0.18, -0.08, -0.35);
+            const earRMesh = new THREE.Mesh(earGeo, matFurDark);
+            earRMesh.position.set(0, -0.2, 0);
+            earRMesh.castShadow = true;
+            rightEarGroup.add(earRMesh);
+            headGroup.add(rightEarGroup);
+
+            // Legs with White Socks Paw Tips
+            const legGeo = new THREE.CylinderGeometry(0.075, 0.058, 0.74, 18);
+            const pawGeo = new THREE.SphereGeometry(0.088, 18, 18);
+            pawGeo.scale(1.12, 0.58, 1.38);
+
+            // Front Left Leg
+            frontLegL = new THREE.Group();
+            frontLegL.position.set(-0.21, 0.75, 0.12);
+            const fLegLMesh = new THREE.Mesh(legGeo, matFurMain);
+            fLegLMesh.position.set(0, -0.32, 0);
+            fLegLMesh.castShadow = true;
+            const fPawLMesh = new THREE.Mesh(pawGeo, matFurCream);
+            fPawLMesh.position.set(0, -0.67, 0.04);
+            fPawLMesh.castShadow = true;
+            frontLegL.add(fLegLMesh);
+            frontLegL.add(fPawLMesh);
+            bodyGroup.add(frontLegL);
+
+            // Front Right Leg
+            frontLegR = new THREE.Group();
+            frontLegR.position.set(0.21, 0.75, 0.12);
+            const fLegRMesh = new THREE.Mesh(legGeo, matFurMain);
+            fLegRMesh.position.set(0, -0.32, 0);
+            fLegRMesh.castShadow = true;
+            const fPawRMesh = new THREE.Mesh(pawGeo, matFurCream);
+            fPawRMesh.position.set(0, -0.67, 0.04);
+            fPawRMesh.castShadow = true;
+            frontLegR.add(fLegRMesh);
+            frontLegR.add(fPawRMesh);
+            bodyGroup.add(frontLegR);
+
+            // Back Legs
+            const thighGeo = new THREE.SphereGeometry(0.17, 18, 18);
+            thighGeo.scale(0.82, 1.38, 0.98);
+
+            backLegL = new THREE.Group();
+            backLegL.position.set(-0.23, 0.75, -0.52);
+            const bThighL = new THREE.Mesh(thighGeo, matFurMain);
+            bThighL.position.set(0, -0.1, 0);
+            bThighL.castShadow = true;
+            const bLegL = new THREE.Mesh(legGeo, matFurMain);
+            bLegL.position.set(0, -0.35, -0.05);
+            bLegL.castShadow = true;
+            const bPawL = new THREE.Mesh(pawGeo, matFurCream);
+            bPawL.position.set(0, -0.67, 0.02);
+            bPawL.castShadow = true;
+            backLegL.add(bThighL);
+            backLegL.add(bLegL);
+            backLegL.add(bPawL);
+            bodyGroup.add(backLegL);
+
+            backLegR = new THREE.Group();
+            backLegR.position.set(0.23, 0.75, -0.52);
+            const bThighR = new THREE.Mesh(thighGeo, matFurMain);
+            bThighR.position.set(0, -0.1, 0);
+            bThighR.castShadow = true;
+            const bLegR = new THREE.Mesh(legGeo, matFurMain);
+            bLegR.position.set(0, -0.35, -0.05);
+            bLegR.castShadow = true;
+            const bPawR = new THREE.Mesh(pawGeo, matFurCream);
+            bPawR.position.set(0, -0.67, 0.02);
+            bPawR.castShadow = true;
+            backLegR.add(bThighR);
+            backLegR.add(bLegR);
+            backLegR.add(bPawR);
+            bodyGroup.add(backLegR);
+
+            // Multi-Joint Curved Animated Tail
+            tailSeg1 = new THREE.Group();
+            tailSeg1.position.set(0, 0.88, -0.72);
+            bodyGroup.add(tailSeg1);
+
+            const tailGeo1 = new THREE.CylinderGeometry(0.045, 0.035, 0.22, 16);
+            const mTail1 = new THREE.Mesh(tailGeo1, matFurDark);
+            mTail1.position.set(0, 0.1, -0.04);
+            mTail1.rotation.x = -0.7;
+            mTail1.castShadow = true;
+            tailSeg1.add(mTail1);
+
+            tailSeg2 = new THREE.Group();
+            tailSeg2.position.set(0, 0.18, -0.08);
+            tailSeg1.add(tailSeg2);
+
+            const tailGeo2 = new THREE.CylinderGeometry(0.035, 0.025, 0.22, 16);
+            const mTail2 = new THREE.Mesh(tailGeo2, matFurDark);
+            mTail2.position.set(0, 0.1, -0.04);
+            mTail2.rotation.x = -0.2;
+            mTail2.castShadow = true;
+            tailSeg2.add(mTail2);
+
+            tailSeg3 = new THREE.Group();
+            tailSeg3.position.set(0, 0.18, -0.08);
+            tailSeg2.add(tailSeg3);
+
+            const tailGeo3 = new THREE.CylinderGeometry(0.025, 0.012, 0.2, 16);
+            const mTail3 = new THREE.Mesh(tailGeo3, matFurDark);
+            mTail3.position.set(0, 0.09, -0.03);
+            mTail3.rotation.x = -0.15;
+            mTail3.castShadow = true;
+            tailSeg3.add(mTail3);
+        }
+
+        function setDogPose(poseName) {
+            currentPoseState = poseName;
+
+            switch(poseName) {
+                case 'sentar':
+                    targetPose.bodyRotX = -0.65;
+                    targetPose.bodyPosY = -0.22;
+                    targetPose.bodyPosZ = -0.2;
+                    targetPose.headRotX = 0.55;
+                    targetPose.headRotY = 0;
+                    targetPose.headPosY = 1.35;
+                    targetPose.jawRotX = 0.18;
+                    targetPose.tailRotZ = 0.45;
+                    targetPose.tailSpeed = 18;
+                    targetPose.frontLegLRotX = 0.65;
+                    targetPose.frontLegRRotX = 0.65;
+                    targetPose.backLegLRotX = 1.2;
+                    targetPose.backLegRRotX = 1.2;
+                    break;
+
+                case 'pular':
+                    targetPose.bodyRotX = 0.55;
+                    targetPose.bodyPosY = 0.35;
+                    targetPose.bodyPosZ = 0.15;
+                    targetPose.headRotX = -0.2;
+                    targetPose.headRotY = 0;
+                    targetPose.headPosY = 1.45;
+                    targetPose.jawRotX = 0.38;
+                    targetPose.tailRotZ = 0.85;
+                    targetPose.tailSpeed = 28;
+                    targetPose.frontLegLRotX = -0.85;
+                    targetPose.frontLegRRotX = -0.75;
+                    targetPose.backLegLRotX = -0.4;
+                    targetPose.backLegRRotX = -0.4;
+                    break;
+
+                case 'latir':
+                    targetPose.bodyRotX = 0.1;
+                    targetPose.bodyPosY = 0.05;
+                    targetPose.bodyPosZ = 0.05;
+                    targetPose.headRotX = -0.25;
+                    targetPose.headRotY = 0.2;
+                    targetPose.headPosY = 1.32;
+                    targetPose.jawRotX = 0.58;
+                    targetPose.tailRotZ = 0.65;
+                    targetPose.tailSpeed = 22;
+                    targetPose.frontLegLRotX = -0.15;
+                    targetPose.frontLegRRotX = 0.1;
+                    targetPose.backLegLRotX = 0.05;
+                    targetPose.backLegRRotX = -0.05;
+                    break;
+
+                case 'deitar':
+                    targetPose.bodyRotX = 0.05;
+                    targetPose.bodyPosY = -0.42;
+                    targetPose.bodyPosZ = 0;
+                    targetPose.headRotX = 0.25;
+                    targetPose.headRotY = 0;
+                    targetPose.headPosY = 0.85;
+                    targetPose.jawRotX = 0.05;
+                    targetPose.tailRotZ = 0.18;
+                    targetPose.tailSpeed = 7;
+                    targetPose.frontLegLRotX = -1.25;
+                    targetPose.frontLegRRotX = -1.25;
+                    targetPose.backLegLRotX = 1.35;
+                    targetPose.backLegRRotX = 1.35;
+                    break;
+
+                case 'idle':
+                default:
+                    targetPose.bodyRotX = 0;
+                    targetPose.bodyPosY = 0;
+                    targetPose.bodyPosZ = 0;
+                    targetPose.headRotX = 0;
+                    targetPose.headRotY = 0;
+                    targetPose.headPosY = 1.25;
+                    targetPose.jawRotX = 0.08;
+                    targetPose.tailRotZ = 0.25;
+                    targetPose.tailSpeed = 13;
+                    targetPose.frontLegLRotX = 0;
+                    targetPose.frontLegRRotX = 0;
+                    targetPose.backLegLRotX = 0;
+                    targetPose.backLegRRotX = 0;
+                    break;
+            }
+        }
+
+        let clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Smooth Interpolation for Mouse Tracking
+            prevMouseX = currentMouse.x;
+            currentMouse.x += (targetMouse.x - currentMouse.x) * 0.08;
+            currentMouse.y += (targetMouse.y - currentMouse.y) * 0.08;
+
+            // Ear Spring Velocity Physics
+            const mouseDeltaX = (currentMouse.x - prevMouseX) * 1.5;
+
+            // Interpolate pose parameters
+            const lerpSpeed = 0.08;
+            currentPose.bodyRotX += (targetPose.bodyRotX - currentPose.bodyRotX) * lerpSpeed;
+            currentPose.bodyPosY += (targetPose.bodyPosY - currentPose.bodyPosY) * lerpSpeed;
+            currentPose.bodyPosZ += (targetPose.bodyPosZ - currentPose.bodyPosZ) * lerpSpeed;
+            currentPose.headRotX += (targetPose.headRotX - currentPose.headRotX) * lerpSpeed;
+            currentPose.headRotY += (targetPose.headRotY - currentPose.headRotY) * lerpSpeed;
+            currentPose.headPosY += (targetPose.headPosY - currentPose.headPosY) * lerpSpeed;
+            currentPose.jawRotX += (targetPose.jawRotX - currentPose.jawRotX) * lerpSpeed;
+            currentPose.tailRotZ += (targetPose.tailRotZ - currentPose.tailRotZ) * lerpSpeed;
+            currentPose.frontLegLRotX += (targetPose.frontLegLRotX - currentPose.frontLegLRotX) * lerpSpeed;
+            currentPose.frontLegRRotX += (targetPose.frontLegRRotX - currentPose.frontLegRRotX) * lerpSpeed;
+            currentPose.backLegLRotX += (targetPose.backLegLRotX - currentPose.backLegLRotX) * lerpSpeed;
+            currentPose.backLegRRotX += (targetPose.backLegRRotX - currentPose.backLegRRotX) * lerpSpeed;
+
+            // Natural Idle Animations (Breathing, Curious Tilt, Ear Physics)
+            const breath = Math.sin(elapsedTime * 2.8) * 0.024;
+            const earTwitch = Math.sin(elapsedTime * 1.8) * 0.04;
+            const curiousTilt = Math.sin(elapsedTime * 1.2) * 0.035 - currentMouse.x * 0.12;
+
+            // Apply Pose Transforms
+            bodyGroup.rotation.x = currentPose.bodyRotX + breath * 0.5;
+            bodyGroup.position.y = currentPose.bodyPosY + breath * 0.4;
+            bodyGroup.position.z = currentPose.bodyPosZ;
+
+            // Head Rotations with interactive mouse tracking & curious tilt
+            headGroup.position.y = currentPose.headPosY + breath;
+            headGroup.rotation.x = currentPose.headRotX - currentMouse.y * 0.24;
+            headGroup.rotation.y = currentPose.headRotY + currentMouse.x * 0.45;
+            headGroup.rotation.z = curiousTilt;
+
+            // Eyebrows slight animation
+            if (browL && browR) {
+                browL.position.y = 0.2 + Math.abs(currentMouse.y) * 0.03;
+                browR.position.y = 0.2 + Math.abs(currentMouse.y) * 0.03;
+            }
+
+            // Ears Reacting with Spring Physics
+            if (leftEarGroup && rightEarGroup) {
+                leftEarGroup.rotation.z = 0.35 + earTwitch + mouseDeltaX;
+                rightEarGroup.rotation.z = -0.35 - earTwitch - mouseDeltaX;
+            }
+
+            // Jaw & Panting
+            if (jawGroup) {
+                const panting = currentPoseState === 'pular' || currentPoseState === 'latir' 
+                    ? Math.sin(elapsedTime * 14) * 0.08 
+                    : Math.sin(elapsedTime * 2.2) * 0.012;
+                jawGroup.rotation.x = currentPose.jawRotX + panting;
+            }
+
+            // Multi-Joint Wave Tail Wagging
+            if (tailSeg1 && tailSeg2 && tailSeg3) {
+                const tailWagBase = Math.sin(elapsedTime * targetPose.tailSpeed) * currentPose.tailRotZ;
+                tailSeg1.rotation.y = tailWagBase * 0.5;
+                tailSeg2.rotation.y = Math.sin(elapsedTime * targetPose.tailSpeed - 0.4) * currentPose.tailRotZ * 0.6;
+                tailSeg3.rotation.y = Math.sin(elapsedTime * targetPose.tailSpeed - 0.8) * currentPose.tailRotZ * 0.7;
+            }
+
+            // Legs Rotations
+            frontLegL.rotation.x = currentPose.frontLegLRotX;
+            frontLegR.rotation.x = currentPose.frontLegRRotX;
+            backLegL.rotation.x = currentPose.backLegLRotX;
+            backLegR.rotation.x = currentPose.backLegRRotX;
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('dog-canvas-container');
+            if (!container || !renderer || !camera) return;
+
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        // Initialize 3D Engine on Window Load
+        window.onload = function() {
+            init3DScene();
+            animate();
+        };
+    </script>
+</body>
+</html>
