@@ -4,6 +4,32 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-07-27 — Reformulação do Balão de Fala e Resiliência de Vídeos (`TreinadorRL.tsx` / `CenarioTreinadorDog.tsx`) ✅
+
+- **Remoção de Rótulos Explicativos Redundantes:** Eliminado o texto explicativo desnecessário `"Tutor (fora de cena)"` abaixo do balão de fala.
+- **Redesign UI/UX do Balão de Fala:** Criado balão de fala de alta fidelidade visual com `bg-white/95`, borda dourada/densa (`border-amber-400/90`), tipografia destacada (`text-lg sm:text-2xl font-black`), ícone de fala (`🗣️`) e rabinho com sombra direcionado ao cão.
+- **Correção e Resiliência dos Vídeos MP4:**
+  - Corrigido o descasamento de nomenclatura entre os arquivos em `public/videos/treinador/` (`dog_recebendo_pestisco.mp4` e `dog_sem_pestisco.mp4`) e os identificadores do código (`petisco`).
+  - Adicionado suporte a candidaturas resilientes em `gerenciadorVideoTreinador.ts` para carregar ambas as grafias sem quebras ou 404s.
+- **Fila de Transição de Ações (`VideoCaoChroma.tsx`):**
+  - Implementado sistema de fila para que solicitações de ação enviadas durante o `dog_idle.mp4` aguardem o término natural da iteração do ciclo antes de transicionar para a animação da ação, evitando cortes bruscos na animação.
+- **Reestruturação Visual dos Botões de Avaliação (`TreinadorRL.tsx`):**
+  - Botão de Recompensa atualizado para `"Recompensa - Dar Petisco"` (verde emerald vibrante + ícone SVG vetorizado `<Bone />`).
+  - Botão de Retenção atualizado para `"Sem Recompensa - Sem Petisco"` (tom de vinho/vermelho discreto em `bg-rose-950/70` + ícone SVG vetorizado `<XCircle />`).
+- **Estabilização da Altura do Cenário (`CenarioTreinadorDog.tsx` / `TreinadorRL.tsx`):**
+  - Fixada a altura do painel de controles inferior em `h-20` para manter a mesma dimensão vertical em todas as 4 etapas.
+  - Alterada a badge da topo-direita para posicionamento absoluto (`absolute top-4 right-4 z-20`), eliminando pulos de layout do contêiner flexbox durante interações.
+- **Modelo Multimodal de Aprendizado Isolado (`TreinadorRL.tsx` / `PainelPreferencias.tsx`):**
+  - Reestruturado o motor de aprendizado para que cada comando ("Sentar", "Pular", "Deitar") possua sua taxa de acerto/domínio **100% independente e isolada** (iniciando em `33.33%` e evoluindo com cap em `98.00%`).
+  - Treinar o comando "Sentar" aumenta apenas o acerto de "Sentar", sem alterar, reduzir ou apagar as porcentagens dos demais comandos.
+  - Exibição limpa das 3 barras de domínio lado a lado sob o título `DOMÍNIO DOS COMANDOS (TAXA DE ACERTO DO AGENTE)`.
+- **Transição de Vídeo Seletiva (`VideoCaoChroma.tsx`):**
+  - Permitida a solicitação de novas ações durante a animação `dog_idle.mp4` (que aguardam o fim do loop do idle para transicionar).
+  - Bloqueadas completamente quaisquer interrupções durante a reprodução de vídeos **não-idle** (`sentando`, `pulando`, `deitando`, `petisco`, `sem_petisco`), garantindo que ações e feedbacks sejam executados 100% até o fim.
+- **Persistência de Estado do Treino (`TreinadorRL.tsx`):**
+  - Implementada gravação e restauração automática do progresso do treino (`dominio`, `rodadas`, `acertos`, `pontos`) em `localStorage` sob a chave `aprendendo_ia_treinador_dog_v1`. Recarregar ou fechar o navegador mantém todo o aprendizado intacto.
+- **Validação:** Typecheck (`npx tsc --noEmit`) aprovado com 0 erros.
+
 ### 2026-07-26 — Reconstrução Completa do TreinadorRL com Mascotes Ilustrados (`CenarioTreinadorDog.tsx`) ✅
 
 - **Substituição dos Vetores por Mascotes Ilustrados Profissionais:**
