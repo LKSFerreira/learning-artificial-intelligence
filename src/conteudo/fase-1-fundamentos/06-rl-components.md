@@ -36,7 +36,7 @@ graph LR
 
 ---
 
-### 🔍 Detalhes Críticos para Não Se Confundir
+### 🔍 Detalhes Críticos dos 5 Pilares
 
 > **1. Agente vs. Ambiente**  
 > O agente é estritamente o **mecanismo de decisão**. Todo o resto — inclusive o corpo físico de um robô ou a gravidade do mapa — faz parte do **ambiente**. O ambiente atua como o *juiz supremo*: ele valida se a ação é possível, calcula a física e gera a resposta.
@@ -45,21 +45,24 @@ graph LR
 > O estado é a representação que o agente recebe do mundo. Em muitos problemas, o agente não enxerga o mapa inteiro (como o campo de visão limitado em um jogo de tiro). Chamamos de **Estado/Observação** tudo aquilo que o agente consegue perceber naquele exato instante para tomar sua decisão.
 
 > **3. Conjunto de Ações Válidas**  
-> Em cada estado, o leque de ações possíveis pode mudar. Em uma casa vazia no labirinto, você pode andar em 4 direções; diante de uma porta trancada sem chave, a ação "abrir" torna-se inválida ou resulta em punição.
+> Em cada estado, o leque de ações possíveis pode mudar. Em uma posição livre, você pode andar para frente; diante de uma parede 🧱, a ação resulta em colisão e punição.
 
 > **4. Engenharia de Recompensa (*Reward Shaping*)**  
 > A recompensa é apenas um **sinal numérico** ($+10$, $-1$, $0$). O agente não possui "consciência" do objetivo final; ele simplesmente busca maximizar a soma total de recompensas acumuladas ao longo do tempo. Se você desenhar a recompensa de forma errada (ex: dar recompensa por dar passos sem exigir que ele chegue ao objetivo), o agente aprenderá a dar voltas infinitas em círculo.
+
+> **5. O Loop Infinito de Decisão ($s_t \to a_t \to r_t \to s_{t+1}$)**  
+> A cada passo $t$, o agente lê o estado $s_t$, escolhe a ação $a_t$, o ambiente calcula a transição e devolve o novo estado $s_{t+1}$ acompanhado da recompensa $r_t$.
 
 ---
 
 ### 🧪 Oficina Prática: O Mapa dos 5 Pilares (Painel ao Lado)
 
-No painel interativo à direita, você vai interagir com um cenário onde um **Robô Agente 🤖** precisa coletar uma **Célula de Energia ⚡**:
+No painel interativo à direita, você vai explorar o mundo do **Robô Agente 🤖** buscando a **Célula de Energia ⚡**:
 
-1. **Explore os Pilares:** Clique em cada um dos 5 botões de pilares no topo do painel para destacar o componente correspondente na cena visual.
-2. **Execute Ações Diretas:** Clique em **Avançar ➡️**, **Recuar ⬅️** ou **Coletar ⚡** e observe a reação do ambiente.
-3. **Observe a Recompensa Flutuante:** Veja o número da recompensa surgir diretamente na tela ($+10.0$ ao pegar a energia, $-1.0$ ao colidir ou gastar tempo).
-4. **Alterne entre Perfis:** Teste o botão de **Simulação Automática** e veja como a preferência por ações evolui à medida que os 5 pilares interagem em tempo real.
+1. **Inspecione os Pilares:** Clique em cada um dos 5 botões de pilares no topo do painel (`1. Agente`, `2. Ambiente`, `3. Estado`, `4. Ação`, `5. Recompensa`) para destacar o componente correspondente no mapa com anéis e explicações focadas.
+2. **Execute Ações no Mapa:** Clique em **Avançar ➡️**, **Recuar ⬅️** ou **Coletar ⚡** e acompanhe a reação imediata do ambiente na barra de status.
+3. **Analise o Loop RL:** Observe a tabela **Últimos Passos do Loop RL**, que registra a transição exata: `s_t ➔ a_t ➔ s_{t+1} | r_t`.
+4. **Simule a IA:** Clique em **Simular IA** para ver a tomada de decisão automática evoluir à medida que o agente acumula recompensas.
 
 ---
 

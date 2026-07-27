@@ -1,8 +1,12 @@
 /**
  * Visual: Os 5 Pilares do Aprendizado por Reforço.
  *
- * Apresentação interativa, limpa e didática dos 5 componentes de RL:
- * Agente, Ambiente, Estado, Ação e Recompensa.
+ * Apresentação interativa, didática e de alta fidelidade visual dos 5 pilares de RL:
+ * 1. Agente (Agent)
+ * 2. Ambiente (Environment)
+ * 3. Estado (State - s)
+ * 4. Ação (Action - a)
+ * 5. Recompensa (Reward - r)
  *
  * **Estado Visual:** ``rl_components_interactive``
  */
@@ -19,6 +23,8 @@ import {
   RotateCcw,
   Sparkles,
   ChevronRight,
+  Zap,
+  History,
 } from "lucide-react";
 
 type Pilar = "todos" | "agente" | "ambiente" | "estado" | "acao" | "recompensa";
@@ -33,81 +39,81 @@ interface InfoPilar {
   corTexto: string;
   icone: React.ReactNode;
   descricao: string;
-  exemploCena: string;
+  detalheChave: string;
 }
 
 const PILARES_INFO: Record<Pilar, InfoPilar> = {
   todos: {
     id: "todos",
     titulo: "Os 5 Pilares Conectados",
-    subtitulo: "Visão Geral do Sistema RL",
+    subtitulo: "Visão Geral do Loop RL",
     corBorder: "border-indigo-500/50",
     corBg: "bg-indigo-500/10",
     corTexto: "text-indigo-300",
     icone: <Sparkles size={18} className="text-indigo-400" />,
     descricao:
-      "Veja como os 5 pilares interagem em tempo real. O Agente toma uma Ação no Ambiente, que responde alterando o Estado e devolvendo uma Recompensa.",
-    exemploCena: "Interação completa em tempo real.",
+      "No Aprendizado por Reforço, o Agente toma uma Ação no Ambiente. O Ambiente processa a física do mundo e devolve o Novo Estado e o Sinal de Recompensa.",
+    detalheChave: "O ciclo é contínuo: Estado → Ação → Ambiente → Recompensa → Novo Estado.",
   },
   agente: {
     id: "agente",
     titulo: "1. Agente (Agent)",
-    subtitulo: "Quem toma as decisões",
+    subtitulo: "O Mecanismo de Decisão",
     corBorder: "border-cyan-500/50",
     corBg: "bg-cyan-500/10",
     corTexto: "text-cyan-300",
     icone: <Bot size={18} className="text-cyan-400" />,
     descricao:
-      "O Agente é a inteligência que aprende com os erros. Ele analisa o estado atual e decide qual ação tomar para tentar obter a maior recompensa.",
-    exemploCena: "O Robô 🤖 é o agente que aprende a buscar energia.",
+      "O Agente é estritamente a 'mente' que escolhe as ações. Ele não possui consciência do objetivo final; ele aprende puramente testando ações e buscando maximizar a recompensa acumulada.",
+    detalheChave: "O robô 🤖 é o agente. Seu corpo físico e bateria pertencem ao ambiente!",
   },
   ambiente: {
     id: "ambiente",
     titulo: "2. Ambiente (Environment)",
-    subtitulo: "O mundo externo e suas regras",
+    subtitulo: "O Juiz Supremo do Mundo",
     corBorder: "border-emerald-500/50",
     corBg: "bg-emerald-500/10",
     corTexto: "text-emerald-300",
     icone: <Globe size={18} className="text-emerald-400" />,
     descricao:
-      "O Ambiente é tudo aquilo fora do controle do agente. Ele aplica as leis do mundo, valida o movimento e gera o feedback numérico.",
-    exemploCena: "O mapa, a física e a bateria ⚡ são o ambiente.",
+      "O Ambiente representa tudo que está fora do controle do agente: as paredes, a física, os limites do mapa e a lógica que concede ou nega a recompensa.",
+    detalheChave: "Se o robô tenta atravessar uma parede 🧱, o ambiente impede e aplica punição.",
   },
   estado: {
     id: "estado",
     titulo: "3. Estado (State - s)",
-    subtitulo: "A fotografia do momento",
+    subtitulo: "A Fotografia da Situação Atual",
     corBorder: "border-amber-500/50",
     corBg: "bg-amber-500/10",
     corTexto: "text-amber-300",
     icone: <MapPin size={18} className="text-amber-400" />,
     descricao:
-      "O Estado é a posição ou situação atual em que o agente se encontra no ambiente. É a informação utilizada para decidir a próxima ação.",
-    exemploCena: "Posição atual do Robô no caminho (Célula 1, 2 ou 3).",
+      "O Estado s é a informação exata que o agente percebe do mundo em um instante t. Pode ser a posição na grade (Célula 1, 2 ou 3), o nível de bateria ou a distância da meta.",
+    detalheChave: "O agente usa o estado atual s_t para decidir qual ação a_t tomar a seguir.",
   },
   acao: {
     id: "acao",
     titulo: "4. Ação (Action - a)",
-    subtitulo: "O leque de escolhas disponíveis",
+    subtitulo: "Conjunto de Escolhas Válidas",
     corBorder: "border-fuchsia-500/50",
     corBg: "bg-fuchsia-500/10",
     corTexto: "text-fuchsia-300",
     icone: <Gamepad2 size={18} className="text-fuchsia-400" />,
     descricao:
-      "A Ação é qualquer decisão válida que o agente pode executar no seu estado atual. Mover-se ou interagir altera a situação do mundo.",
-    exemploCena: "As opções: Recuar ⬅️, Avançar ➡️ ou Coletar ⚡.",
+      "A Ação a é a decisão enviada pelo agente ao ambiente. Dependendo do estado, o leque de ações válidas muda (ex: coletar só é válido na célula com energia).",
+    detalheChave: "Opções: Recuar ⬅️, Avançar ➡️ ou Coletar Energia ⚡.",
   },
   recompensa: {
     id: "recompensa",
     titulo: "5. Recompensa (Reward - r)",
-    subtitulo: "O sinal de feedback numérico",
+    subtitulo: "Sinal Numérico de Feedback",
     corBorder: "border-rose-500/50",
     corBg: "bg-rose-500/10",
     corTexto: "text-rose-300",
     icone: <Trophy size={18} className="text-rose-400" />,
     descricao:
-      "A Recompensa é um valor numérico positivo ou negativo que diz ao agente se sua ação recente foi boa (+10) ou ruim (-1).",
-    exemploCena: "+10 ao pegar a bateria ⚡, -1 ao gastar tempo ou recuar.",
+      "A Recompensa r é o único feedback que o agente recebe (+10 ao atingir a meta, -1 por tempo/movimento, -2 ao bater na parede). É a bússola que orienta o aprendizado.",
+    detalheChave: "Reward Shaping: O agente busca maximizar o total de pontos acumulados.",
   },
 };
 
@@ -117,15 +123,27 @@ const NOMES_ACAO: Record<TipoAcao, string> = {
   coletar: "Coletar ⚡",
 };
 
+interface PassoHistorico {
+  id: number;
+  estadoAnterior: number;
+  acao: TipoAcao;
+  novoEstado: number;
+  recompensa: number;
+  mensagem: string;
+}
+
 export function PilaresRL(): React.ReactElement {
   const [pilarAtivo, setPilarAtivo] = useState<Pilar>("todos");
-  const [posicaoAgente, setPosicaoAgente] = useState<number>(0); // 0 (início), 1 (meio), 2 (diante da bateria)
+  const [posicaoAgente, setPosicaoAgente] = useState<number>(0); // 0: Célula 1, 1: Célula 2, 2: Célula 3
   const [comBateria, setComBateria] = useState<boolean>(false);
   const [ultimaAcao, setUltimaAcao] = useState<TipoAcao | null>(null);
   const [ultimaRecompensa, setUltimaRecompensa] = useState<number | null>(null);
+  const [pontuacaoTotal, setPontuacaoTotal] = useState<number>(0);
+  const [historico, setHistorico] = useState<PassoHistorico[]>([]);
   const [textoEfeito, setTextoEfeito] = useState<string>(
-    "Clique nos pilares acima para entender cada peça, ou interaja no mapa abaixo!",
+    "Selecione um pilar no topo para entender cada conceito, ou clique nas ações para ver a IA em ação!",
   );
+
   const [preferencias, setPreferencias] = useState<Record<TipoAcao, number>>({
     recuar: 20,
     avancar: 50,
@@ -134,81 +152,97 @@ export function PilaresRL(): React.ReactElement {
   const [rodandoAuto, setRodandoAuto] = useState<boolean>(false);
   const [flutuanteRecompensa, setFlutuanteRecompensa] = useState<string | null>(null);
 
-  const executarAcao = useCallback((acao: TipoAcao) => {
-    setUltimaAcao(acao);
-    let recompensa = -1.0;
-    let novaPos = posicaoAgente;
-    let frase = "";
+  const executarAcao = useCallback(
+    (acao: TipoAcao) => {
+      setUltimaAcao(acao);
+      let recompensa = -0.5;
+      let novaPos = posicaoAgente;
+      let mensagem = "";
 
-    if (acao === "recuar") {
-      if (posicaoAgente > 0) {
-        novaPos = posicaoAgente - 1;
-        recompensa = -1.0;
-        frase = "O agente recuou uma posição no caminho (-1.0).";
-      } else {
-        recompensa = -2.0;
-        frase = "O agente tentou recuar além do início e bateu na parede (-2.0).";
-      }
-    } else if (acao === "avancar") {
-      if (posicaoAgente < 2) {
-        novaPos = posicaoAgente + 1;
-        recompensa = -0.5;
-        frase = "O agente avançou no caminho rumo à bateria (-0.5).";
-      } else {
-        recompensa = -1.0;
-        frase = "O agente já está diante da bateria! Tente coletar (-1.0).";
-      }
-    } else if (acao === "coletar") {
-      if (posicaoAgente === 2) {
-        setComBateria(true);
-        recompensa = +10.0;
-        frase = "Sucesso! O agente coletou a Célula de Energia (+10.0)! 🎉";
-      } else {
-        recompensa = -3.0;
-        frase = "Tentou coletar longe da bateria! Ação inválida (-3.0).";
-      }
-    }
-
-    setPosicaoAgente(novaPos);
-    setUltimaRecompensa(recompensa);
-    setTextoEfeito(frase);
-
-    // Efeito visual de recompensa flutuante
-    setFlutuanteRecompensa(recompensa > 0 ? `+${recompensa.toFixed(1)} 🏆` : `${recompensa.toFixed(1)} ⚠️`);
-    setTimeout(() => setFlutuanteRecompensa(null), 1200);
-
-    // Atualiza preferências de forma simples e intuitiva
-    setPreferencias((ant) => {
-      const delta = recompensa > 0 ? 15 : -5;
-      const novoValor = Math.max(10, Math.min(90, ant[acao] + delta));
-      const somaOutras = Object.keys(ant)
-        .filter((k) => k !== acao)
-        .reduce((s, k) => s + ant[k as TipoAcao], 0);
-
-      const fator = (100 - novoValor) / (somaOutras || 1);
-      const proximo: Record<TipoAcao, number> = { ...ant, [acao]: novoValor };
-
-      (Object.keys(ant) as TipoAcao[]).forEach((k) => {
-        if (k !== acao) {
-          proximo[k] = Math.max(5, Math.round(ant[k] * fator));
+      if (acao === "recuar") {
+        if (posicaoAgente > 0) {
+          novaPos = posicaoAgente - 1;
+          recompensa = -0.5;
+          mensagem = `O agente recuou da Célula ${posicaoAgente + 1} para Célula ${novaPos + 1} (-0.5).`;
+        } else {
+          recompensa = -2.0;
+          mensagem = "O ambiente bloqueou: Célula 1 é o início. Bateu na parede 🧱 (-2.0).";
         }
+      } else if (acao === "avancar") {
+        if (posicaoAgente < 2) {
+          novaPos = posicaoAgente + 1;
+          recompensa = -0.5;
+          mensagem = `O agente avançou para a Célula ${novaPos + 1} (-0.5).`;
+        } else {
+          recompensa = -1.0;
+          mensagem = "O agente já está na Célula 3 (diante da Bateria ⚡). Tente Coletar! (-1.0).";
+        }
+      } else if (acao === "coletar") {
+        if (posicaoAgente === 2) {
+          setComBateria(true);
+          recompensa = +10.0;
+          mensagem = "Sucesso Absoluto! O agente coletou a Célula de Energia ⚡ (+10.0)! 🎉";
+        } else {
+          recompensa = -3.0;
+          mensagem = `Tentou coletar na Célula ${posicaoAgente + 1} longe da bateria! Ação inútil (-3.0).`;
+        }
+      }
+
+      setPosicaoAgente(novaPos);
+      setUltimaRecompensa(recompensa);
+      setPontuacaoTotal((prev) => prev + recompensa);
+      setTextoEfeito(mensagem);
+
+      // Adiciona ao histórico do loop RL
+      const novoPasso: PassoHistorico = {
+        id: Date.now(),
+        estadoAnterior: posicaoAgente + 1,
+        acao,
+        novoEstado: novaPos + 1,
+        recompensa,
+        mensagem,
+      };
+      setHistorico((h) => [novoPasso, ...h.slice(0, 3)]);
+
+      // Efeito visual flutuante de recompensa
+      setFlutuanteRecompensa(
+        recompensa > 0 ? `+${recompensa.toFixed(1)} 🏆` : `${recompensa.toFixed(1)} ⚠️`,
+      );
+      setTimeout(() => setFlutuanteRecompensa(null), 1300);
+
+      // Atualiza preferências aprendidas pela IA
+      setPreferencias((ant) => {
+        const delta = recompensa > 0 ? 20 : -5;
+        const novoValor = Math.max(10, Math.min(90, ant[acao] + delta));
+        const outras = (Object.keys(ant) as TipoAcao[]).filter((k) => k !== acao);
+        const somaOutras = outras.reduce((s, k) => s + ant[k], 0);
+
+        const fator = (100 - novoValor) / (somaOutras || 1);
+        const proximo: Record<TipoAcao, number> = { ...ant, [acao]: novoValor };
+
+        outras.forEach((k) => {
+          proximo[k] = Math.max(5, Math.round(ant[k] * fator));
+        });
+        return proximo;
       });
-      return proximo;
-    });
-  }, [posicaoAgente]);
+    },
+    [posicaoAgente],
+  );
 
   const resetar = () => {
     setPosicaoAgente(0);
     setComBateria(false);
     setUltimaAcao(null);
     setUltimaRecompensa(null);
+    setPontuacaoTotal(0);
+    setHistorico([]);
     setFlutuanteRecompensa(null);
     setPreferencias({ recuar: 20, avancar: 50, coletar: 30 });
-    setTextoEfeito("Cenário reiniciado. Pronto para novos testes!");
+    setTextoEfeito("Cenário reiniciado. O agente voltou à Célula 1 (Início).");
     setRodandoAuto(false);
   };
 
-  // Efeito de treino automático simples
+  // Simulação da IA
   useEffect(() => {
     if (!rodandoAuto) return;
     const interval = setInterval(() => {
@@ -216,7 +250,6 @@ export function PilaresRL(): React.ReactElement {
         resetar();
         return;
       }
-      // Escolha com base nas preferências
       const rand = Math.random() * 100;
       let acaoEscolhida: TipoAcao = "avancar";
       if (rand < preferencias.recuar) {
@@ -227,21 +260,27 @@ export function PilaresRL(): React.ReactElement {
         acaoEscolhida = "coletar";
       }
       executarAcao(acaoEscolhida);
-    }, 1100);
+    }, 1200);
 
     return () => clearInterval(interval);
   }, [rodandoAuto, comBateria, preferencias, executarAcao]);
 
-  const pilar = PILARES_INFO[pilarAtivo];
+  const pilarInfo = PILARES_INFO[pilarAtivo];
 
   return (
-    <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 p-3 md:p-4 overflow-hidden rounded-xl border border-slate-800">
-      {/* 1. Seleção dos Pilares (Navegação Superior) */}
-      <div className="shrink-0 mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
-          <Sparkles size={13} className="text-amber-400" />
-          Selecione um Pilar para Destacar:
-        </p>
+    <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 p-3.5 md:p-4 overflow-y-auto gap-3.5 rounded-xl border border-slate-800 shadow-2xl">
+      {/* 1. Navegação dos 5 Pilares (Abas Superiores) */}
+      <div className="shrink-0 flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+            <Sparkles size={14} className="text-amber-400" />
+            Selecione um Pilar para Inspecionar no Mapa:
+          </p>
+          <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+            Clique nos botões para destacar
+          </span>
+        </div>
+
         <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
           {(Object.keys(PILARES_INFO) as Pilar[]).map((key) => {
             const item = PILARES_INFO[key];
@@ -251,66 +290,81 @@ export function PilaresRL(): React.ReactElement {
                 key={key}
                 type="button"
                 onClick={() => setPilarAtivo(key)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-bold transition-all border ${
                   ativo
-                    ? `${item.corBg} ${item.corBorder} ${item.corTexto} shadow-lg ring-1 ring-white/20 scale-[1.02]`
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                    ? `${item.corBg} ${item.corBorder} ${item.corTexto} shadow-lg ring-2 ring-amber-400/30 scale-[1.03]`
+                    : "bg-slate-900/90 border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-slate-200"
                 }`}
               >
                 {item.icone}
-                <span className="truncate">{key === "todos" ? "Todos" : item.titulo.split(" ")[1]}</span>
+                <span className="truncate">
+                  {key === "todos" ? "Todos" : item.titulo.split(" ")[1]}
+                </span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 2. Card Explicativo do Pilar Ativo */}
+      {/* 2. Card de Explicação do Pilar Selecionado */}
       <div
-        className={`shrink-0 mb-3 p-3 rounded-xl border ${pilar.corBorder} ${pilar.corBg} transition-all duration-300 relative overflow-hidden`}
+        className={`shrink-0 p-3.5 rounded-xl border ${pilarInfo.corBorder} ${pilarInfo.corBg} backdrop-blur-md transition-all duration-300 relative overflow-hidden`}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-700/50">
-              {pilar.icone}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
+              {pilarInfo.icone}
             </div>
             <div>
-              <h4 className={`text-sm font-bold ${pilar.corTexto}`}>{pilar.titulo}</h4>
-              <p className="text-xs text-slate-300 font-medium">{pilar.subtitulo}</p>
+              <h4 className={`text-sm font-bold ${pilarInfo.corTexto}`}>{pilarInfo.titulo}</h4>
+              <p className="text-xs text-slate-300 font-semibold">{pilarInfo.subtitulo}</p>
             </div>
           </div>
-          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-900/60 text-slate-400 border border-slate-700/40">
-            {pilarAtivo === "todos" ? "Visão Geral" : "Pilar em Foco"}
+          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded bg-slate-950/80 text-amber-400 border border-amber-500/30">
+            {pilarAtivo === "todos" ? "Modo Completo" : "Destacado no Mapa"}
           </span>
         </div>
-        <p className="text-xs text-slate-300 mt-2 leading-relaxed">{pilar.descricao}</p>
+
+        <p className="text-xs text-slate-200 mt-2.5 leading-relaxed">{pilarInfo.descricao}</p>
+        <div className="mt-2 text-[11px] font-semibold text-amber-300/90 flex items-center gap-1.5">
+          <span>💡 Exemplo Prático:</span>
+          <span className="text-slate-300 font-normal">{pilarInfo.detalheChave}</span>
+        </div>
       </div>
 
-      {/* 3. Palco da Cena Visual (O Mundo do Robô) */}
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-3 overflow-hidden">
-        {/* Painel do Mapa */}
-        <div
-          className={`flex-1 rounded-xl border bg-slate-900/90 relative flex flex-col justify-between p-3 overflow-hidden transition-all ${
-            pilarAtivo === "ambiente" || pilarAtivo === "estado"
-              ? "border-emerald-500/60 ring-2 ring-emerald-500/20"
-              : "border-slate-800"
-          }`}
-        >
-          {/* Topo do Palco: Status de Estado & Recompensa */}
-          <div className="flex justify-between items-center text-xs">
-            <div className="flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800">
+      {/* 3. O Cenário Visual (Mapa do Robô) */}
+      <div
+        className={`relative p-4 rounded-xl border bg-slate-900/80 backdrop-blur-md transition-all ${
+          pilarAtivo === "ambiente"
+            ? "border-emerald-500/70 ring-2 ring-emerald-500/30 shadow-emerald-950/40"
+            : pilarAtivo === "estado"
+            ? "border-amber-500/70 ring-2 ring-amber-500/30 shadow-amber-950/40"
+            : "border-slate-800"
+        }`}
+      >
+        {/* Topo do Mapa: Status de Estado & Pontuação */}
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">
               <MapPin size={14} className="text-amber-400" />
-              <span className="text-slate-400">Estado:</span>
-              <strong className="text-amber-300 font-mono">
-                {posicaoAgente === 0 ? "Posição 1 (Início)" : posicaoAgente === 1 ? "Posição 2 (Caminho)" : "Posição 3 (Bateria)"}
+              <span className="text-xs text-slate-400">Estado Atual (s):</span>
+              <strong className="text-xs text-amber-300 font-mono font-bold">
+                Célula {posicaoAgente + 1}
               </strong>
             </div>
+            {pilarAtivo === "estado" && (
+              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40 animate-pulse">
+                ⬅️ Onde o Robô está agora!
+              </span>
+            )}
+          </div>
 
-            <div className="flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">
               <Trophy size={14} className="text-rose-400" />
-              <span className="text-slate-400">Última Recompensa:</span>
+              <span className="text-xs text-slate-400">Última Recompensa (r):</span>
               <strong
-                className={`font-mono ${
+                className={`text-xs font-mono font-bold ${
                   ultimaRecompensa === null
                     ? "text-slate-500"
                     : ultimaRecompensa > 0
@@ -318,97 +372,166 @@ export function PilaresRL(): React.ReactElement {
                     : "text-rose-400"
                 }`}
               >
-                {ultimaRecompensa === null ? "0.0" : ultimaRecompensa > 0 ? `+${ultimaRecompensa.toFixed(1)}` : ultimaRecompensa.toFixed(1)}
+                {ultimaRecompensa === null
+                  ? "0.0"
+                  : ultimaRecompensa > 0
+                  ? `+${ultimaRecompensa.toFixed(1)}`
+                  : ultimaRecompensa.toFixed(1)}
+              </strong>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">
+              <span className="text-xs text-slate-400">Total:</span>
+              <strong
+                className={`text-xs font-mono font-bold ${
+                  pontuacaoTotal >= 0 ? "text-emerald-400" : "text-rose-400"
+                }`}
+              >
+                {pontuacaoTotal > 0 ? `+${pontuacaoTotal.toFixed(1)}` : pontuacaoTotal.toFixed(1)}
               </strong>
             </div>
           </div>
+        </div>
 
-          {/* Animação do Robô e Bateria no Caminho */}
-          <div className="my-auto py-6 relative flex items-center justify-around bg-slate-950/50 rounded-xl border border-slate-800/80 px-4">
-            {/* Linha de Conexão do Caminho */}
-            <div className="absolute top-1/2 left-10 right-10 h-1 bg-slate-800 -translate-y-1/2 rounded-full" />
+        {/* Trilha das 3 Células */}
+        <div className="relative py-8 px-4 bg-slate-950/80 rounded-xl border border-slate-800/90 flex justify-between items-center gap-2 overflow-hidden">
+          {/* Linha Guia de Conexão */}
+          <div className="absolute top-1/2 left-12 right-12 h-1.5 bg-slate-800 -translate-y-1/2 rounded-full" />
 
-            {/* Posição 0 */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                  posicaoAgente === 0
-                    ? "bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-500/20 scale-110"
-                    : "bg-slate-900 border-slate-800 opacity-60"
-                }`}
-              >
-                {posicaoAgente === 0 ? <Bot size={28} className="text-cyan-300 animate-bounce" /> : <span className="text-xs text-slate-600 font-mono">P1</span>}
-              </div>
-              <span className="text-[10px] text-slate-400 font-semibold">Início</span>
+          {/* Célula 1 (Início & Parede) */}
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <div
+              className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border transition-all duration-300 ${
+                posicaoAgente === 0
+                  ? "bg-cyan-500/20 border-cyan-400 shadow-xl shadow-cyan-500/30 scale-110 ring-4 ring-cyan-500/20"
+                  : "bg-slate-900/90 border-slate-800 text-slate-600"
+              }`}
+            >
+              {posicaoAgente === 0 ? (
+                <Bot
+                  size={32}
+                  className={`text-cyan-300 ${
+                    pilarAtivo === "agente" ? "animate-bounce" : ""
+                  }`}
+                />
+              ) : (
+                <span className="text-xs font-bold font-mono text-slate-500">Célula 1</span>
+              )}
             </div>
-
-            <ChevronRight size={16} className="text-slate-700 relative z-10" />
-
-            {/* Posição 1 */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                  posicaoAgente === 1
-                    ? "bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-500/20 scale-110"
-                    : "bg-slate-900 border-slate-800 opacity-60"
-                }`}
-              >
-                {posicaoAgente === 1 ? <Bot size={28} className="text-cyan-300 animate-bounce" /> : <span className="text-xs text-slate-600 font-mono">P2</span>}
-              </div>
-              <span className="text-[10px] text-slate-400 font-semibold">Caminho</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-bold text-slate-300">🚩 Início</span>
+              <span className="text-[10px] text-rose-400 font-medium">Parede 🧱</span>
             </div>
+          </div>
 
-            <ChevronRight size={16} className="text-slate-700 relative z-10" />
+          <ChevronRight size={20} className="text-slate-700 relative z-10 shrink-0" />
 
-            {/* Posição 2 (Meta) */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                  posicaoAgente === 2
-                    ? "bg-amber-500/20 border-amber-400 shadow-lg shadow-amber-500/20 scale-110"
-                    : "bg-slate-900 border-slate-800 opacity-60"
-                }`}
-              >
-                {posicaoAgente === 2 && !comBateria ? (
-                  <Bot size={28} className="text-cyan-300 animate-bounce" />
-                ) : comBateria ? (
-                  <span className="text-2xl">⚡</span>
-                ) : (
-                  <span className="text-xl opacity-60">🔋</span>
-                )}
-              </div>
-              <span className="text-[10px] text-amber-400 font-bold">Meta ⚡</span>
+          {/* Célula 2 (Caminho) */}
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <div
+              className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border transition-all duration-300 ${
+                posicaoAgente === 1
+                  ? "bg-cyan-500/20 border-cyan-400 shadow-xl shadow-cyan-500/30 scale-110 ring-4 ring-cyan-500/20"
+                  : "bg-slate-900/90 border-slate-800 text-slate-600"
+              }`}
+            >
+              {posicaoAgente === 1 ? (
+                <Bot
+                  size={32}
+                  className={`text-cyan-300 ${
+                    pilarAtivo === "agente" ? "animate-bounce" : ""
+                  }`}
+                />
+              ) : (
+                <span className="text-xs font-bold font-mono text-slate-500">Célula 2</span>
+              )}
             </div>
+            <span className="text-xs font-bold text-slate-300">🛣️ Caminho</span>
+          </div>
 
-            {/* Efeito Flutuante de Recompensa */}
-            {flutuanteRecompensa && (
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-900 border border-slate-700 text-amber-300 font-bold text-sm rounded-full shadow-2xl animate-bounce z-30">
-                {flutuanteRecompensa}
-              </div>
+          <ChevronRight size={20} className="text-slate-700 relative z-10 shrink-0" />
+
+          {/* Célula 3 (Meta com Célula de Energia) */}
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <div
+              className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border transition-all duration-300 ${
+                posicaoAgente === 2
+                  ? "bg-amber-500/25 border-amber-400 shadow-xl shadow-amber-500/30 scale-110 ring-4 ring-amber-500/20"
+                  : "bg-slate-900/90 border-slate-800"
+              }`}
+            >
+              {posicaoAgente === 2 && !comBateria ? (
+                <Bot
+                  size={32}
+                  className={`text-cyan-300 ${
+                    pilarAtivo === "agente" ? "animate-bounce" : ""
+                  }`}
+                />
+              ) : comBateria ? (
+                <span className="text-3xl animate-bounce">⚡</span>
+              ) : (
+                <div className="flex flex-col items-center text-amber-400">
+                  <Zap size={26} className="animate-pulse" />
+                </div>
+              )}
+            </div>
+            <span className="text-xs font-bold text-amber-400 flex items-center gap-1">
+              <span>Meta</span>
+              <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/40">
+                +10 pts
+              </span>
+            </span>
+          </div>
+
+          {/* Recompensa Flutuante Animada */}
+          {flutuanteRecompensa && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-slate-900 border-2 border-amber-400 text-amber-300 font-extrabold text-sm rounded-full shadow-2xl animate-bounce z-30 flex items-center gap-1.5">
+              <span>{flutuanteRecompensa}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Painel de Reação Didática do Ambiente */}
+        <div className="mt-3 bg-slate-950/90 p-3 rounded-xl border border-slate-800 flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 shrink-0">
+            <Globe size={18} />
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed font-medium">
+            <strong className="text-white mr-1">Resposta do Ambiente:</strong>
+            {textoEfeito}
+          </p>
+        </div>
+      </div>
+
+      {/* 4. Ações Válidas & Log de Passos do Loop RL */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Bloco de Controles de Ação Válida */}
+        <div
+          className={`p-3.5 rounded-xl border bg-slate-900/90 flex flex-col justify-between gap-2.5 transition-all ${
+            pilarAtivo === "acao"
+              ? "border-fuchsia-500/70 ring-2 ring-fuchsia-500/30"
+              : "border-slate-800"
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <p className="text-xs font-bold uppercase tracking-wider text-fuchsia-400 flex items-center gap-1.5">
+              <Gamepad2 size={15} />
+              Escolha uma Ação Válida (a):
+            </p>
+            {pilarAtivo === "acao" && (
+              <span className="text-[10px] text-fuchsia-300 font-bold bg-fuchsia-500/20 px-2 py-0.5 rounded border border-fuchsia-500/40">
+                Pilar Ação Selecionado
+              </span>
             )}
           </div>
 
-          {/* Feedback Didático */}
-          <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
-            <span className="text-base">💡</span>
-            <span className="flex-1">{textoEfeito}</span>
-          </div>
-        </div>
+          <div className="grid grid-cols-3 gap-2">
+            {(["recuar", "avancar", "coletar"] as TipoAcao[]).map((acao) => {
+              const ehRecuarBloqueado = acao === "recuar" && posicaoAgente === 0;
+              const ehColetarInvalido = acao === "coletar" && posicaoAgente !== 2;
+              const ehColetarSucesso = acao === "coletar" && posicaoAgente === 2;
 
-        {/* Painel Lateral: Ações & Preferência do Agente */}
-        <div className="w-full md:w-60 shrink-0 flex flex-col gap-2.5">
-          {/* Controles de Ação Direta */}
-          <div
-            className={`p-3 rounded-xl border bg-slate-900/90 transition-all ${
-              pilarAtivo === "acao" ? "border-fuchsia-500/60 ring-2 ring-fuchsia-500/20" : "border-slate-800"
-            }`}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 mb-2 flex items-center gap-1">
-              <Gamepad2 size={13} />
-              Executar Ação (Action):
-            </p>
-            <div className="grid grid-cols-3 md:grid-cols-1 gap-1.5">
-              {(["recuar", "avancar", "coletar"] as TipoAcao[]).map((acao) => (
+              return (
                 <button
                   key={acao}
                   type="button"
@@ -416,79 +539,92 @@ export function PilaresRL(): React.ReactElement {
                     setRodandoAuto(false);
                     executarAcao(acao);
                   }}
-                  className={`py-2 px-2.5 rounded-lg text-xs font-bold transition-all border flex items-center justify-between ${
+                  className={`py-2.5 px-2 rounded-xl text-xs font-extrabold transition-all border flex flex-col items-center justify-center gap-1 ${
                     ultimaAcao === acao
-                      ? "bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-200 shadow-md"
-                      : "bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800"
+                      ? "bg-fuchsia-600 text-white border-fuchsia-300 shadow-lg scale-105"
+                      : ehColetarSucesso
+                      ? "bg-emerald-950/80 border-emerald-500/80 text-emerald-300 hover:bg-emerald-900"
+                      : "bg-slate-950 border-slate-800 text-slate-200 hover:bg-slate-850"
                   }`}
                 >
                   <span>{NOMES_ACAO[acao]}</span>
+                  <span className="text-[9px] font-normal text-slate-400">
+                    {ehRecuarBloqueado
+                      ? "(Parede -2)"
+                      : ehColetarInvalido
+                      ? "(Fora da Meta)"
+                      : ehColetarSucesso
+                      ? "(Pegar Meta! +10)"
+                      : "(-0.5)"}
+                  </span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
-          {/* Preferência Aprendida do Agente */}
-          <div
-            className={`p-3 rounded-xl border bg-slate-900/90 flex-1 flex flex-col justify-between transition-all ${
-              pilarAtivo === "agente" || pilarAtivo === "recompensa"
-                ? "border-cyan-500/60 ring-2 ring-cyan-500/20"
-                : "border-slate-800"
-            }`}
-          >
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1">
-                <Bot size={13} />
-                Preferência Interna da IA:
-              </p>
+          <p className="text-[11px] text-slate-400 italic">
+            * O conjunto de ações válidas depende de onde o agente está no momento.
+          </p>
+        </div>
 
-              <div className="space-y-2">
-                {(["recuar", "avancar", "coletar"] as TipoAcao[]).map((acao) => (
-                  <div key={acao} className="space-y-0.5">
-                    <div className="flex justify-between text-[11px] font-medium text-slate-400">
-                      <span>{NOMES_ACAO[acao]}</span>
-                      <span className="font-mono text-slate-200">{preferencias[acao]}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          acao === "coletar"
-                            ? "bg-emerald-400"
-                            : acao === "avancar"
-                            ? "bg-indigo-400"
-                            : "bg-rose-400"
-                        }`}
-                        style={{ width: `${preferencias[acao]}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Bloco de Histórico do Loop (s_t ➔ a_t ➔ r_t ➔ s_{t+1}) */}
+        <div className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/90 flex flex-col justify-between gap-2">
+          <div className="flex justify-between items-center">
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <History size={15} />
+              Últimos Passos do Loop RL:
+            </p>
 
-            {/* Botões Globais de Simulação */}
-            <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setRodandoAuto(!rodandoAuto)}
-                className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 text-white transition-all ${
+                className={`py-1 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 text-white transition-all ${
                   rodandoAuto ? "bg-amber-600 hover:bg-amber-500" : "bg-indigo-600 hover:bg-indigo-500"
                 }`}
               >
-                {rodandoAuto ? <Pause size={14} /> : <Play size={14} />}
-                <span>{rodandoAuto ? "Pausar" : "Simular IA"}</span>
+                {rodandoAuto ? <Pause size={13} /> : <Play size={13} />}
+                <span>{rodandoAuto ? "Pausar IA" : "Simular IA"}</span>
               </button>
 
               <button
                 type="button"
                 onClick={resetar}
-                title="Reiniciar Cenário"
-                className="p-2 rounded-lg border border-slate-700 bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+                title="Reiniciar"
+                className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white"
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={13} />
               </button>
             </div>
           </div>
+
+          {historico.length === 0 ? (
+            <p className="text-xs text-slate-500 italic my-auto text-center py-2">
+              Nenhuma ação executada ainda. Clique nos botões de ação para gerar eventos do Loop RL!
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {historico.map((passo) => (
+                <div
+                  key={passo.id}
+                  className="flex items-center justify-between text-[11px] bg-slate-950 p-2 rounded-lg border border-slate-800/80 font-mono"
+                >
+                  <span className="text-amber-300">s={passo.estadoAnterior}</span>
+                  <span className="text-slate-400">➔</span>
+                  <span className="text-fuchsia-300 font-bold">{NOMES_ACAO[passo.acao]}</span>
+                  <span className="text-slate-400">➔</span>
+                  <span className="text-amber-300">s'={passo.novoEstado}</span>
+                  <span
+                    className={`font-bold ${
+                      passo.recompensa > 0 ? "text-emerald-400" : "text-rose-400"
+                    }`}
+                  >
+                    r={passo.recompensa > 0 ? `+${passo.recompensa.toFixed(1)}` : passo.recompensa.toFixed(1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
