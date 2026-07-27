@@ -79,7 +79,7 @@ Ninguém te entregou um manual impresso. Você operou em um ciclo puro de **tent
 
 No painel, **você é o tutor** (o ambiente): personagem com **bolsa de petiscos**. O agente é o **cão digital**.
 
-Comandos disponíveis: **Sentar**, **Pular**, **Latir**, **Deitar**.
+Comandos disponíveis: **Sentar**, **Pular**, **Deitar** (o cão também tem pose de repouso / idle).
 
 1. Escolha um comando (ex.: “Senta!”).
 2. O cão escolhe uma ação segundo as preferências atuais (no início, quase no acaso).

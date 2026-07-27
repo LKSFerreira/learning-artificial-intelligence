@@ -1,39 +1,45 @@
 /**
- * Componente visual que exibe o painel de preferências/probabilidades do agente cão.
+ * Componente visual que exibe o nível de aprendizado/domínio de cada comando pelo cão.
+ * As porcentagens são 100% independentes entre si (33.33% até 98.00%).
  */
 
 import React from "react";
-import { ACOES, ROTULOS, type Acao, type PreferenciasAgente } from "./tipos";
+import { ACOES, ROTULOS, type Acao, type DominioComandos } from "./tipos";
 
 interface PainelPreferenciasProps {
-  preferencias: PreferenciasAgente;
+  dominio: DominioComandos;
   comandoAlvo: Acao | null;
 }
 
 export function PainelPreferencias({
-  preferencias,
+  dominio,
   comandoAlvo,
 }: PainelPreferenciasProps): React.ReactElement {
   return (
-    <div className="shrink-0 rounded-xl border border-slate-800/80 bg-slate-900/80 p-3 shadow-lg backdrop-blur-md">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Preferência por Ação (Política do Agente)
-        </span>
-        <span className="text-[10px] text-slate-500">
-          Valores aproximam a distribuição de probabilidades
+    <div className="shrink-0 rounded-xl border border-slate-800/80 bg-slate-900/80 p-3 shadow-lg backdrop-blur-md flex flex-col gap-2.5">
+      <div className="flex justify-between items-center gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+            Domínio dos Comandos (Taxa de Acerto do Agente)
+          </span>
+        </div>
+
+        <span className="text-[10px] text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 font-semibold">
+          Teto Máximo: 98,00%
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {ACOES.map((acao) => {
-          const valor = preferencias[acao];
-          const ehAlvo = comandoAlvo === acao;
-          const porcentagem = Math.round(valor * 100);
+      {/* Grid de Aprendizado Independente de cada Comando */}
+      <div className="grid grid-cols-3 gap-2">
+        {ACOES.map((cmd) => {
+          const valorBruto = dominio[cmd];
+          const valorLimitado = Math.min(valorBruto * 100, 98.0);
+          const formatoFormatado = valorLimitado.toFixed(2);
+          const ehAlvo = comandoAlvo === cmd;
 
           return (
             <div
-              key={acao}
+              key={cmd}
               className={`flex flex-col gap-1 p-2 rounded-lg border transition-all ${
                 ehAlvo
                   ? "bg-amber-500/10 border-amber-500/40 shadow-sm"
@@ -46,14 +52,14 @@ export function PainelPreferencias({
                     ehAlvo ? "text-amber-300" : "text-slate-300"
                   }`}
                 >
-                  {ROTULOS[acao]}
+                  {ROTULOS[cmd]}
                 </span>
                 <span
                   className={`text-[11px] font-mono font-bold ${
                     ehAlvo ? "text-amber-400" : "text-slate-400"
                   }`}
                 >
-                  {porcentagem}%
+                  {formatoFormatado}%
                 </span>
               </div>
               <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -61,7 +67,7 @@ export function PainelPreferencias({
                   className={`h-full rounded-full transition-all duration-500 ${
                     ehAlvo ? "bg-amber-400 shadow-glow" : "bg-indigo-500"
                   }`}
-                  style={{ width: `${Math.min(porcentagem, 100)}%` }}
+                  style={{ width: `${Math.min(valorLimitado, 100)}%` }}
                 />
               </div>
             </div>
