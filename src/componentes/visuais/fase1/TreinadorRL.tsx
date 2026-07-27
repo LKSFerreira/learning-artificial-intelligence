@@ -240,7 +240,7 @@ export function TreinadorRL(): React.ReactElement {
               Treino por Reforço Positivo
             </h3>
             <p className="text-xs text-slate-400">
-              Você é o tutor (ambiente). Dê ou retenha o petisco para moldar a política do cão.
+              Você é o tutor (ambiente). Dê ou não o petisco para moldar a política do cão.
             </p>
           </div>
         </div>
