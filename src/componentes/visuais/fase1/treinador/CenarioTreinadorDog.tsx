@@ -15,7 +15,6 @@ import {
 import { VideoCaoChroma } from "./VideoCaoChroma";
 import {
   obterCandidatosUrlPorEstadoCao,
-  obterTodasUrlsVideosTreinador,
   type EstadoVisualCao,
 } from "../../../../servicos/midia/gerenciadorVideoTreinador";
 
@@ -64,9 +63,6 @@ export function CenarioTreinadorDog({
     [estadoVisual],
   );
 
-  // Lista de todas as URLs para pré-carregamento dos 6 vídeos no DOM
-  const todasUrlsPreload = useMemo(() => obterTodasUrlsVideosTreinador(), []);
-
   const ehIdle = estadoVisual === "idle";
   const ehFeedback =
     estadoVisual === "happy" || estadoVisual === "sad";
@@ -83,19 +79,7 @@ export function CenarioTreinadorDog({
 
   return (
     <div className="cenario-treino-palco w-full flex-1 min-h-[400px] relative overflow-hidden rounded-2xl border border-slate-700/80 shadow-2xl flex flex-col select-none">
-      {/* Elementos ocultos de pré-carregamento total de vídeos para evitar qualquer desaparecimento do cão */}
-      <div className="hidden" aria-hidden="true">
-        {todasUrlsPreload.map((url) => (
-          <video
-            key={url}
-            src={url}
-            preload="auto"
-            muted
-            playsInline
-            className="hidden"
-          />
-        ))}
-      </div>
+
 
       <div className="absolute inset-0 z-0" aria-hidden>
         <img
@@ -149,7 +133,7 @@ export function CenarioTreinadorDog({
           </div>
         )}
 
-        <div className="relative w-[min(94%,34rem)] sm:w-[min(90%,38rem)] h-[min(62vw,26rem)] sm:h-[28rem] flex items-end justify-center bg-transparent">
+        <div className="relative w-[min(94%,34rem)] sm:w-[min(90%,38rem)] aspect-[16/9] max-h-[28rem] flex items-end justify-center bg-transparent">
           <VideoCaoChroma
             src={candidatosVideo}
             loop={ehIdle}
@@ -157,7 +141,7 @@ export function CenarioTreinadorDog({
             onTerminou={
               ehFeedback ? onFeedbackVideoTerminou : undefined
             }
-            className="max-w-full max-h-full w-auto h-auto object-contain object-bottom"
+            className="w-full h-full object-contain select-none pointer-events-none"
           />
         </div>
 

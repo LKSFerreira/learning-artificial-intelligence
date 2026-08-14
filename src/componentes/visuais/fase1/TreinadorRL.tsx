@@ -9,10 +9,11 @@
  * **Estado Visual:** ``rl_dog_training``
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bone, Dog, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import {
   ACOES,
+  ACOES_PASSADO,
   COMANDOS_FALA,
   DOMINIO_INICIAL,
   ROTULOS,
@@ -100,6 +101,8 @@ export function TreinadorRL(): React.ReactElement {
       : "Você treina o cão. Escolha um comando; depois dê petisco ou não (sem punir).",
   );
 
+  const refTimeoutDecisao = useRef<number | null>(null);
+
   // Efeito para persistir no localStorage sempre que houver progresso
   useEffect(() => {
     try {
@@ -115,28 +118,41 @@ export function TreinadorRL(): React.ReactElement {
     }
   }, [dominio, rodadas, acertos, pontos]);
 
+  // Limpeza de timeout pendente ao desmontar
+  useEffect(() => {
+    return () => {
+      if (refTimeoutDecisao.current !== null) {
+        window.clearTimeout(refTimeoutDecisao.current);
+      }
+    };
+  }, []);
+
   const emitirComando = (acaoComando: Acao) => {
     if (etapa !== "escolher_comando") return;
+
+    if (refTimeoutDecisao.current !== null) {
+      window.clearTimeout(refTimeoutDecisao.current);
+    }
 
     setComando(acaoComando);
     setFeedback(null);
     setEtapa("decidindo");
     setNarracao(
-      `Você gritou: "${COMANDOS_FALA[acaoComando]}". O cão decide a ação...`,
+      `Você deu o comando: "${COMANDOS_FALA[acaoComando]}". O cão está decidindo o que fazer...`,
     );
 
     const dominioSnapshot = dominio;
-    window.setTimeout(() => {
+    refTimeoutDecisao.current = window.setTimeout(() => {
       // O cão testa a ação com base no domínio isolado daquele comando específico
       const escolhida = amostrarAcaoComando(acaoComando, dominioSnapshot);
       setAcaoCao(escolhida);
       setEtapa("avaliar");
       setNarracao(
         escolhida === acaoComando
-          ? `O cão fez ${ROTULOS[escolhida]} — acertou o comando! Dê o petisco ou recuse a dar o petisco.`
-          : `O cão fez ${ROTULOS[escolhida]}, mas o comando era ${ROTULOS[acaoComando]}. Dê o petisco ou não.`,
+          ? `O cão ${ACOES_PASSADO[escolhida]} e acertou o comando! Dê o petisco ou recuse a dar o petisco.`
+          : `O cão ${ACOES_PASSADO[escolhida]}, mas o comando era ${ROTULOS[acaoComando].toLowerCase()}. Dê o petisco ou não.`,
       );
-    }, 400);
+    }, 350);
   };
 
   const aplicarConsequencia = (tipo: "petisco" | "sem_petisco") => {
@@ -209,6 +225,9 @@ export function TreinadorRL(): React.ReactElement {
   };
 
   const resetarTreino = () => {
+    if (refTimeoutDecisao.current !== null) {
+      window.clearTimeout(refTimeoutDecisao.current);
+    }
     try {
       localStorage.removeItem(CHAVE_STORAGE_TREINADOR);
     } catch {

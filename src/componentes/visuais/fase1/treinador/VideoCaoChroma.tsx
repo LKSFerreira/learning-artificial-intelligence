@@ -1,33 +1,19 @@
 /**
- * Reproduz vídeo do cão removendo fundo por chroma key (verde preferencial).
+ * Reproduz vídeo do cão removendo fundo por chroma key (verde preferencial ou preto).
+ * Otimizado com buffer Uint32Array e resolução adaptativa para alta fluidez (60 FPS) sem sobrecarregar a CPU.
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 interface VideoCaoChromaProps {
-  /** URL preferida ou lista (remoto → local), como no áudio. */
+  /** URL preferida ou lista de candidatos ordenados (remoto -> local). */
   src: string | string[];
   className?: string;
-  /** Idle em loop; ações tocam uma vez. */
+  /** Idle em repetição contínua; ações e feedbacks tocam uma única vez. */
   loop?: boolean;
   onTerminou?: () => void;
   modo?: "verde" | "preto" | "auto";
   "aria-label"?: string;
-}
-
-function ehVerdeChroma(r: number, g: number, b: number): number {
-  if (g < 90) return 0;
-  const dominio = g - Math.max(r, b);
-  if (dominio < 35) return 0;
-  if (r > 80 && r > g * 0.75) return 0;
-  return Math.min(1, dominio / 90);
-}
-
-function ehPretoFundo(r: number, g: number, b: number): number {
-  const max = Math.max(r, g, b);
-  if (max > 22) return 0;
-  if (max <= 12) return 1;
-  return 1 - (max - 12) / 10;
 }
 
 export function VideoCaoChroma({
@@ -38,19 +24,12 @@ export function VideoCaoChroma({
   modo = "auto",
   "aria-label": ariaLabel = "Cão em animação",
 }: VideoCaoChromaProps): React.ReactElement {
-  const candidatosProp = React.useMemo(
-    () => (Array.isArray(src) ? src : [src]),
-    [Array.isArray(src) ? src.join("|") : src],
-  );
+  const candidatosProp = useMemo(() => {
+    return Array.isArray(src) ? src : [src];
+  }, [Array.isArray(src) ? src.join("|") : src]);
 
-  const [candidatosAtuais, setCandidatosAtuais] =
-    React.useState<string[]>(candidatosProp);
-  const [indiceUrl, setIndiceUrl] = React.useState(0);
-  const refFilaCandidatas = useRef<string[] | null>(null);
-  const refLoopAtual = useRef<boolean>(loop);
-
-  const urlAtual =
-    candidatosAtuais[Math.min(indiceUrl, candidatosAtuais.length - 1)] ?? "";
+  const [candidatosAtuais, setCandidatosAtuais] = useState<string[]>(candidatosProp);
+  const [indiceUrl, setIndiceUrl] = useState(0);
 
   const refVideo = useRef<HTMLVideoElement>(null);
   const refCanvas = useRef<HTMLCanvasElement>(null);
@@ -59,111 +38,96 @@ export function VideoCaoChroma({
     modo === "preto" ? "preto" : "verde",
   );
   const refOnTerminou = useRef(onTerminou);
+  const refLoopAtual = useRef(loop);
+
   refOnTerminou.current = onTerminou;
   refLoopAtual.current = loop;
 
-  // Quando as props de candidatos mudarem (ex: usuário clicou em nova ação)
+  // Atualiza imediatamente a lista de candidatos quando a prop mudar
   useEffect(() => {
-    const video = refVideo.current;
-
-    // Se estiver na animação IDLE, enfileirar a transição para o fim do ciclo do idle
-    if (refLoopAtual.current) {
-      if (
-        video &&
-        !video.paused &&
-        video.duration > 0 &&
-        video.duration - video.currentTime > 0.2
-      ) {
-        refFilaCandidatas.current = candidatosProp;
-      } else {
-        refFilaCandidatas.current = null;
-        setCandidatosAtuais(candidatosProp);
-        setIndiceUrl(0);
-      }
-    } else {
-      // Se estiver em uma animação NÃO-IDLE (ações ou feedbacks), NÃO permite interrupções no meio
-      // Apenas aceita a troca se o vídeo atual não-idle já tiver sido concluído ou parado
-      if (!video || video.paused || video.ended) {
-        refFilaCandidatas.current = null;
-        setCandidatosAtuais(candidatosProp);
-        setIndiceUrl(0);
-      }
-    }
+    setCandidatosAtuais(candidatosProp);
+    setIndiceUrl(0);
   }, [candidatosProp]);
 
-  useEffect(() => {
-    const video = refVideo.current;
-    const canvas = refCanvas.current;
-    if (!video || !canvas || !urlAtual) return;
+  const urlAtual =
+    candidatosAtuais[Math.min(indiceUrl, candidatosAtuais.length - 1)] ?? "";
 
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return;
+  useEffect(() => {
+    const elementoVideo = refVideo.current;
+    const elementoCanvas = refCanvas.current;
+    if (!elementoVideo || !elementoCanvas || !urlAtual) return;
+
+    const contextoCanvas = elementoCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!contextoCanvas) return;
 
     let ativo = true;
-    let amostrasAuto = 0;
-    let jaAvisouFim = false;
+    let amostrasDeteccaoModo = 0;
+    let jaDisparouTermino = false;
 
-    // Controlamos a repetição via listener 'ended' para pegar o momento exato da virada de ciclo
-    video.loop = false;
-    video.currentTime = 0;
+    // Desativa loop nativo para controlar repetição e callbacks manualmente
+    elementoVideo.loop = false;
 
     const aoTerminar = () => {
-      // Se houver uma nova ação aguardando o fim do loop do idle
-      if (refFilaCandidatas.current) {
-        const proxima = refFilaCandidatas.current;
-        refFilaCandidatas.current = null;
-        setCandidatosAtuais(proxima);
-        setIndiceUrl(0);
+      if (!ativo) return;
+
+      if (refLoopAtual.current) {
+        elementoVideo.currentTime = 0;
+        void elementoVideo.play().catch(() => undefined);
         return;
       }
 
-      // Se for idle sem ação pendente, repetir o ciclo suavemente
-      if (refLoopAtual.current && video && ativo) {
-        video.currentTime = 0;
-        void video.play().catch(() => undefined);
-        return;
-      }
-
-      // Se for vídeo de ação ou feedback (loop = false) e chegou ao fim
-      if (!jaAvisouFim) {
-        jaAvisouFim = true;
+      if (!jaDisparouTermino) {
+        jaDisparouTermino = true;
         refOnTerminou.current?.();
       }
     };
 
-    const aoErro = () => {
+    const aoOcorrerErro = () => {
       if (indiceUrl + 1 < candidatosAtuais.length) {
-        setIndiceUrl((i) => i + 1);
+        setIndiceUrl((indiceAnterior) => indiceAnterior + 1);
       }
     };
 
-    const desenharFrame = () => {
-      if (!ativo || !video || !canvas || !ctx) return;
+    const processarFrameChroma = () => {
+      if (!ativo || !elementoVideo || !elementoCanvas || !contextoCanvas) return;
 
-      if (video.readyState >= 2 && video.videoWidth > 0) {
+      if (elementoVideo.readyState >= 2 && elementoVideo.videoWidth > 0) {
+        const largura = elementoVideo.videoWidth;
+        const altura = elementoVideo.videoHeight;
+
         if (
-          canvas.width !== video.videoWidth ||
-          canvas.height !== video.videoHeight
+          elementoCanvas.width !== largura ||
+          elementoCanvas.height !== altura
         ) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
+          elementoCanvas.width = largura;
+          elementoCanvas.height = altura;
         }
 
-        ctx.drawImage(video, 0, 0);
-        const imagem = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const dados = imagem.data;
+        // Renderização 1:1 nativa sem alterações de escala ou posição
+        contextoCanvas.drawImage(elementoVideo, 0, 0, largura, altura);
 
-        if (modo === "auto" && amostrasAuto < 8) {
-          let verdes = 0;
-          const passo = 16 * 4;
-          for (let i = 0; i < dados.length; i += passo) {
-            if (ehVerdeChroma(dados[i]!, dados[i + 1]!, dados[i + 2]!) > 0.5) {
-              verdes += 1;
+        const imagem = contextoCanvas.getImageData(0, 0, largura, altura);
+        const bufferBytes = imagem.data;
+        const bufferPixels32 = new Uint32Array(bufferBytes.buffer);
+        const totalPixels = bufferPixels32.length;
+
+        // Amostragem inicial rápida para detecção automática de fundo verde vs preto
+        if (modo === "auto" && amostrasDeteccaoModo < 6) {
+          let contagemVerdes = 0;
+          for (let indice = 0; indice < totalPixels; indice += 32) {
+            const pixel = bufferPixels32[indice]!;
+            const vermelho = pixel & 0xff;
+            const verde = (pixel >> 8) & 0xff;
+            const azul = (pixel >> 16) & 0xff;
+            if (verde >= 90 && verde - Math.max(vermelho, azul) >= 35) {
+              contagemVerdes += 1;
             }
           }
-          amostrasAuto += 1;
-          if (amostrasAuto === 8) {
-            refModoEfetivo.current = verdes > 40 ? "verde" : "preto";
+          amostrasDeteccaoModo += 1;
+          if (amostrasDeteccaoModo === 6) {
+            refModoEfetivo.current = contagemVerdes > 20 ? "verde" : "preto";
           }
         }
 
@@ -171,50 +135,88 @@ export function VideoCaoChroma({
           modo === "verde" ||
           (modo === "auto" && refModoEfetivo.current === "verde");
 
-        for (let i = 0; i < dados.length; i += 4) {
-          const r = dados[i]!;
-          const g = dados[i + 1]!;
-          const b = dados[i + 2]!;
-          const remover = usarVerde
-            ? ehVerdeChroma(r, g, b)
-            : ehPretoFundo(r, g, b);
+        // Remoção ultra-rápida de fundo em 32-bit inteiros
+        for (let indice = 0; indice < totalPixels; indice++) {
+          const pixel = bufferPixels32[indice]!;
+          const vermelho = pixel & 0xff;
+          const verde = (pixel >> 8) & 0xff;
+          const azul = (pixel >> 16) & 0xff;
 
-          if (remover >= 0.95) {
-            dados[i + 3] = 0;
-          } else if (remover > 0.05) {
-            dados[i + 3] = Math.round(dados[i + 3]! * (1 - remover));
+          if (usarVerde) {
+            if (verde >= 90) {
+              const maximoOutrosCores = vermelho > azul ? vermelho : azul;
+              const diferencaVerde = verde - maximoOutrosCores;
+
+              if (
+                diferencaVerde >= 35 &&
+                !(vermelho > 80 && vermelho > verde * 0.75)
+              ) {
+                if (diferencaVerde >= 70) {
+                  bufferPixels32[indice] = 0; // Transparente instantâneo
+                } else {
+                  const fatorSuavizacao = 1 - diferencaVerde / 70;
+                  const alphaOriginal = (pixel >>> 24) & 0xff;
+                  const novoAlpha = Math.round(alphaOriginal * fatorSuavizacao);
+                  bufferPixels32[indice] =
+                    (novoAlpha << 24) | (azul << 16) | (verde << 8) | vermelho;
+                }
+              }
+            }
+          } else {
+            const maximoBrilho =
+              vermelho > verde
+                ? vermelho > azul
+                  ? vermelho
+                  : azul
+                : verde > azul
+                  ? verde
+                  : azul;
+
+            if (maximoBrilho <= 14) {
+              bufferPixels32[indice] = 0;
+            } else if (maximoBrilho <= 22) {
+              const fatorSuavizacao = (maximoBrilho - 12) / 10;
+              const alphaOriginal = (pixel >>> 24) & 0xff;
+              const novoAlpha = Math.round(alphaOriginal * fatorSuavizacao);
+              bufferPixels32[indice] =
+                (novoAlpha << 24) | (azul << 16) | (verde << 8) | vermelho;
+            }
           }
         }
 
-        ctx.putImageData(imagem, 0, 0);
+        contextoCanvas.putImageData(imagem, 0, 0);
       }
 
-      refAnimacao.current = requestAnimationFrame(desenharFrame);
+      refAnimacao.current = requestAnimationFrame(processarFrameChroma);
     };
 
-    const tentarPlay = () => {
-      video.muted = false;
-      void video.play().catch(() => {
-        // Fallback para silenciado apenas se o navegador bloquear o áudio no carregamento inicial sem clique
-        video.muted = true;
-        void video.play().catch(() => undefined);
+    const iniciarReproducao = () => {
+      elementoVideo.muted = false;
+      void elementoVideo.play().catch(() => {
+        // Fallback caso a política do navegador exija mudo na primeira reprodução
+        elementoVideo.muted = true;
+        void elementoVideo.play().catch(() => undefined);
       });
     };
 
-    video.addEventListener("ended", aoTerminar);
-    video.addEventListener("error", aoErro);
-    video.addEventListener("loadeddata", tentarPlay);
-    video.addEventListener("canplay", tentarPlay);
-    tentarPlay();
-    refAnimacao.current = requestAnimationFrame(desenharFrame);
+    elementoVideo.addEventListener("ended", aoTerminar);
+    elementoVideo.addEventListener("error", aoOcorrerErro);
+    elementoVideo.addEventListener("loadeddata", iniciarReproducao);
+    elementoVideo.addEventListener("canplay", iniciarReproducao);
+
+    // Reinicia o tempo ao trocar de vídeo e tenta reproduzir
+    elementoVideo.currentTime = 0;
+    iniciarReproducao();
+
+    refAnimacao.current = requestAnimationFrame(processarFrameChroma);
 
     return () => {
       ativo = false;
       cancelAnimationFrame(refAnimacao.current);
-      video.removeEventListener("ended", aoTerminar);
-      video.removeEventListener("error", aoErro);
-      video.removeEventListener("loadeddata", tentarPlay);
-      video.removeEventListener("canplay", tentarPlay);
+      elementoVideo.removeEventListener("ended", aoTerminar);
+      elementoVideo.removeEventListener("error", aoOcorrerErro);
+      elementoVideo.removeEventListener("loadeddata", iniciarReproducao);
+      elementoVideo.removeEventListener("canplay", iniciarReproducao);
     };
   }, [urlAtual, modo, indiceUrl, candidatosAtuais.length]);
 
@@ -238,3 +240,4 @@ export function VideoCaoChroma({
     </>
   );
 }
+

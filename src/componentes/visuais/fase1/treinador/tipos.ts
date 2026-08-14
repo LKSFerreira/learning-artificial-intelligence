@@ -28,6 +28,12 @@ export const ROTULOS: Record<Acao, string> = {
   deitar: "Deitar",
 };
 
+export const ACOES_PASSADO: Record<Acao, string> = {
+  sentar: "sentou",
+  pular: "pulou",
+  deitar: "deitou",
+};
+
 export const COMANDOS_FALA: Record<Acao, string> = {
   sentar: "Senta!",
   pular: "Pula!",
