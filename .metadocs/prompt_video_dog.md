@@ -1,264 +1,164 @@
-# Prompts de VÍDEO do cão — referência + continuidade
+# Prompts de VÍDEO do Cão (Text-to-Video / Image-to-Video) — Continuidade e Consistência (10s)
 
-## Ideia
+## 📌 Configurações na Interface do Gerador (UI)
 
-- **Identidade do cão:** só a imagem anexada `dog_idle.png` (não redesenhar).  
-- **Duração:** ~**10 segundos** por clipe.  
-- **Continuidade:** em todo vídeo de *ação*, o cão  
-  1) **começa** na pose idle da referência,  
-  2) faz a ação,  
-  3) **volta** para a **mesma pose idle original** no final.  
+* **Proporção:** 16:9
+* **Resolução:** 720P (1280x720) ou 1080P
+* **Duração:** 10 segundos (24 FPS / 30 FPS)
+* **Formato:** MP4
+* **Imagem de Entrada (Obrigatório):** Anexar [`dog_idle.png`](public/imagens/treinador/dog_idle.png) como imagem de referência base (First Frame / Subject Reference / Image-to-Video)
+* **Dica de Consistência:** Nos geradores com suporte a Seed/Seed Locking ou Subject Reference, mantenha a mesma Seed e o mesmo peso de fidelidade à imagem de referência em todas as gerações.
 
-Assim o app só troca de vídeo (`idle` ↔ `sit` ↔ `happy`…) sem “pulo” de pose.
+---
+
+## 🔄 Estrutura de Continuidade em 3 Fases (10s)
+
+Para que a transição entre os vídeos seja imperceptível no aplicativo, todo clipe de ação de 10 segundos segue este cronograma:
 
 ```text
-[início] idle = dog_idle.png
-   → ação (sentar / pular / deitar / petisco / triste)
-   → [fim] de novo idle = mesma pose da referência
-```
-
-**Idle** é o único que fica o tempo todo em repouso (respirando), já na pose original.
-
----
-
-## Como usar
-
-1. Sessão **nova** por vídeo.  
-2. Anexar **sempre** `dog_idle.png`.  
-3. Colar o prompt **inteiro** da seção.  
-4. Gerar ~10s, fundo **verde #00FF00**.  
-5. Salvar o `.mp4` com o nome indicado.
-
----
-
-## 6 vídeos
-
-| # | Arquivo | O que acontece (e volta pro idle) |
-| ---: | :--- | :--- |
-| 1 | `dog_idle.mp4` | Só espera (já é a pose base) |
-| 2 | `dog_sit.mp4` | Idle → senta → **volta idle** |
-| 3 | `dog_jump.mp4` | Idle → pula → aterra → **volta idle** |
-| 4 | `dog_lay.mp4` | Idle → deita → levanta → **volta idle** |
-| 5 | `dog_happy.mp4` | Idle → petisco + festa → **volta idle** |
-| 6 | `dog_sad.mp4` | Idle → triste gentil → **volta idle** |
-
----
-
-# VÍDEO 1 — Idle (pose base, 10s)
-
-**Anexar:** `dog_idle.png`  
-**Salvar:** `dog_idle.mp4`
-
-### Prompt (copiar tudo)
-
-```text
-Image-to-video. Animate ONLY the EXACT dog from the attached reference image. Do NOT redesign, recolor, or restyle the dog. Same face, body, fur, chest marking, ears, and 2D illustration style as the reference.
-
-GREEN SCREEN IS MANDATORY: entire background is flat pure chroma-key green #00FF00 (RGB 0,255,0), solid even green edge to edge. No black, no gray, no gradient, no shadows on the green, no ground plane, no grass, no park, no scenery, no props.
-
-TIMING: about 10 seconds, 24fps.
-
-ACTION: the dog stays in the SAME standing full-body idle pose as the reference for the whole clip. Subtle breathing, tiny ear twitch, slight tail tip movement only. No walking, no sitting, no jumping, no lying down, no spinning. First frame and last frame must match the reference standing pose (seamless idle loop).
-
-CAMERA: fixed eye-level, full body head-to-tail and all paws visible, dog centered, same facing as the reference. No camera move, no zoom, no cut. No text, watermark, logo, UI, collar, accessories, second animal, or human.
-
-Output: 10-second seamless idle loop of the exact attached dog on pure #00FF00 green.
+[0.0s – 2.0s]               [2.0s – 7.0s]                  [7.0s – 10.0s]
+    INÍCIO                       AÇÃO                           FIM
+Começa exatamente           Executa a ação              Retorna à pose IDLE
+na pose IDLE base    ➔    (Senta, Pula, Deita,    ➔   e completa 1 ciclo de IDLE
+ (em pé/respirando)         Petisco ou Triste)        (mesma altura, foco e chão)
 ```
 
 ---
 
-# VÍDEO 2 — Sentar (e volta ao idle)
+## 🎬 Prompts Prontos (Text-to-Video / Image-to-Video com Consistência de Personagem - 10s)
 
-**Anexar:** `dog_idle.png`  
-**Salvar:** `dog_sit.mp4`
+| # | Arquivo Final | Ação Principal (10s) | Papel do Prompt |
+| :-: | :--- | :--- | :--- |
+| **1** | `dog_idle.mp4` | Repouso contínuo em pé (loop perfeito de 10s) | **Âncora Principal** (Define o cão base da imagem `dog_idle.png`) |
+| **2** | `dog_sentando.mp4` | Idle (2.0s) ➔ Senta e sustenta (5.0s) ➔ Levanta e volta para Idle (3.0s) | Mantém o **mesmo cão** do vídeo/imagem anterior |
+| **3** | `dog_pulando.mp4` | Idle (2.0s) ➔ Pulo alegre e aterrissagem suave (5.0s) ➔ Volta para Idle (3.0s) | Mantém o **mesmo cão** do vídeo/imagem anterior |
+| **4** | `dog_deitando.mp4` | Idle (2.0s) ➔ Deita no chão relaxado (5.0s) ➔ Levanta e volta para Idle (3.0s) | Mantém o **mesmo cão** do vídeo/imagem anterior |
+| **5** | `dog_recebendo_petisco.mp4` | Idle (2.0s) ➔ Pega petisco, mastiga e comemora (5.0s) ➔ Volta para Idle (3.0s) | Mantém o **mesmo cão** do vídeo/imagem anterior |
+| **6** | `dog_sem_petisco.mp4` | Idle (2.0s) ➔ Reação triste suave e compreensiva (5.0s) ➔ Volta para Idle (3.0s) | Mantém o **mesmo cão** do vídeo/imagem anterior |
 
-### Prompt (copiar tudo)
+---
+
+### VÍDEO 1 — `dog_idle.mp4` (Repouso Base / Loop Contínuo / Cão Âncora - 10s)
 
 ```text
-Image-to-video. Animate the EXACT dog from the attached reference image. Do NOT redesign the dog. Same identity, colors, proportions, markings, and 2D art style as the reference.
+REFERENCE: Master base character reference from attached image dog_idle.png. Establish the definitive visual identity, proportions, and style for all subsequent animations.
 
-GREEN SCREEN IS MANDATORY: flat pure chroma-key green #00FF00 background only, even solid green, no black, no park, no grass, no shadows on the green, no props.
+CHARACTER: A friendly cartoon caramel dog (Brazilian "vira-lata caramelo" mixed breed), 2D clean vector animation illustration style with clear black contour line art and soft cell shading. Short golden-tan caramel coat, cream-white chest patch running down throat and belly, cream-white muzzle, dark chocolate-brown floppy drop ears, dark brown nose, expressive warm brown eyes. Standing athletic build, medium curved tail, no collar, no accessories. Full body standing in profile facing left at 3/4 angle.
 
-TIMING: about 10 seconds total, 24fps. Continuity structure (must follow this order):
-1) START (about 0-1.5s): dog standing in the EXACT same idle pose as the attached reference image.
-2) MIDDLE: dog clearly sits down (hind legs sit, front paws on ground), holds the sit briefly with gentle breathing.
-3) END (last 2-3 seconds): dog stands back up and RETURNS to the EXACT original standing idle pose of the reference image — same stance, same facing, same head height. Final frame must match the reference standing pose so the next video can continue seamlessly.
+BACKGROUND: Pure solid chroma-key green #00FF00 only, flat and completely shadowless from edge to edge with no ground, no floor gradient, no shadows, no scenery.
 
-No jumping, no lying flat, no spinning, no walking off frame. No human, no second animal, no collar, no accessories.
+ACTION: The dog remains in the exact same standing full-body idle pose for the entire 10-second clip. Gentle subtle breathing and very slight tail tip twitch only. First frame (0.0s) and last frame (10.0s) must match the exact standing pose for a seamless continuous loop.
 
-CAMERA: fixed eye-level, full body always in frame, dog centered. No camera move, no zoom, no cut, no text, no watermark, no UI.
-
-Output: 10s clip of the same dog: idle → sit → back to idle on pure #00FF00 green.
+CAMERA: Fixed static eye-level camera, dog centered in the middle of the frame, full body and all 4 paws always visible. No camera movement, no zoom, no pan, no cut.
 ```
 
 ---
 
-# VÍDEO 3 — Pular (e volta ao idle)
-
-**Anexar:** `dog_idle.png`  
-**Salvar:** `dog_jump.mp4`
-
-### Prompt (copiar tudo)
+### VÍDEO 2 — `dog_sentando.mp4` (Comando Sentar - 10s)
 
 ```text
-Image-to-video. Animate the EXACT dog from the attached reference image. Do NOT redesign the dog. Same identity, colors, proportions, markings, and 2D art style as the reference.
+REFERENCE & CONSISTENCY: Exact same character as the reference image dog_idle.png and the previous base idle prompt. Maintain 100% consistency with the same dog: identical facial features, body proportions, fur coloring, dark floppy drop ears, white chest patch, vector art style, and clean contour line art.
 
-GREEN SCREEN IS MANDATORY: flat pure chroma-key green #00FF00 background only, even solid green, no black, no park, no grass, no shadows on the green, no props.
+CHARACTER: A friendly cartoon caramel dog (Brazilian "vira-lata caramelo" mixed breed), 2D clean vector animation illustration style with clear black contour line art and soft cell shading. Short golden-tan caramel coat, cream-white chest patch running down throat and belly, cream-white muzzle, dark chocolate-brown floppy drop ears, dark brown nose, expressive warm brown eyes. Standing athletic build, medium curved tail, no collar, no accessories. Full body standing in profile facing left at 3/4 angle.
 
-TIMING: about 10 seconds total, 24fps. Continuity structure (must follow this order):
-1) START (about 0-1.5s): dog standing in the EXACT same idle pose as the attached reference image.
-2) MIDDLE: dog performs a clear joyful jump (paws leave the ground), then lands.
-3) END (last 2-3 seconds): dog RETURNS to the EXACT original standing idle pose of the reference image — same stance, same facing, same head height. Final frame must match the reference standing pose for seamless continuity.
+BACKGROUND: Pure solid chroma-key green #00FF00 only, flat and completely shadowless from edge to edge with no ground, no floor gradient, no shadows, no scenery.
 
-No sitting, no lying down, no spinning as main action, no walking off frame. No human, no second animal, no collar, no accessories.
+TIMING & CONTINUITY:
+1) START (0.0s - 2.0s): Starts in the exact standard standing idle pose facing left, identical to dog_idle.
+2) ACTION (2.0s - 7.0s): Dog smoothly sits down on its hind legs (front paws firmly on ground), comfortably holds the sit pose with an attentive look.
+3) END (7.0s - 10.0s): Dog smoothly stands back up to the exact standing idle pose, holding the calm breathing idle loop until the final frame (10.0s).
 
-CAMERA: fixed eye-level, full body always in frame, dog centered. No camera move, no zoom, no cut, no text, no watermark, no UI.
-
-Output: 10s clip of the same dog: idle → jump → back to idle on pure #00FF00 green.
+CAMERA: Fixed static eye-level camera, dog centered in the middle of the frame, full body always visible. No zoom, no camera movement, no cut.
 ```
 
 ---
 
-# VÍDEO 4 — Deitar (e volta ao idle)
-
-**Anexar:** `dog_idle.png`  
-**Salvar:** `dog_lay.mp4`
-
-### Prompt (copiar tudo)
+### VÍDEO 3 — `dog_pulando.mp4` (Comando Pular - 10s)
 
 ```text
-Image-to-video. Animate the EXACT dog from the attached reference image. Do NOT redesign the dog. Same identity, colors, proportions, markings, and 2D art style as the reference.
+REFERENCE & CONSISTENCY: Exact same character as the reference image dog_idle.png and the previous base idle prompt. Maintain 100% consistency with the same dog: identical facial features, body proportions, fur coloring, dark floppy drop ears, white chest patch, vector art style, and clean contour line art.
 
-GREEN SCREEN IS MANDATORY: flat pure chroma-key green #00FF00 background only, even solid green, no black, no park, no grass, no shadows on the green, no props.
+CHARACTER: A friendly cartoon caramel dog (Brazilian "vira-lata caramelo" mixed breed), 2D clean vector animation illustration style with clear black contour line art and soft cell shading. Short golden-tan caramel coat, cream-white chest patch running down throat and belly, cream-white muzzle, dark chocolate-brown floppy drop ears, dark brown nose, expressive warm brown eyes. Standing athletic build, medium curved tail, no collar, no accessories. Full body standing in profile facing left at 3/4 angle.
 
-TIMING: about 10 seconds total, 24fps. Continuity structure (must follow this order):
-1) START (about 0-1.5s): dog standing in the EXACT same idle pose as the attached reference image.
-2) MIDDLE: dog lies down (down command: belly/chest low, relaxed), holds briefly.
-3) END (last 2-3 seconds): dog stands back up and RETURNS to the EXACT original standing idle pose of the reference image — same stance, same facing, same head height. Final frame must match the reference standing pose for seamless continuity.
+BACKGROUND: Pure solid chroma-key green #00FF00 only, flat and completely shadowless from edge to edge with no ground, no floor gradient, no shadows, no scenery.
 
-No jumping, no spinning, no walking off frame. No human, no second animal, no collar, no accessories.
+TIMING & CONTINUITY:
+1) START (0.0s - 2.0s): Starts in the exact standard standing idle pose facing left, identical to dog_idle.
+2) ACTION (2.0s - 7.0s): Dog prepares, performs a joyful vertical jump with all paws leaving the ground, reaches jump apex, and lands smoothly back on its four paws, stabilizing comfortably.
+3) END (7.0s - 10.0s): Dog returns to the exact standing idle pose, holding the calm breathing idle loop until the final frame (10.0s).
 
-CAMERA: fixed eye-level, full body always in frame, dog centered. No camera move, no zoom, no cut, no text, no watermark, no UI.
-
-Output: 10s clip of the same dog: idle → lie down → back to idle on pure #00FF00 green.
+CAMERA: Fixed static eye-level camera, dog centered in the middle of the frame, full body always visible throughout jump. No zoom, no camera movement, no cut.
 ```
 
 ---
 
-# VÍDEO 5 — Petisco + feliz (e volta ao idle)
-
-**Anexar:** `dog_idle.png`  
-**Salvar:** `dog_happy.mp4`  
-
-**App:** só dá play (petisco já está no vídeo).
-
-### Prompt (copiar tudo)
+### VÍDEO 4 — `dog_deitando.mp4` (Comando Deitar - 10s)
 
 ```text
-Image-to-video. Animate the EXACT dog from the attached reference image. Do NOT redesign the dog. Same identity, colors, proportions, markings, and 2D art style as the reference.
+REFERENCE & CONSISTENCY: Exact same character as the reference image dog_idle.png and the previous base idle prompt. Maintain 100% consistency with the same dog: identical facial features, body proportions, fur coloring, dark floppy drop ears, white chest patch, vector art style, and clean contour line art.
 
-GREEN SCREEN IS MANDATORY: flat pure chroma-key green #00FF00 background only, even solid green, no black, no park, no grass, no shadows on the green, no props.
+CHARACTER: A friendly cartoon caramel dog (Brazilian "vira-lata caramelo" mixed breed), 2D clean vector animation illustration style with clear black contour line art and soft cell shading. Short golden-tan caramel coat, cream-white chest patch running down throat and belly, cream-white muzzle, dark chocolate-brown floppy drop ears, dark brown nose, expressive warm brown eyes. Standing athletic build, medium curved tail, no collar, no accessories. Full body standing in profile facing left at 3/4 angle.
 
-TIMING: about 10 seconds total, 24fps. Continuity structure (must follow this order):
-1) START (about 0-1.5s): dog standing in the EXACT same idle pose as the attached reference image, attentive.
-2) MIDDLE reward sequence:
-   - A small brown/tan dog biscuit flies in from the FRONT as if thrown through the screen by an off-camera tutor (no hand, no human body visible).
-   - The dog catches it, chews once or twice, swallows.
-   - The dog becomes super happy: cheerful face, strong continuous tail wag, slight happy bounce.
-3) END (last 2-3 seconds): happiness calms down and the dog RETURNS to the EXACT original standing idle pose of the reference image — same stance, same facing, same head height, calm again. Final frame must match the reference standing pose for seamless continuity.
+BACKGROUND: Pure solid chroma-key green #00FF00 only, flat and completely shadowless from edge to edge with no ground, no floor gradient, no shadows, no scenery.
 
-No sitting, no lying down, no spinning, no walking off frame. No bowl. No second animal. No human visible. No collar.
+TIMING & CONTINUITY:
+1) START (0.0s - 2.0s): Starts in the exact standard standing idle pose facing left, identical to dog_idle.
+2) ACTION (2.0s - 7.0s): Dog smoothly lies down flat on its belly in a relaxed posture with front paws extended, resting calmly in the lie-down pose.
+3) END (7.0s - 10.0s): Dog pushes up and stands back up to the exact standing idle pose, holding the calm breathing idle loop until the final frame (10.0s).
 
-CAMERA: fixed eye-level, full body always in frame, dog centered. No camera move, no zoom, no cut, no text, no watermark, no UI.
-
-Output: 10s clip of the same dog: idle → catch treat → celebrate → back to idle on pure #00FF00 green.
+CAMERA: Fixed static eye-level camera, dog centered in the middle of the frame, full body always visible. No zoom, no camera movement, no cut.
 ```
 
 ---
 
-# VÍDEO 6 — Sem petisco / triste gentil (e volta ao idle)
-
-**Anexar:** `dog_idle.png`  
-**Salvar:** `dog_sad.mp4`
-
-### Prompt (copiar tudo)
+### VÍDEO 5 — `dog_recebendo_petisco.mp4` (Feedback Positivo / Recompensa - 10s)
 
 ```text
-Image-to-video. Animate the EXACT dog from the attached reference image. Do NOT redesign the dog. Same identity, colors, proportions, markings, and 2D art style as the reference.
+REFERENCE & CONSISTENCY: Exact same character as the reference image dog_idle.png and the previous base idle prompt. Maintain 100% consistency with the same dog: identical facial features, body proportions, fur coloring, dark floppy drop ears, white chest patch, vector art style, and clean contour line art.
 
-GREEN SCREEN IS MANDATORY: flat pure chroma-key green #00FF00 background only, even solid green, no black, no park, no grass, no shadows on the green, no props.
+CHARACTER: A friendly cartoon caramel dog (Brazilian "vira-lata caramelo" mixed breed), 2D clean vector animation illustration style with clear black contour line art and soft cell shading. Short golden-tan caramel coat, cream-white chest patch running down throat and belly, cream-white muzzle, dark chocolate-brown floppy drop ears, dark brown nose, expressive warm brown eyes. Standing athletic build, medium curved tail, no collar, no accessories. Full body standing in profile facing left at 3/4 angle.
 
-TIMING: about 10 seconds total, 24fps. Continuity structure (must follow this order):
-1) START (about 0-1.5s): dog standing in the EXACT same idle pose as the attached reference image.
-2) MIDDLE: gentle disappointment (no treat) — head slightly down, soft sad expression, tail low, calm not-this-time body language. NO fear, NO pain, NO tears, NO abuse tone. Hold this mood briefly.
-3) END (last 2-3 seconds): mood softens and the dog RETURNS to the EXACT original standing idle pose of the reference image — same stance, same facing, same head height, neutral again. Final frame must match the reference standing pose for seamless continuity.
+BACKGROUND: Pure solid chroma-key green #00FF00 only, flat and completely shadowless from edge to edge with no ground, no floor gradient, no shadows, no scenery.
 
-No sitting, no lying down, no jumping, no spinning. No human, no second animal, no collar, no accessories.
+TIMING & CONTINUITY:
+1) START (0.0s - 2.0s): Starts in the exact standard standing idle pose facing left, identical to dog_idle.
+2) ACTION (2.0s - 7.0s): A small bone-shaped dog biscuit flies in from the front, dog catches it, chews and swallows happily, wagging its tail joyfully.
+3) END (7.0s - 10.0s): Excitement calms down and the dog returns to the exact standing idle pose, holding the calm breathing idle loop until the final frame (10.0s).
 
-CAMERA: fixed eye-level, full body always in frame, dog centered. No camera move, no zoom, no cut, no text, no watermark, no UI.
-
-Output: 10s clip of the same dog: idle → gently sad → back to idle on pure #00FF00 green.
+CAMERA: Fixed static eye-level camera, dog centered in the middle of the frame, full body always visible. No zoom, no camera movement, no cut.
 ```
 
 ---
 
-## Continuidade no app (depois)
+### VÍDEO 6 — `dog_sem_petisco.mp4` (Feedback Negativo / Petisco Retido - 10s)
 
 ```text
-Estado idle      → dog_idle.mp4 (loop)
-Comando Sentar   → dog_sit.mp4 (play uma vez; fim = idle)
-Comando Pular    → dog_jump.mp4
-Comando Deitar   → dog_lay.mp4
-Dar petisco      → dog_happy.mp4
-Sem petisco      → dog_sad.mp4
-Quando o vídeo de ação termina → volta para dog_idle.mp4
+REFERENCE & CONSISTENCY: Exact same character as the reference image dog_idle.png and the previous base idle prompt. Maintain 100% consistency with the same dog: identical facial features, body proportions, fur coloring, dark floppy drop ears, white chest patch, vector art style, and clean contour line art.
+
+CHARACTER: A friendly cartoon caramel dog (Brazilian "vira-lata caramelo" mixed breed), 2D clean vector animation illustration style with clear black contour line art and soft cell shading. Short golden-tan caramel coat, cream-white chest patch running down throat and belly, cream-white muzzle, dark chocolate-brown floppy drop ears, dark brown nose, expressive warm brown eyes. Standing athletic build, medium curved tail, no collar, no accessories. Full body standing in profile facing left at 3/4 angle.
+
+BACKGROUND: Pure solid chroma-key green #00FF00 only, flat and completely shadowless from edge to edge with no ground, no floor gradient, no shadows, no scenery.
+
+TIMING & CONTINUITY:
+1) START (0.0s - 2.0s): Starts in the exact standard standing idle pose facing left, identical to dog_idle.
+2) ACTION (2.0s - 7.0s): Dog displays a gentle disappointment expression (head tilts slightly down, sad puppy eyes, tail lowers, calm not-this-time reaction), holding the calm expression.
+3) END (7.0s - 10.0s): Mood softens and dog lifts its head back up to the exact standing idle pose, holding the calm breathing idle loop until the final frame (10.0s).
+
+CAMERA: Fixed static eye-level camera, dog centered in the middle of the frame, full body always visible. No zoom, no camera movement, no cut.
 ```
 
-Como cada ação **termina em idle**, a troca para `dog_idle.mp4` fica natural.
+---
 
-## Checklist por vídeo
+## 📁 Onde Salvar os Arquivos Gerados
 
-- [ ] Mesmo dog da referência  
-- [ ] Fundo verde `#00FF00` (não preto)  
-- [ ] ~10 segundos  
-- [ ] Começa em idle da referência  
-- [ ] Faz a ação  
-- [ ] **Termina de novo no idle da referência**  
-- [ ] Corpo inteiro, câmera fixa  
-
-## Pasta (igual estratégia do áudio)
-
-MP4 ficam em **`public/videos/`** (e no bucket `videos` com a mesma árvore).  
-PNG de referência e cenário ficam em `public/imagens/treinador/`.
-
+Coloque os arquivos `.mp4` na pasta:
 ```text
-public/videos/treinador/         ← local (= espelho do bucket)
-  dog_idle.mp4
-  dog_sentando.mp4
-  dog_pulando.mp4
-  dog_deitando.mp4
-  dog_recebendo_petisco.mp4
-  dog_sem_petisco.mp4
-
-public/imagens/treinador/
-  dog_idle.png                   ← referência de geração
-  bg_park.png
-  prompt_video_dog.md
+public/videos/treinador/
+  ├── dog_idle.mp4
+  ├── dog_sentando.mp4
+  ├── dog_pulando.mp4
+  ├── dog_deitando.mp4
+  ├── dog_recebendo_petisco.mp4
+  └── dog_sem_petisco.mp4
 ```
-
-Bucket Supabase (pasta que você criou):
-
-```text
-https://…/object/public/videos/treinador
-  dog_idle.mp4
-  dog_sentando.mp4
-  …
-```
-
-Env (raiz do bucket `videos`, **sem** `/treinador` no final):
-
-```env
-VITE_VIDEO_BASE_URL=https://ilvwvrjixrjqldwaccgj.supabase.co/storage/v1/object/public/videos
-```
-
-Ver `public/videos/README.md` e `src/servicos/midia/gerenciadorVideoTreinador.ts`.
+*(E suba os mesmos arquivos para o seu bucket `videos/treinador/` no Supabase Storage se utilizar a URL remota).*
