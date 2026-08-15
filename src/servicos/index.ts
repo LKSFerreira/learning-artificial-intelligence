@@ -18,8 +18,11 @@ export {
   obterCandidatosUrlPorEstadoCao,
   MAPA_ESTADO_PARA_VIDEO_CAO,
   PASTA_VIDEO_CAO,
+  PASTA_VIDEO_PADRAO,
 } from './midia/gerenciadorVideoTreinador';
 export type {
   IdVideoCao,
   EstadoVisualCao,
+  VersaoVideoTreinador,
 } from './midia/gerenciadorVideoTreinador';
+

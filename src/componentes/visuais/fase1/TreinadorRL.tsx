@@ -10,7 +10,15 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Bone, Dog, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import {
+  Bone,
+  Dog,
+  Film,
+  Play,
+  RotateCcw,
+  Sparkles,
+  XCircle,
+} from "lucide-react";
 import {
   ACOES,
   ACOES_PASSADO,
@@ -24,9 +32,40 @@ import {
 } from "./treinador/tipos";
 import { CenarioTreinadorDog } from "./treinador/CenarioTreinadorDog";
 import { PainelPreferencias } from "./treinador/PainelPreferencias";
+import {
+  PASTA_VIDEO_PADRAO,
+  type IdVideoCao,
+  type VersaoVideoTreinador,
+} from "../../../servicos/midia/gerenciadorVideoTreinador";
 
 const CAP_MAXIMO = 0.98;
 const TAXA_APRENDIZADO = 0.18; // 33.33% -> 44.97% -> 54.51% -> 62.34%...
+const CHAVE_STORAGE_TREINADOR = "aprendendo_ia_treinador_dog_v1";
+const CHAVE_STORAGE_VERSAO_VIDEO = "aprendendo_ia_versao_video_treinador";
+
+const CLIPS_TESTE: {
+  id: IdVideoCao;
+  rotulo: string;
+  emoji: string;
+  arquivo: string;
+}[] = [
+  { id: "dog_idle", rotulo: "Idle", emoji: "🐕", arquivo: "dog_idle.mp4" },
+  { id: "dog_sentando", rotulo: "Sentar", emoji: "🪑", arquivo: "dog_sentando.mp4" },
+  { id: "dog_pulando", rotulo: "Pular", emoji: "🦘", arquivo: "dog_pulando.mp4" },
+  { id: "dog_deitando", rotulo: "Deitar", emoji: "🛌", arquivo: "dog_deitando.mp4" },
+  {
+    id: "dog_recebendo_petisco",
+    rotulo: "Com Petisco",
+    emoji: "🍖",
+    arquivo: "dog_recebendo_petisco.mp4",
+  },
+  {
+    id: "dog_sem_petisco",
+    rotulo: "Sem Petisco",
+    emoji: "❌",
+    arquivo: "dog_sem_petisco.mp4",
+  },
+];
 
 function amostrarAcaoComando(comando: Acao, dominio: DominioComandos): Acao {
   const probAcerto = dominio[comando];
@@ -37,8 +76,6 @@ function amostrarAcaoComando(comando: Acao, dominio: DominioComandos): Acao {
   const outrasAcoes = ACOES.filter((a) => a !== comando);
   return outrasAcoes[Math.floor(Math.random() * outrasAcoes.length)]!;
 }
-
-const CHAVE_STORAGE_TREINADOR = "aprendendo_ia_treinador_dog_v1";
 
 interface EstadoTreinadorSalvo {
   dominio: DominioComandos;
@@ -85,8 +122,21 @@ function carregarEstadoSalvo(): EstadoTreinadorSalvo {
   };
 }
 
+function carregarVersaoSalva(): VersaoVideoTreinador {
+  try {
+    const salva = localStorage.getItem(CHAVE_STORAGE_VERSAO_VIDEO);
+    if (salva === "treinador" || salva === "treinador v2") {
+      return salva;
+    }
+  } catch {
+    // Ignora
+  }
+  return PASTA_VIDEO_PADRAO;
+}
+
 export function TreinadorRL(): React.ReactElement {
   const [estadoInicial] = useState(carregarEstadoSalvo);
+  const [versaoVideo, setVersaoVideo] = useState<VersaoVideoTreinador>(carregarVersaoSalva);
   const [dominio, setDominio] = useState<DominioComandos>(estadoInicial.dominio);
   const [comando, setComando] = useState<Acao | null>(null);
   const [acaoCao, setAcaoCao] = useState<Acao | null>(null);
@@ -101,9 +151,21 @@ export function TreinadorRL(): React.ReactElement {
       : "Você treina o cão. Escolha um comando; depois dê petisco ou não (sem punir).",
   );
 
+  // Modo de teste direto de animações
+  const [clipTesteAtivo, setClipTesteAtivo] = useState<IdVideoCao | null>(null);
+
   const refTimeoutDecisao = useRef<number | null>(null);
 
-  // Efeito para persistir no localStorage sempre que houver progresso
+  // Persiste versão de vídeo
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHAVE_STORAGE_VERSAO_VIDEO, versaoVideo);
+    } catch {
+      // Ignora
+    }
+  }, [versaoVideo]);
+
+  // Persiste progresso no localStorage sempre que houver progresso
   useEffect(() => {
     try {
       const payload: EstadoTreinadorSalvo = {
@@ -128,6 +190,9 @@ export function TreinadorRL(): React.ReactElement {
   }, []);
 
   const emitirComando = (acaoComando: Acao) => {
+    if (clipTesteAtivo) {
+      setClipTesteAtivo(null);
+    }
     if (etapa !== "escolher_comando") return;
 
     if (refTimeoutDecisao.current !== null) {
@@ -186,7 +251,6 @@ export function TreinadorRL(): React.ReactElement {
           const pAtual = proximo[comando];
           proximo[comando] = Math.max(pAtual - 0.1 * (pAtual - 0.05), 0.05);
         }
-        // Se errou e não ganhou petisco: NENHUMA taxa altera (os outros comandos permanecem intocados)
       }
       return proximo;
     });
@@ -224,6 +288,22 @@ export function TreinadorRL(): React.ReactElement {
     );
   };
 
+  const selecionarClipTeste = (idClip: IdVideoCao) => {
+    if (refTimeoutDecisao.current !== null) {
+      window.clearTimeout(refTimeoutDecisao.current);
+    }
+    setClipTesteAtivo(idClip);
+    const itemClip = CLIPS_TESTE.find((c) => c.id === idClip);
+    setNarracao(
+      `🧪 Testando vídeo: "${itemClip?.rotulo ?? idClip}" (${itemClip?.arquivo}) na pasta "${versaoVideo}".`,
+    );
+  };
+
+  const voltarParaModoTreino = () => {
+    setClipTesteAtivo(null);
+    setNarracao("Modo de treino por reforço ativo. Selecione um comando abaixo.");
+  };
+
   const resetarTreino = () => {
     if (refTimeoutDecisao.current !== null) {
       window.clearTimeout(refTimeoutDecisao.current);
@@ -233,6 +313,7 @@ export function TreinadorRL(): React.ReactElement {
     } catch {
       // Ignora
     }
+    setClipTesteAtivo(null);
     setDominio(DOMINIO_INICIAL);
     setComando(null);
     setAcaoCao(null);
@@ -248,40 +329,79 @@ export function TreinadorRL(): React.ReactElement {
 
   return (
     <div className="treinador-rl flex flex-col h-full w-full bg-slate-950 text-slate-200 p-4 gap-3 overflow-y-auto">
-      {/* Topo com Estatísticas e Título */}
-      <div className="shrink-0 flex flex-wrap justify-between items-center gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 shadow-md">
+      {/* Topo com Estatísticas, Seleção de Versão e Título */}
+      <div className="shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 shadow-md">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
             <Dog size={24} />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              Treino por Reforço Positivo
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-white">
+                Treino por Reforço Positivo
+              </h3>
+              {/* Badge da Versão do Vídeo */}
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide border ${
+                  versaoVideo === "treinador v2"
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                    : "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
+                }`}
+              >
+                {versaoVideo === "treinador v2" ? "Vídeos v2 (Novos)" : "Vídeos v1"}
+              </span>
+            </div>
             <p className="text-xs text-slate-400">
               Você é o tutor (ambiente). Dê ou não o petisco para moldar a política do cão.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex gap-4 text-xs font-medium">
-            <div className="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
-              <span className="text-slate-400 mr-1.5">Rodadas:</span>
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          {/* Seletor de Versão de Vídeo */}
+          <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+            <button
+              type="button"
+              onClick={() => setVersaoVideo("treinador v2")}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                versaoVideo === "treinador v2"
+                  ? "bg-amber-500 text-slate-950 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+              title="Pasta public/videos/treinador v2"
+            >
+              v2 (Novo)
+            </button>
+            <button
+              type="button"
+              onClick={() => setVersaoVideo("treinador")}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                versaoVideo === "treinador"
+                  ? "bg-slate-700 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+              title="Pasta public/videos/treinador (v1)"
+            >
+              v1 (Atual)
+            </button>
+          </div>
+
+          <div className="flex gap-2 text-xs font-medium">
+            <div className="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 mr-1">R:</span>
               <strong className="text-slate-100 tabular-nums">{rodadas}</strong>
             </div>
-            <div className="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
-              <span className="text-slate-400 mr-1.5">Acertos:</span>
+            <div className="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 mr-1">Acertos:</span>
               <strong className="text-emerald-400 tabular-nums">{acertos}</strong>
             </div>
-            <div className="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
-              <span className="text-slate-400 mr-1.5">Pontos de Treino:</span>
+            <div className="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
               <strong
                 className={`tabular-nums font-bold ${
                   pontos >= 0 ? "text-sky-400" : "text-rose-400"
                 }`}
               >
-                {pontos > 0 ? `+${pontos}` : pontos}
+                {pontos > 0 ? `+${pontos}` : pontos} pts
               </strong>
             </div>
           </div>
@@ -290,11 +410,51 @@ export function TreinadorRL(): React.ReactElement {
             type="button"
             onClick={resetarTreino}
             title="Reiniciar Treino"
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors shrink-0"
           >
             <RotateCcw size={16} />
           </button>
         </div>
+      </div>
+
+      {/* BARRA DE TESTE DIRETO DE VÍDEOS */}
+      <div className="shrink-0 flex flex-wrap items-center gap-2 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800/80">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 mr-1">
+          <Film size={14} />
+          <span>Testar Vídeos ({versaoVideo}):</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 flex-1">
+          {CLIPS_TESTE.map((clip) => {
+            const ehAtivo = clipTesteAtivo === clip.id;
+            return (
+              <button
+                key={clip.id}
+                type="button"
+                onClick={() => selecionarClipTeste(clip.id)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+                  ehAtivo
+                    ? "bg-amber-400 text-slate-950 shadow-md font-bold ring-2 ring-amber-300/40"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                }`}
+              >
+                <span>{clip.emoji}</span>
+                <span>{clip.rotulo}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {clipTesteAtivo && (
+          <button
+            type="button"
+            onClick={voltarParaModoTreino}
+            className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-all animate-pulse"
+          >
+            <Play size={12} />
+            <span>Voltar ao Jogo RL</span>
+          </button>
+        )}
       </div>
 
       {/* COMPONENTE ISOLADO: Palco de Animação e Cenário */}
@@ -304,6 +464,9 @@ export function TreinadorRL(): React.ReactElement {
         etapa={etapa}
         feedback={feedback}
         narracao={narracao}
+        versaoVideo={versaoVideo}
+        clipPreview={clipTesteAtivo}
+        loopPreview={clipTesteAtivo ? true : undefined}
         onFeedbackVideoTerminou={aoTerminarVideoFeedback}
       />
 
@@ -312,74 +475,96 @@ export function TreinadorRL(): React.ReactElement {
 
       {/* Painel de Controles do Usuário (Tutor com altura fixa estabilizada) */}
       <div className="shrink-0 mt-1 h-20 flex flex-col justify-center">
-        {etapa === "escolher_comando" && (
-          <div className="flex flex-col gap-2">
-            <span className="text-xs text-amber-300/90 font-semibold flex items-center gap-1.5">
-              <Sparkles size={14} className="text-amber-400" />
-              Selecione o Comando para o Cão:
-            </span>
-            <div className="grid grid-cols-3 gap-2.5">
-              {ACOES.map((acao) => (
-                <button
-                  key={acao}
-                  type="button"
-                  onClick={() => emitirComando(acao)}
-                  className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/30 active:scale-[0.98] transition-all"
-                >
-                  {ROTULOS[acao]}
-                </button>
-              ))}
+        {clipTesteAtivo ? (
+          <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span className="text-lg">🎬</span>
+              <span>
+                Visualizando clipe <strong>{clipTesteAtivo}.mp4</strong> da pasta{" "}
+                <strong>{versaoVideo}</strong> em repetição contínua.
+              </span>
             </div>
-          </div>
-        )}
-
-        {etapa === "decidindo" && (
-          <div className="h-14 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-center text-slate-300 text-sm font-medium animate-pulse">
-            🐕 O cão está decidindo a ação com base em suas preferências...
-          </div>
-        )}
-
-        {etapa === "avaliar" && (
-          <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => aplicarConsequencia("petisco")}
-              className="flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/40 border border-emerald-400/30 active:scale-[0.98] transition-all"
+              onClick={voltarParaModoTreino}
+              className="py-1.5 px-4 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-sm transition-all"
             >
-              <Bone size={18} className="text-emerald-100 shrink-0" />
-              <span>Recompensa - Dar Petisco</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => aplicarConsequencia("sem_petisco")}
-              className="flex-1 py-3.5 px-4 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 text-rose-200 font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-slate-950/40 border border-rose-800/60 active:scale-[0.98] transition-all"
-            >
-              <XCircle size={18} className="text-rose-400 shrink-0" />
-              <span>Sem Recompensa - Sem Petisco</span>
+              Retornar ao Treino Interativo
             </button>
           </div>
-        )}
-
-        {etapa === "feedback" && (
-          <div
-            className={`h-14 rounded-xl flex items-center justify-center text-sm font-bold border shadow-inner ${
-              feedback === "petisco"
-                ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-200"
-                : "bg-rose-500/20 border-rose-500/40 text-rose-200"
-            }`}
-          >
-            {feedback === "petisco" ? (
-              <span className="flex items-center gap-2">
-                <Bone size={18} className="text-emerald-400" /> Recompensa Entregue! (+Reforço Positivo)
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <XCircle size={18} className="text-rose-400" /> Sem Recompensa (Petisco Retido)
-              </span>
+        ) : (
+          <>
+            {etapa === "escolher_comando" && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs text-amber-300/90 font-semibold flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-amber-400" />
+                  Selecione o Comando para o Cão:
+                </span>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {ACOES.map((acao) => (
+                    <button
+                      key={acao}
+                      type="button"
+                      onClick={() => emitirComando(acao)}
+                      className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/30 active:scale-[0.98] transition-all"
+                    >
+                      {ROTULOS[acao]}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
+
+            {etapa === "decidindo" && (
+              <div className="h-14 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-center text-slate-300 text-sm font-medium animate-pulse">
+                🐕 O cão está decidindo a ação com base em suas preferências...
+              </div>
+            )}
+
+            {etapa === "avaliar" && (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => aplicarConsequencia("petisco")}
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/40 border border-emerald-400/30 active:scale-[0.98] transition-all"
+                >
+                  <Bone size={18} className="text-emerald-100 shrink-0" />
+                  <span>Recompensa - Dar Petisco</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => aplicarConsequencia("sem_petisco")}
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 text-rose-200 font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-slate-950/40 border border-rose-800/60 active:scale-[0.98] transition-all"
+                >
+                  <XCircle size={18} className="text-rose-400 shrink-0" />
+                  <span>Sem Recompensa - Sem Petisco</span>
+                </button>
+              </div>
+            )}
+
+            {etapa === "feedback" && (
+              <div
+                className={`h-14 rounded-xl flex items-center justify-center text-sm font-bold border shadow-inner ${
+                  feedback === "petisco"
+                    ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-200"
+                    : "bg-rose-500/20 border-rose-500/40 text-rose-200"
+                }`}
+              >
+                {feedback === "petisco" ? (
+                  <span className="flex items-center gap-2">
+                    <Bone size={18} className="text-emerald-400" /> Recompensa Entregue! (+Reforço Positivo)
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <XCircle size={18} className="text-rose-400" /> Sem Recompensa (Petisco Retido)
+                  </span>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
+

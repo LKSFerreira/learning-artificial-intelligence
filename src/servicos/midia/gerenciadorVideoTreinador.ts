@@ -3,24 +3,18 @@
  *
  * Layout (local e bucket):
  *   {BASE}/treinador/{arquivo}.mp4
+ *   {BASE}/treinador v2/{arquivo}.mp4
  *
- * - Com `VITE_VIDEO_BASE_URL`: tenta remoto e depois local.
+ * - Com `VITE_VIDEO_BASE_URL`: tenta remoto e depois local (ou local primeiro para v2 em teste).
  * - Sem env: só local em `public/videos/`.
- *
- * Exemplo remoto (Supabase Storage bucket público `videos`):
- *   VITE_VIDEO_BASE_URL=https://PROJ.supabase.co/storage/v1/object/public/videos
- *   → …/videos/treinador/dog_idle.mp4
- *
- * Pasta no bucket (a que você criou):
- *   https://…/object/public/videos/treinador
- *
- * Local:
- *   /videos/treinador/dog_idle.mp4
- *   → public/videos/treinador/dog_idle.mp4
  */
 
-/** Pasta relativa fixa dos clips do cão (sem barra inicial/final). */
-export const PASTA_VIDEO_CAO = "treinador";
+/** Versões disponíveis de vídeo do cão. */
+export type VersaoVideoTreinador = "treinador" | "treinador v2";
+
+/** Pasta padrão ativa dos clips do cão (v2 por padrão para testes). */
+export const PASTA_VIDEO_PADRAO: VersaoVideoTreinador = "treinador v2";
+export const PASTA_VIDEO_CAO: string = PASTA_VIDEO_PADRAO;
 
 /** Ações de vídeo do cão (nomes de arquivo sem extensão). */
 export type IdVideoCao =
@@ -53,19 +47,24 @@ export function obterCaminhoVideoLocal(caminhoRelativo: string): string {
 
 /**
  * Caminho local de um clip do cão.
- * Ex.: `/videos/treinador/cao/dog_idle.mp4`
  */
-export function obterCaminhoVideoCaoLocal(idVideo: IdVideoCao): string {
-  return obterCaminhoVideoLocal(`${PASTA_VIDEO_CAO}/${idVideo}.mp4`);
+export function obterCaminhoVideoCaoLocal(
+  idVideo: IdVideoCao,
+  pasta: string = PASTA_VIDEO_PADRAO,
+): string {
+  return obterCaminhoVideoLocal(`${pasta}/${idVideo}.mp4`);
 }
 
 /**
  * Lista de URLs a tentar, em ordem de preferência.
  *
- * 1. CDN/Supabase (`VITE_VIDEO_BASE_URL`), se configurada
- * 2. Arquivo local em `public/videos` (dev / ainda não subido)
+ * Quando em desenvolvimento ou para pastas em teste (como "treinador v2"),
+ * priorizamos o arquivo local para resposta instantânea.
  */
-export function obterCandidatosUrlVideo(caminhoRelativo: string): string[] {
+export function obterCandidatosUrlVideo(
+  caminhoRelativo: string,
+  priorizarLocal = false,
+): string[] {
   const limpo = caminhoRelativo.replace(/^\/+/, "");
   const local = obterCaminhoVideoLocal(limpo);
   const base = obterBaseVideo();
@@ -79,23 +78,35 @@ export function obterCandidatosUrlVideo(caminhoRelativo: string): string[] {
     return [local];
   }
 
+  // Se for teste v2 ou sinalizado para priorizar local, tenta local primeiro
+  if (priorizarLocal || limpo.startsWith("treinador v2")) {
+    return [local, remoto];
+  }
+
   return [remoto, local];
 }
 
 /**
- * Candidatos para um clip do cão.
+ * Candidatos para um clip do cão com suporte a versão configurável.
  */
-export function obterCandidatosUrlVideoCao(idVideo: IdVideoCao): string[] {
-  const padrao = obterCandidatosUrlVideo(`${PASTA_VIDEO_CAO}/${idVideo}.mp4`);
+export function obterCandidatosUrlVideoCao(
+  idVideo: IdVideoCao,
+  pasta: string = PASTA_VIDEO_PADRAO,
+): string[] {
+  const priorizarLocal = pasta === "treinador v2";
+  const padrao = obterCandidatosUrlVideo(`${pasta}/${idVideo}.mp4`, priorizarLocal);
+
   if (idVideo === "dog_recebendo_petisco") {
     const comPestisco = obterCandidatosUrlVideo(
-      `${PASTA_VIDEO_CAO}/dog_recebendo_pestisco.mp4`,
+      `${pasta}/dog_recebendo_pestisco.mp4`,
+      priorizarLocal,
     );
     return [...padrao, ...comPestisco];
   }
   if (idVideo === "dog_sem_petisco") {
     const comPestisco = obterCandidatosUrlVideo(
-      `${PASTA_VIDEO_CAO}/dog_sem_pestisco.mp4`,
+      `${pasta}/dog_sem_pestisco.mp4`,
+      priorizarLocal,
     );
     return [...padrao, ...comPestisco];
   }
@@ -105,8 +116,11 @@ export function obterCandidatosUrlVideoCao(idVideo: IdVideoCao): string[] {
 /**
  * URL preferida (primeiro candidato).
  */
-export function obterUrlVideoCao(idVideo: IdVideoCao): string {
-  return obterCandidatosUrlVideoCao(idVideo)[0]!;
+export function obterUrlVideoCao(
+  idVideo: IdVideoCao,
+  pasta: string = PASTA_VIDEO_PADRAO,
+): string {
+  return obterCandidatosUrlVideoCao(idVideo, pasta)[0]!;
 }
 
 /**
@@ -125,14 +139,17 @@ export type EstadoVisualCao = keyof typeof MAPA_ESTADO_PARA_VIDEO_CAO;
 
 export function obterCandidatosUrlPorEstadoCao(
   estado: EstadoVisualCao,
+  pasta: string = PASTA_VIDEO_PADRAO,
 ): string[] {
-  return obterCandidatosUrlVideoCao(MAPA_ESTADO_PARA_VIDEO_CAO[estado]);
+  return obterCandidatosUrlVideoCao(MAPA_ESTADO_PARA_VIDEO_CAO[estado], pasta);
 }
 
 /**
  * Retorna todas as URLs de todos os estados dos vídeos para pré-carregamento.
  */
-export function obterTodasUrlsVideosTreinador(): string[] {
+export function obterTodasUrlsVideosTreinador(
+  pasta: string = PASTA_VIDEO_PADRAO,
+): string[] {
   const estados: EstadoVisualCao[] = [
     "idle",
     "sentar",
@@ -143,7 +160,7 @@ export function obterTodasUrlsVideosTreinador(): string[] {
   ];
   const urls: string[] = [];
   for (const estado of estados) {
-    const candidatos = obterCandidatosUrlPorEstadoCao(estado);
+    const candidatos = obterCandidatosUrlPorEstadoCao(estado, pasta);
     for (const url of candidatos) {
       if (!urls.includes(url)) {
         urls.push(url);
@@ -152,4 +169,5 @@ export function obterTodasUrlsVideosTreinador(): string[] {
   }
   return urls;
 }
+
 
