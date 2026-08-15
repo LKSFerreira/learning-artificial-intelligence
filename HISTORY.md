@@ -4,6 +4,19 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-08-15 — Suporte e Teste dos Novos Vídeos v2 do Treinador RL (`TreinadorRL.tsx` / `gerenciadorVideoTreinador.ts`) ✅
+
+- **Doc detalhada:** [.metadocs/implemented/treinador_videos_v2.md](.metadocs/implemented/treinador_videos_v2.md)
+- **Resolução e Priorização Local dos Vídeos v2:**
+  - Configurada a versão `treinador v2` (`public/videos/treinador v2/`) com priorização de carregamento local em desenvolvimento.
+  - Tipagem estrita com `VersaoVideoTreinador` (`"treinador" | "treinador v2"`) e persistência da preferência em `localStorage`.
+- **Barra de Teste Rápido de Animações:**
+  - Implementada barra de controles no cabeçalho do `TreinadorRL` para reproduzir e inspecionar imediatamente cada um dos 6 clipes (`dog_idle`, `dog_sentando`, `dog_pulando`, `dog_deitando`, `dog_recebendo_petisco`, `dog_sem_petisco`).
+  - Suporte a modo preview no `CenarioTreinadorDog.tsx` com chroma key adaptativo a 60 FPS e botão para alternar de volta ao modo de jogo RL interativo.
+- **Seletor de Versão (v2 vs v1):**
+  - Adicionado seletor visual no topo para alternância em tempo real entre vídeos antigos e novos.
+- **Validação:** Typecheck (`npx tsc --noEmit`), Build Vite (`npm run build`) e teste visual no navegador via subagente com 100% de sucesso.
+
 ### 2026-07-27 — Reformulação do Balão de Fala e Resiliência de Vídeos (`TreinadorRL.tsx` / `CenarioTreinadorDog.tsx`) ✅
 
 - **Remoção de Rótulos Explicativos Redundantes:** Eliminado o texto explicativo desnecessário `"Tutor (fora de cena)"` abaixo do balão de fala.
