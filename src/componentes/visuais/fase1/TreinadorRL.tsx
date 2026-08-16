@@ -13,8 +13,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Bone,
   Dog,
-  Film,
-  Play,
   RotateCcw,
   Sparkles,
   XCircle,
@@ -34,7 +32,6 @@ import { CenarioTreinadorDog } from "./treinador/CenarioTreinadorDog";
 import { PainelPreferencias } from "./treinador/PainelPreferencias";
 import {
   PASTA_VIDEO_PADRAO,
-  type IdVideoCao,
   type VersaoVideoTreinador,
 } from "../../../servicos/midia/gerenciadorVideoTreinador";
 
@@ -42,30 +39,6 @@ const CAP_MAXIMO = 0.98;
 const TAXA_APRENDIZADO = 0.18; // 33.33% -> 44.97% -> 54.51% -> 62.34%...
 const CHAVE_STORAGE_TREINADOR = "aprendendo_ia_treinador_dog_v1";
 const CHAVE_STORAGE_VERSAO_VIDEO = "aprendendo_ia_versao_video_treinador";
-
-const CLIPS_TESTE: {
-  id: IdVideoCao;
-  rotulo: string;
-  emoji: string;
-  arquivo: string;
-}[] = [
-  { id: "dog_idle", rotulo: "Idle", emoji: "🐕", arquivo: "dog_idle.mp4" },
-  { id: "dog_sentando", rotulo: "Sentar", emoji: "🪑", arquivo: "dog_sentando.mp4" },
-  { id: "dog_pulando", rotulo: "Pular", emoji: "🦘", arquivo: "dog_pulando.mp4" },
-  { id: "dog_deitando", rotulo: "Deitar", emoji: "🛌", arquivo: "dog_deitando.mp4" },
-  {
-    id: "dog_recebendo_petisco",
-    rotulo: "Com Petisco",
-    emoji: "🍖",
-    arquivo: "dog_recebendo_petisco.mp4",
-  },
-  {
-    id: "dog_sem_petisco",
-    rotulo: "Sem Petisco",
-    emoji: "❌",
-    arquivo: "dog_sem_petisco.mp4",
-  },
-];
 
 function amostrarAcaoComando(comando: Acao, dominio: DominioComandos): Acao {
   const probAcerto = dominio[comando];
@@ -151,9 +124,6 @@ export function TreinadorRL(): React.ReactElement {
       : "Você treina o cão. Escolha um comando; depois dê petisco ou não (sem punir).",
   );
 
-  // Modo de teste direto de animações
-  const [clipTesteAtivo, setClipTesteAtivo] = useState<IdVideoCao | null>(null);
-
   const refTimeoutDecisao = useRef<number | null>(null);
 
   // Persiste versão de vídeo
@@ -190,9 +160,6 @@ export function TreinadorRL(): React.ReactElement {
   }, []);
 
   const emitirComando = (acaoComando: Acao) => {
-    if (clipTesteAtivo) {
-      setClipTesteAtivo(null);
-    }
     if (etapa !== "escolher_comando") return;
 
     if (refTimeoutDecisao.current !== null) {
@@ -288,22 +255,6 @@ export function TreinadorRL(): React.ReactElement {
     );
   };
 
-  const selecionarClipTeste = (idClip: IdVideoCao) => {
-    if (refTimeoutDecisao.current !== null) {
-      window.clearTimeout(refTimeoutDecisao.current);
-    }
-    setClipTesteAtivo(idClip);
-    const itemClip = CLIPS_TESTE.find((c) => c.id === idClip);
-    setNarracao(
-      `🧪 Testando vídeo: "${itemClip?.rotulo ?? idClip}" (${itemClip?.arquivo}) na pasta "${versaoVideo}".`,
-    );
-  };
-
-  const voltarParaModoTreino = () => {
-    setClipTesteAtivo(null);
-    setNarracao("Modo de treino por reforço ativo. Selecione um comando abaixo.");
-  };
-
   const resetarTreino = () => {
     if (refTimeoutDecisao.current !== null) {
       window.clearTimeout(refTimeoutDecisao.current);
@@ -313,7 +264,6 @@ export function TreinadorRL(): React.ReactElement {
     } catch {
       // Ignora
     }
-    setClipTesteAtivo(null);
     setDominio(DOMINIO_INICIAL);
     setComando(null);
     setAcaoCao(null);
@@ -417,46 +367,6 @@ export function TreinadorRL(): React.ReactElement {
         </div>
       </div>
 
-      {/* BARRA DE TESTE DIRETO DE VÍDEOS */}
-      <div className="shrink-0 flex flex-wrap items-center gap-2 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800/80">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 mr-1">
-          <Film size={14} />
-          <span>Testar Vídeos ({versaoVideo}):</span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 flex-1">
-          {CLIPS_TESTE.map((clip) => {
-            const ehAtivo = clipTesteAtivo === clip.id;
-            return (
-              <button
-                key={clip.id}
-                type="button"
-                onClick={() => selecionarClipTeste(clip.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
-                  ehAtivo
-                    ? "bg-amber-400 text-slate-950 shadow-md font-bold ring-2 ring-amber-300/40"
-                    : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
-                }`}
-              >
-                <span>{clip.emoji}</span>
-                <span>{clip.rotulo}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {clipTesteAtivo && (
-          <button
-            type="button"
-            onClick={voltarParaModoTreino}
-            className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-all animate-pulse"
-          >
-            <Play size={12} />
-            <span>Voltar ao Jogo RL</span>
-          </button>
-        )}
-      </div>
-
       {/* COMPONENTE ISOLADO: Palco de Animação e Cenário */}
       <CenarioTreinadorDog
         comando={comando}
@@ -465,8 +375,6 @@ export function TreinadorRL(): React.ReactElement {
         feedback={feedback}
         narracao={narracao}
         versaoVideo={versaoVideo}
-        clipPreview={clipTesteAtivo}
-        loopPreview={clipTesteAtivo ? true : undefined}
         onFeedbackVideoTerminou={aoTerminarVideoFeedback}
       />
 
@@ -475,93 +383,72 @@ export function TreinadorRL(): React.ReactElement {
 
       {/* Painel de Controles do Usuário (Tutor com altura fixa estabilizada) */}
       <div className="shrink-0 mt-1 h-20 flex flex-col justify-center">
-        {clipTesteAtivo ? (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <span className="text-lg">🎬</span>
-              <span>
-                Visualizando clipe <strong>{clipTesteAtivo}.mp4</strong> da pasta{" "}
-                <strong>{versaoVideo}</strong> em repetição contínua.
-              </span>
+        {etapa === "escolher_comando" && (
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-amber-300/90 font-semibold flex items-center gap-1.5">
+              <Sparkles size={14} className="text-amber-400" />
+              Selecione o Comando para o Cão:
+            </span>
+            <div className="grid grid-cols-3 gap-2.5">
+              {ACOES.map((acao) => (
+                <button
+                  key={acao}
+                  type="button"
+                  onClick={() => emitirComando(acao)}
+                  className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/30 active:scale-[0.98] transition-all"
+                >
+                  {ROTULOS[acao]}
+                </button>
+              ))}
             </div>
+          </div>
+        )}
+
+        {etapa === "decidindo" && (
+          <div className="h-14 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-center text-slate-300 text-sm font-medium animate-pulse">
+            🐕 O cão está decidindo a ação com base em suas preferências...
+          </div>
+        )}
+
+        {etapa === "avaliar" && (
+          <div className="flex gap-3">
             <button
               type="button"
-              onClick={voltarParaModoTreino}
-              className="py-1.5 px-4 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-sm transition-all"
+              onClick={() => aplicarConsequencia("petisco")}
+              className="flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/40 border border-emerald-400/30 active:scale-[0.98] transition-all"
             >
-              Retornar ao Treino Interativo
+              <Bone size={18} className="text-emerald-100 shrink-0" />
+              <span>Recompensa - Dar Petisco</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => aplicarConsequencia("sem_petisco")}
+              className="flex-1 py-3.5 px-4 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 text-rose-200 font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-slate-950/40 border border-rose-800/60 active:scale-[0.98] transition-all"
+            >
+              <XCircle size={18} className="text-rose-400 shrink-0" />
+              <span>Sem Recompensa - Sem Petisco</span>
             </button>
           </div>
-        ) : (
-          <>
-            {etapa === "escolher_comando" && (
-              <div className="flex flex-col gap-2">
-                <span className="text-xs text-amber-300/90 font-semibold flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-amber-400" />
-                  Selecione o Comando para o Cão:
-                </span>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {ACOES.map((acao) => (
-                    <button
-                      key={acao}
-                      type="button"
-                      onClick={() => emitirComando(acao)}
-                      className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/30 active:scale-[0.98] transition-all"
-                    >
-                      {ROTULOS[acao]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        )}
 
-            {etapa === "decidindo" && (
-              <div className="h-14 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-center text-slate-300 text-sm font-medium animate-pulse">
-                🐕 O cão está decidindo a ação com base em suas preferências...
-              </div>
+        {etapa === "feedback" && (
+          <div
+            className={`h-14 rounded-xl flex items-center justify-center text-sm font-bold border shadow-inner ${
+              feedback === "petisco"
+                ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-200"
+                : "bg-rose-500/20 border-rose-500/40 text-rose-200"
+            }`}
+          >
+            {feedback === "petisco" ? (
+              <span className="flex items-center gap-2">
+                <Bone size={18} className="text-emerald-400" /> Recompensa Entregue! (+Reforço Positivo)
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <XCircle size={18} className="text-rose-400" /> Sem Recompensa (Petisco Retido)
+              </span>
             )}
-
-            {etapa === "avaliar" && (
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => aplicarConsequencia("petisco")}
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/40 border border-emerald-400/30 active:scale-[0.98] transition-all"
-                >
-                  <Bone size={18} className="text-emerald-100 shrink-0" />
-                  <span>Recompensa - Dar Petisco</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => aplicarConsequencia("sem_petisco")}
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 text-rose-200 font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-slate-950/40 border border-rose-800/60 active:scale-[0.98] transition-all"
-                >
-                  <XCircle size={18} className="text-rose-400 shrink-0" />
-                  <span>Sem Recompensa - Sem Petisco</span>
-                </button>
-              </div>
-            )}
-
-            {etapa === "feedback" && (
-              <div
-                className={`h-14 rounded-xl flex items-center justify-center text-sm font-bold border shadow-inner ${
-                  feedback === "petisco"
-                    ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-200"
-                    : "bg-rose-500/20 border-rose-500/40 text-rose-200"
-                }`}
-              >
-                {feedback === "petisco" ? (
-                  <span className="flex items-center gap-2">
-                    <Bone size={18} className="text-emerald-400" /> Recompensa Entregue! (+Reforço Positivo)
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <XCircle size={18} className="text-rose-400" /> Sem Recompensa (Petisco Retido)
-                  </span>
-                )}
-              </div>
-            )}
-          </>
+          </div>
         )}
       </div>
     </div>

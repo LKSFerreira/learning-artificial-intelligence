@@ -15,10 +15,8 @@ import {
 import { VideoCaoChroma } from "./VideoCaoChroma";
 import {
   obterCandidatosUrlPorEstadoCao,
-  obterCandidatosUrlVideoCao,
   PASTA_VIDEO_PADRAO,
   type EstadoVisualCao,
-  type IdVideoCao,
   type VersaoVideoTreinador,
 } from "../../../../servicos/midia/gerenciadorVideoTreinador";
 
@@ -30,10 +28,6 @@ export interface CenarioTreinadorDogProps {
   narracao: string;
   /** Pasta ou versão de vídeo ativa (ex: 'treinador v2'). */
   versaoVideo?: VersaoVideoTreinador;
-  /** Clip forçado para teste/pré-visualização imediata. */
-  clipPreview?: IdVideoCao | null;
-  loopPreview?: boolean;
-  onTerminouPreview?: () => void;
   /** Chamado quando termina vídeo de feedback (petisco / sem petisco). */
   onFeedbackVideoTerminou?: () => void;
 }
@@ -62,9 +56,6 @@ export function CenarioTreinadorDog({
   feedback,
   narracao,
   versaoVideo = PASTA_VIDEO_PADRAO,
-  clipPreview = null,
-  loopPreview,
-  onTerminouPreview,
   onFeedbackVideoTerminou,
 }: CenarioTreinadorDogProps): React.ReactElement {
   const estadoVisual = useMemo(
@@ -72,18 +63,13 @@ export function CenarioTreinadorDog({
     [etapa, acaoCao, feedback],
   );
 
-  const candidatosVideo = useMemo(() => {
-    if (clipPreview) {
-      return obterCandidatosUrlVideoCao(clipPreview, versaoVideo);
-    }
-    return obterCandidatosUrlPorEstadoCao(estadoVisual, versaoVideo);
-  }, [clipPreview, estadoVisual, versaoVideo]);
+  const candidatosVideo = useMemo(
+    () => obterCandidatosUrlPorEstadoCao(estadoVisual, versaoVideo),
+    [estadoVisual, versaoVideo],
+  );
 
-  const ehIdle = clipPreview
-    ? loopPreview ?? (clipPreview === "dog_idle")
-    : estadoVisual === "idle";
-  const ehFeedback =
-    !clipPreview && (estadoVisual === "happy" || estadoVisual === "sad");
+  const ehIdle = estadoVisual === "idle";
+  const ehFeedback = estadoVisual === "happy" || estadoVisual === "sad";
 
 
   /** Texto do balão de fala (tutor em 1ª pessoa). */
@@ -157,13 +143,7 @@ export function CenarioTreinadorDog({
             src={candidatosVideo}
             loop={ehIdle}
             modo="auto"
-            onTerminou={
-              ehFeedback
-                ? onFeedbackVideoTerminou
-                : clipPreview
-                  ? onTerminouPreview
-                  : undefined
-            }
+            onTerminou={ehFeedback ? onFeedbackVideoTerminou : undefined}
             className="w-full h-full object-contain select-none pointer-events-none"
           />
         </div>
