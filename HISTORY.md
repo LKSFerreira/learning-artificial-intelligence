@@ -4,6 +4,15 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-08-17 — Elevação Didática de Os 5 Pilares do RL (`PilaresRL.tsx`) ✅
+
+- **Doc detalhada:** [.metadocs/implemented/pilares_rl_interativos.md](.metadocs/implemented/pilares_rl_interativos.md)
+- **Motor de Ambiente Puro:** extraídas transições, bateria, recompensa, retorno e término de episódio para `src/componentes/visuais/fase1/pilares/motorAmbiente.ts`.
+- **Experiência Ativa:** adicionadas lentes de atribuição, anatomia de cada passo, prévia contrafactual, diário navegável, comparador de episódios e desafio de classificação dos cinco pilares.
+- **Honestidade Conceitual:** o botão agora executa um episódio comentado fixo, sem alegar aprendizado; o markdown foi alinhado à fronteira entre a lição 06 (papéis) e a 07 (política e aprendizado).
+- **Acessibilidade e Persistência:** implementados foco visível, ARIA, suporte a `prefers-reduced-motion` e recuperação local do diário e do desafio.
+- **Validação:** `npx tsc --noEmit`, `npm run build` e `git diff --check` aprovados.
+
 ### 2026-08-15 — Suporte e Teste dos Novos Vídeos v2 do Treinador RL (`TreinadorRL.tsx` / `gerenciadorVideoTreinador.ts`) ✅
 
 - **Doc detalhada:** [.metadocs/implemented/treinador_videos_v2.md](.metadocs/implemented/treinador_videos_v2.md)
@@ -184,5 +193,4 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 - `docs/fase_*.md` marcados como apoio (fonte de verdade = `src/conteudo/`).
 - `.metadocs/escopo.md` e registro R atualizados para a mesma verdade.
 - `servicoGemini.ts`: leitura prioritária de `GEMINI_API_KEY` (alinhada ao `vite.config.ts`).
-
 
