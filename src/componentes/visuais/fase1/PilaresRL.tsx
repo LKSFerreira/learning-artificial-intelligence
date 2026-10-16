@@ -162,9 +162,9 @@ export function PilaresRL(): React.ReactElement {
                 key={idPilar}
                 type="button"
                 onClick={() => setPilarAtivo(idPilar)}
-                className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-bold transition-all ${
+                className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs sm:text-sm font-bold transition-all ${
                   ativo
-                    ? "border-amber-400/80 bg-amber-500/20 text-white shadow-sm"
+                    ? "border-2 border-amber-400 bg-amber-500/25 text-white shadow-md ring-2 ring-amber-400/30"
                     : "border-slate-800 bg-slate-950/80 text-slate-400 hover:border-slate-700 hover:text-slate-200"
                 }`}
               >
@@ -192,7 +192,7 @@ export function PilaresRL(): React.ReactElement {
       />
 
       {/* 3. FAIXA VISUAL RESUMIDA DO ÚLTIMO PASSO (1 LINHA DE CHIPS VISUAIS) */}
-      <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-900/90 px-3.5 py-2.5 text-xs">
+      <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-900/90 px-3.5 py-2.5 text-xs sm:text-sm">
         {ultimaJogada ? (
           <>
             <div className="flex flex-wrap items-center gap-1.5">
@@ -220,8 +220,8 @@ export function PilaresRL(): React.ReactElement {
             </span>
           </>
         ) : (
-          <span className="text-slate-400">
-            💡 Escolha uma das <strong>3 Ações</strong> abaixo para mover o Bibi pela sala!
+          <span className="text-xs sm:text-sm font-medium text-slate-200">
+            💡 Escolha uma das <strong className="text-amber-300">3 Ações</strong> abaixo para mover o Bibi pela sala!
           </span>
         )}
       </div>
@@ -229,7 +229,9 @@ export function PilaresRL(): React.ReactElement {
       {/* 4. CONTROLES GRANDES DE JOGO (4. AÇÃO DO AGENTE) */}
       <div
         className={`shrink-0 flex flex-col justify-center rounded-xl transition-all ${
-          destacarAcoes ? "ring-2 ring-violet-400 p-1 bg-violet-950/20" : ""
+          destacarAcoes
+            ? "border-2 border-violet-400 ring-4 ring-violet-400/50 p-1 bg-violet-950/20 shadow-lg"
+            : ""
         }`}
       >
         {episodioEncerrado ? (

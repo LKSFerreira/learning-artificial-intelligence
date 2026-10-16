@@ -31,6 +31,11 @@ export interface InfoPosicaoVisual {
   indice: PosicaoSala;
   nomeCurto: string;
   leftPercentual: string;
+  /**
+   * Ajuste vertical fino da Bibi nesta posição (opcional).
+   * Exemplo: "8px" (sobe), "-6px" (desce) ou "0px" (padrão).
+   */
+  bottomOffset?: string;
   recompensaDica: string;
 }
 
@@ -61,18 +66,21 @@ export const POSICOES_PALCO: readonly InfoPosicaoVisual[] = [
     indice: 0,
     nomeCurto: "Perto do Sofá",
     leftPercentual: "21%",
+    bottomOffset: "0px",
     recompensaDica: "-2 se bater",
   },
   {
     indice: 1,
     nomeCurto: "Meio do Tapete",
     leftPercentual: "50%",
+    bottomOffset: "0px",
     recompensaDica: "-1 por passo",
   },
   {
     indice: 2,
     nomeCurto: "Base da Tomada",
-    leftPercentual: "79%",
+    leftPercentual: "81.5%",
+    bottomOffset: "18px",
     recompensaDica: "+10 ao plugar!",
   },
 ];
@@ -83,7 +91,7 @@ export const PILARES_VISUAIS: Record<PilarId, InfoPilarVisual> = {
     numero: "✨",
     nomeCurto: "Palco Livre",
     falaBibi:
-      "Oi! Eu sou o Bibi! Me leve até a base de recarga na direita usando os botões abaixo!",
+      "Guie-me até a base de recarga à direita usando os botões de ação abaixo.",
     etiquetaPalco: "Interaja com os controles ou clique em um dos 5 pilares acima",
   },
   agente: {
@@ -91,7 +99,7 @@ export const PILARES_VISUAIS: Record<PilarId, InfoPilarVisual> = {
     numero: "1",
     nomeCurto: "Agente",
     falaBibi:
-      "Eu sou o 1. Agente! Mais precisamente, sou o cérebro de IA aqui dentro que decide qual botão apertar!",
+      "Sou o cérebro de IA: decido qual ação tomar a cada momento.",
     etiquetaPalco: "1. Agente = O cérebro que toma as decisões (não as rodinhas nem a bateria)",
   },
   ambiente: {
@@ -99,7 +107,7 @@ export const PILARES_VISUAIS: Record<PilarId, InfoPilarVisual> = {
     numero: "2",
     nomeCurto: "Ambiente",
     falaBibi:
-      "Tudo ao redor é o 2. Ambiente: o sofá que me bloqueia, o tapete, a tomada e até a minha bateria física!",
+      "É o mundo ao redor: a sala, os obstáculos físicos e as regras do jogo.",
     etiquetaPalco: "2. Ambiente = A sala de estar e suas leis físicas",
   },
   estado: {
@@ -107,7 +115,7 @@ export const PILARES_VISUAIS: Record<PilarId, InfoPilarVisual> = {
     numero: "3",
     nomeCurto: "Estado",
     falaBibi:
-      "O 3. Estado é a foto de onde estou agora na sala: perto do sofá, no tapete ou na tomada!",
+      "É a situação atual: a posição onde me encontro neste instante (Sofá, Tapete ou Tomada).",
     etiquetaPalco: "3. Estado = A posição e condição atual que o Bibi enxerga",
   },
   acao: {
@@ -115,7 +123,7 @@ export const PILARES_VISUAIS: Record<PilarId, InfoPilarVisual> = {
     numero: "4",
     nomeCurto: "Ação",
     falaBibi:
-      "A 4. Ação é o movimento que escolho fazer agora: ir pra esquerda, ir pra direita ou plugar na tomada!",
+      "São as minhas escolhas: mover para a esquerda, para a direita ou plugar.",
     etiquetaPalco: "4. Ação = As 3 escolhas disponíveis nos botões abaixo",
   },
   recompensa: {
@@ -123,7 +131,7 @@ export const PILARES_VISUAIS: Record<PilarId, InfoPilarVisual> = {
     numero: "5",
     nomeCurto: "Recompensa",
     falaBibi:
-      "A 5. Recompensa é a nota que a sala me dá: +10 quando recarrego, -1 quando ando e -2 quando bato!",
+      "É o feedback recebido: +10 ao recarregar, -1 por passo e -2 por colisão.",
     etiquetaPalco: "5. Recompensa = O número (+10, -1, -2) que ensina o que deu certo ou errado",
   },
 };
@@ -154,7 +162,7 @@ export function executarPassoVisualBibi(
         bateriaRestante: novaBateria,
         expressao: "colisao",
         falaBibi:
-          "Ai, minha antena! Bati direto no braço do sofá! A sala me bloqueou e tomei -2 pontos!",
+          "Bati no sofá! Caminho bloqueado (-2 pontos).",
         resumoAmbienteCurto: "Bateu no sofá (Bloqueado)",
         recargaConcluida: false,
         bateriaAcabou: novaBateria === 0,
@@ -173,8 +181,8 @@ export function executarPassoVisualBibi(
       expressao: "idle",
       falaBibi:
         destino === 0
-          ? "Voltei para perto do sofá (-1 pt de passo). Cuidado: a tomada fica lá do outro lado!"
-          : "Voltei para o meio do tapete (-1 pt pelo deslocamento)!",
+          ? "Movi para perto do sofá (-1 ponto de deslocamento)."
+          : "Movi para o tapete (-1 ponto de deslocamento).",
       resumoAmbienteCurto: `Moveu para ${nomeDestino}`,
       recargaConcluida: false,
       bateriaAcabou: novaBateria === 0,
@@ -191,7 +199,7 @@ export function executarPassoVisualBibi(
         bateriaRestante: novaBateria,
         expressao: "idle",
         falaBibi:
-          "Já estou encostado na base da tomada! Clique em 'Plugar na Tomada' para recarregar!",
+          "Já estou na base! Clique em 'Plugar na Tomada'.",
         resumoAmbienteCurto: "Já estava na tomada",
         recargaConcluida: false,
         bateriaAcabou: novaBateria === 0,
@@ -210,8 +218,8 @@ export function executarPassoVisualBibi(
       expressao: "idle",
       falaBibi:
         destino === 2
-          ? "Oba, cheguei na Base da Tomada (-1 pt do passo)! Agora clique em 'Plugar na Tomada'!"
-          : "Avancei para o meio do tapete (-1 pt do passo)! Mais um passo pra direita e chego na tomada!",
+          ? "Cheguei na base! Clique em 'Plugar na Tomada'."
+          : "Movi para o meio do tapete (-1 ponto de passo).",
       resumoAmbienteCurto: `Moveu para ${nomeDestino}`,
       recargaConcluida: false,
       bateriaAcabou: novaBateria === 0,
@@ -228,7 +236,7 @@ export function executarPassoVisualBibi(
       bateriaRestante: BATERIA_MAXIMA_BIBI,
       expressao: "carregando",
       falaBibi:
-        "ENERGIA MÁXIMA! Conectei na base, recarreguei 100% e ganhei +10 pontos de Recompensa!",
+        "Bateria recarregada em 100% (+10 pontos de recompensa)!",
       resumoAmbienteCurto: "Conectou na Doca (+10!)",
       recargaConcluida: true,
       bateriaAcabou: false,
@@ -243,7 +251,7 @@ export function executarPassoVisualBibi(
     bateriaRestante: novaBateria,
     expressao: "colisao",
     falaBibi:
-      "Ué?! Tentei plugar no ar, mas estou longe da tomada! Perdi -2 pontos por tentar no lugar errado!",
+      "Não há tomada aqui! Tentativa incorreta (-2 pontos).",
     resumoAmbienteCurto: "Tentou plugar no vazio",
     recargaConcluida: false,
     bateriaAcabou: novaBateria === 0,

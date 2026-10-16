@@ -1,4 +1,4 @@
-/**
+  /**
  * Palco Visual Ilustrado: A Sala de Estar e a Persona do Robô Bibi.
  *
  * Inspirado diretamente na linguagem visual de CenarioTreinadorDog:
@@ -81,9 +81,9 @@ export function CenaSalaBibi({
 
   return (
     <div
-      className={`relative flex min-h-[380px] w-full flex-1 flex-col justify-between overflow-hidden rounded-2xl border shadow-2xl select-none sm:min-h-[420px] ${
+      className={`relative flex min-h-[380px] max-h-[580px] w-full flex-1 flex-col justify-between overflow-hidden rounded-2xl border-2 shadow-2xl select-none sm:min-h-[420px] transition-all duration-300 ${
         focarAmbiente
-          ? "border-emerald-400 ring-2 ring-emerald-400/40"
+          ? "border-emerald-400 ring-4 ring-emerald-400/50 shadow-[0_0_25px_rgba(52,211,153,0.3)]"
           : "border-slate-700/80"
       }`}
     >
@@ -104,24 +104,24 @@ export function CenaSalaBibi({
         {/* Etiqueta do Ambiente e Estado Atual */}
         <div className="flex flex-wrap items-center gap-2">
           <div
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold backdrop-blur-md transition-all ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-bold backdrop-blur-md transition-all ${
               focarAmbiente
-                ? "border-emerald-300 bg-emerald-600/90 text-white shadow-lg"
-                : "border-white/20 bg-slate-950/75 text-emerald-300"
+                ? "border-2 border-emerald-300 bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-300/40"
+                : "border border-white/20 bg-slate-950/75 text-emerald-300"
             }`}
           >
-            <Globe size={14} aria-hidden="true" />
+            <Globe size={15} aria-hidden="true" />
             <span>Sala (2. Ambiente)</span>
           </div>
 
           <div
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold backdrop-blur-md transition-all ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-bold backdrop-blur-md transition-all ${
               focarEstado
-                ? "border-amber-300 bg-amber-500 text-slate-950 shadow-lg scale-105"
-                : "border-white/20 bg-slate-950/75 text-amber-200"
+                ? "border-2 border-amber-300 bg-amber-400 text-slate-950 shadow-lg ring-2 ring-amber-400/60 scale-105"
+                : "border border-white/20 bg-slate-950/75 text-amber-200"
             }`}
           >
-            <MapPin size={14} aria-hidden="true" />
+            <MapPin size={15} aria-hidden="true" />
             <span>3. Estado: {posicaoConfig.nomeCurto}</span>
           </div>
         </div>
@@ -130,25 +130,25 @@ export function CenaSalaBibi({
         <div className="flex items-center gap-2">
           {/* Bateria Física (Pertence ao Ambiente) */}
           <div
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold backdrop-blur-md transition-all ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-bold backdrop-blur-md transition-all ${
               focarAmbiente
-                ? "border-emerald-300 bg-emerald-600/90 text-white shadow-lg"
-                : "border-white/20 bg-slate-950/75 text-slate-100"
+                ? "border-2 border-emerald-300 bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-300/40"
+                : "border border-white/20 bg-slate-950/75 text-slate-100"
             }`}
             title="A bateria física pertence ao corpo/ambiente"
           >
             {expressaoBibi === "carregando" ? (
-              <BatteryCharging size={15} className="text-emerald-400" />
+              <BatteryCharging size={16} className="text-emerald-400" />
             ) : bateriaAtual <= 2 ? (
-              <BatteryWarning size={15} className="text-rose-400" />
+              <BatteryWarning size={16} className="text-rose-400" />
             ) : (
-              <BatteryMedium size={15} className="text-amber-300" />
+              <BatteryMedium size={16} className="text-amber-300" />
             )}
             <div className="flex items-center gap-0.5">
               {Array.from({ length: BATERIA_MAXIMA_BIBI }).map((_, indiceBloco) => (
                 <span
                   key={indiceBloco}
-                  className={`h-2.5 w-1.5 rounded-sm ${
+                  className={`h-3 w-1.5 rounded-sm ${
                     indiceBloco < bateriaAtual
                       ? expressaoBibi === "carregando"
                         ? "bg-emerald-400"
@@ -164,13 +164,13 @@ export function CenaSalaBibi({
 
           {/* Placar de Recompensa */}
           <div
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold backdrop-blur-md transition-all ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-bold backdrop-blur-md transition-all ${
               focarRecompensa
-                ? "border-rose-300 bg-rose-600 text-white shadow-lg scale-105"
-                : "border-white/20 bg-slate-950/75 text-white"
+                ? "border-2 border-rose-300 bg-rose-600 text-white shadow-lg ring-2 ring-rose-300/40 scale-105"
+                : "border border-white/20 bg-slate-950/75 text-white"
             }`}
           >
-            <Trophy size={14} className="text-amber-400" aria-hidden="true" />
+            <Trophy size={15} className="text-amber-400" aria-hidden="true" />
             <span>5. Recompensa:</span>
             <strong
               className={`font-mono ${
@@ -189,13 +189,23 @@ export function CenaSalaBibi({
         </div>
       </div>
 
-      {/* 3. BALÃO DE FALA DA PERSONA (O ROBÔ BIBI CONVERSANDO COM O ALUNO) */}
-      <div className="relative z-20 mx-auto mt-1 max-w-[92%] px-3 sm:max-w-xl">
+      {/* 3. BALÃO DE FALA ESTRUTURADO DA PERSONA (OCUPA O ESPAÇO LIMPO DA PAREDE) */}
+      <div className="relative z-20 mx-auto mt-1.5 max-w-[94%] px-3 sm:max-w-xl">
         <div
           aria-live="polite"
-          className="relative rounded-2xl border-2 border-amber-400/90 bg-white/95 px-4 py-2.5 text-slate-950 shadow-2xl backdrop-blur-md sm:px-5 sm:py-3"
+          className="relative rounded-2xl border-[3px] border-amber-400 bg-white/95 px-5 py-3 text-slate-950 shadow-2xl backdrop-blur-md transition-all sm:px-6 sm:py-3.5"
         >
-          <p className="text-center text-xs font-extrabold leading-snug sm:text-sm">
+          {/* Identificador estruturado do pilar/contexto */}
+          <div className="mb-1.5 flex items-center justify-center">
+            <span className="rounded-full bg-amber-100 border border-amber-400/80 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-amber-900 shadow-sm">
+              {pilarAtivo === "todos"
+                ? "Palco Livre"
+                : `${infoPilarAtivo.numero}. ${infoPilarAtivo.nomeCurto}`}
+            </span>
+          </div>
+
+          {/* Texto de diálogo direto, estruturado e em fonte ampliada com alto contraste */}
+          <p className="text-center text-base sm:text-lg font-black leading-snug tracking-tight text-slate-950">
             &ldquo;{pilarAtivo === "todos" ? falaAtualBibi : infoPilarAtivo.falaBibi}&rdquo;
           </p>
         </div>
@@ -211,33 +221,35 @@ export function CenaSalaBibi({
             <div
               key={ponto.indice}
               style={{ left: ponto.leftPercentual }}
-              className="absolute bottom-3 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+              className="absolute bottom-2.5 -translate-x-1/2 flex flex-col items-center pointer-events-none z-40"
             >
               {/* Balão de Recompensa do Local (Destacado quando clica em 5. Recompensa ou 2. Ambiente) */}
               {(focarRecompensa || focarAmbiente) && (
                 <span
-                  className={`mb-24 rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-black shadow-lg backdrop-blur-md ${
+                  className={`rounded-full border-2 px-3 py-1 font-mono text-xs sm:text-sm font-black shadow-2xl backdrop-blur-md transition-all ${
+                    bibiEstaAqui ? "mb-56 sm:mb-60" : "mb-52 sm:mb-56"
+                  } ${
                     ponto.indice === 2
-                      ? "border-emerald-300 bg-emerald-600/95 text-white"
+                      ? "border-emerald-300 bg-emerald-600 text-white ring-2 ring-emerald-300/40"
                       : ponto.indice === 0
-                        ? "border-rose-300 bg-rose-600/95 text-white"
-                        : "border-amber-300 bg-slate-900/90 text-amber-200"
+                        ? "border-rose-300 bg-rose-600 text-white ring-2 ring-rose-300/40"
+                        : "border-amber-300 bg-slate-900/95 text-amber-200 ring-2 ring-amber-300/40"
                   }`}
                 >
                   {ponto.recompensaDica}
                 </span>
               )}
 
-              {/* Etiqueta de Posição no Chão */}
+              {/* Etiqueta de Posição no Chão (ampliada para leitura fácil) */}
               <div
-                className={`rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold shadow-md backdrop-blur-md transition-all ${
+                className={`rounded-full border-2 px-3 py-1 text-xs sm:text-sm font-bold shadow-md backdrop-blur-md transition-all ${
                   bibiEstaAqui
                     ? focarEstado
-                      ? "border-amber-300 bg-amber-500 text-slate-950 scale-110"
+                      ? "border-amber-300 bg-amber-400 text-slate-950 ring-2 ring-amber-400/50 scale-105"
                       : "border-cyan-300 bg-slate-950/90 text-cyan-200"
                     : focarEstado
-                      ? "border-amber-300/80 bg-slate-950/85 text-amber-200 scale-105"
-                      : "border-white/25 bg-slate-950/65 text-slate-200"
+                      ? "border-amber-300/80 bg-slate-950/85 text-amber-200"
+                      : "border-white/25 bg-slate-950/75 text-slate-200"
                 }`}
               >
                 {ponto.nomeCurto}
@@ -246,18 +258,21 @@ export function CenaSalaBibi({
           );
         })}
 
-        {/* PERSONA ILUSTRADA DO ROBÔ BIBI DESLIZANDO SUAVEMENTE PELO CHÃO */}
+        {/* PERSONA ILUSTRADA DO ROBÔ BIBI: ELEVADA E HARMONIZADA NA PERSPECTIVA DO TAPETE */}
         <div
-          style={{ left: posicaoConfig.leftPercentual }}
-          className="absolute bottom-9 z-30 -translate-x-1/2 flex flex-col items-center transition-all duration-500 ease-out pointer-events-none"
+          style={{
+            left: posicaoConfig.leftPercentual,
+            marginBottom: posicaoConfig.bottomOffset ?? "0px",
+          }}
+          className="absolute bottom-14 sm:bottom-16 z-30 -translate-x-1/2 flex flex-col items-center transition-all duration-500 ease-out pointer-events-none"
         >
           {/* Badge de Pontuação da Última Ação Acima do Bibi */}
           {ultimaJogada && (
             <div
-              className={`mb-1 rounded-full border px-3 py-0.5 font-mono text-xs font-black shadow-lg ${
+              className={`mb-1.5 rounded-full border-2 px-3 py-0.5 font-mono text-xs sm:text-sm font-black shadow-lg ${
                 ultimaJogada.recompensa > 0
-                  ? "border-emerald-200 bg-emerald-500 text-slate-950"
-                  : "border-rose-200 bg-rose-600 text-white"
+                  ? "border-emerald-200 bg-emerald-500 text-slate-950 ring-2 ring-emerald-300/40"
+                  : "border-rose-200 bg-rose-600 text-white ring-2 ring-rose-300/40"
               }`}
             >
               {formatarPontos(ultimaJogada.recompensa)} pts
@@ -266,29 +281,33 @@ export function CenaSalaBibi({
 
           {/* Destaque Especial quando o aluno clica em "1. Agente" */}
           {focarAgente && (
-            <div className="mb-1 flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-500 px-2.5 py-0.5 text-[10px] font-black text-slate-950 shadow-lg">
-              <Bot size={12} aria-hidden="true" />
+            <div className="mb-1.5 flex items-center gap-1.5 rounded-full border-2 border-cyan-200 bg-cyan-400 px-3 py-1 text-xs font-black text-slate-950 shadow-lg ring-2 ring-cyan-300/50">
+              <Bot size={14} aria-hidden="true" />
               <span>1. Agente (Cérebro de IA)</span>
             </div>
           )}
 
-          {/* Sombra oval sob as esteiras no piso de madeira */}
-          <div className="relative flex items-center justify-center">
+          {/* Persona do Robô Bibi com Sombra de Contato para Perspectiva Perfeita no Piso */}
+          <div className="relative flex flex-col items-center justify-center">
             <img
               src={spriteAtual}
               alt="Robô Aspirador Bibi"
-              className={`h-32 w-32 object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:h-36 sm:w-36 ${
-                focarAgente ? "scale-110 ring-4 ring-cyan-400/70 rounded-full bg-cyan-400/10" : ""
+              className={`h-32 w-32 object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.5)] transition-transform duration-300 sm:h-36 sm:w-36 ${
+                focarAgente
+                  ? "scale-105 ring-[5px] ring-cyan-300 shadow-[0_0_25px_rgba(34,211,238,0.6)] rounded-full bg-cyan-400/10"
+                  : ""
               }`}
               draggable={false}
             />
+            {/* Sombra elíptica de contato no piso */}
+            <div className="h-2.5 w-24 -mt-2 rounded-full bg-slate-950/40 blur-[2px]" />
           </div>
         </div>
       </div>
 
       {/* 5. FAIXA DE LEGENDA CURTA NA BASE DO PALCO */}
-      <div className="relative z-20 mx-3 mb-2.5 rounded-xl border border-white/15 bg-slate-950/80 px-3 py-2 text-center backdrop-blur-md">
-        <p className="text-[11px] font-semibold text-slate-200 sm:text-xs">
+      <div className="relative z-20 mx-3 mb-2.5 rounded-xl border border-white/20 bg-slate-950/85 px-3.5 py-2 text-center backdrop-blur-md shadow-md">
+        <p className="text-xs sm:text-sm font-semibold text-slate-100">
           {infoPilarAtivo.etiquetaPalco}
         </p>
       </div>
