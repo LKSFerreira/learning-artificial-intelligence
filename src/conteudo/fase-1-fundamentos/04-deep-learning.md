@@ -19,8 +19,6 @@ A imprensa e parte da comunidade comemoraram demais. Parecia que “máquina que
 
 Só que o Perceptron **simples** (poucas camadas, resposta quase linear) tinha **capacidade limitada**. Um exemplo clássico de sala de aula é o **XOR** (ou exclusivo): uma regra lógica fácil de dizer em palavras, mas que esse tipo de classificador **não** separa bem com uma única linha reta no espaço das entradas. Em resumo: **uma camada rasa não resolve tudo** o que o entusiasmo da época prometia.
 
-<!-- cut -->
-
 ### O livro *Perceptrons*: freio, não sentença de morte
 
 Em **1969**, **Marvin Minsky** e **Seymour Papert** publicaram o livro *Perceptrons*. Eles mostraram, com rigor, o que redes do tipo perceptron **conseguiam** e o que **não** conseguiam. O efeito prático foi forte: em vários lugares, o **financiamento** e o **prestígio** das redes neurais caíram. Muita gente conta isso como se o livro tivesse acabado com a área. A história é mais cuidadosa:
@@ -40,8 +38,6 @@ Um marco de popularização é o trabalho de **Rumelhart, Hinton e Williams (198
 *   **dados** rotulados em volume (como no simulador de **O Momento em que Paramos de Programar Regras**);
 *   **computação** barata o bastante (em especial **GPUs** para muitos cálculos em paralelo);
 *   **arquiteturas** adequadas ao tipo de dado (por exemplo, convoluções para imagens).
-
-<!-- cut -->
 
 ### 2012: o deep deixa o laboratório
 
@@ -82,8 +78,6 @@ O painel direito é um laboratório em **duas partes**.
 | **Tem rosto** | Partes do personagem |
 
 Com **um** ou **dois** sinais, a imagem ainda fica confusa (dá para imaginar outra coisa). Só com os **três** a saída fecha como **PORING**.
-
-<!-- cut -->
 
 **2. Exemplo avançado: Angeling**
 

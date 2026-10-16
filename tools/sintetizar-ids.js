@@ -1,16 +1,29 @@
 /**
- * Sintetiza áudio para IDs específicos (uso CLI).
- * Ex.: node tools/sintetizar-ids.js hierarchy ia ml dl
+ * Sintetiza áudio para IDs específicos (uso CLI) usando o motor unificado
+ * com direção acústica por voz e equalização RMS de estúdio.
+ *
+ * Ex.:
+ *   node tools/sintetizar-ids.js rl_intro rl_components
+ *   node tools/sintetizar-ids.js --forcar deep_learning
  */
 
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
-import vm from "vm";
+import {
+  TAXA_AMOSTRAGEM_PCM,
+  limparEmojis,
+  montarPartesNarracao,
+  requisitarPcmDaApi,
+  unirPartesPcmNormalizadas,
+  converterPcmParaMp3Buffer,
+} from "../sintetizar/motorSintese.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const raiz = path.resolve(__dirname, "..");
+
+const INTERVALO_RATE_LIMIT_MS = 30_000;
 
 // Carrega .env
 const envPath = path.join(raiz, ".env");
@@ -18,11 +31,11 @@ if (fs.existsSync(envPath)) {
   for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;
-    const indexDoisPontos = trimmed.indexOf("=");
-    if (indexDoisPontos === -1) continue;
-    const chave = trimmed.slice(0, indexDoisPontos).trim();
+    const indexIgual = trimmed.indexOf("=");
+    if (indexIgual === -1) continue;
+    const chave = trimmed.slice(0, indexIgual).trim();
     const valor = trimmed
-      .slice(indexDoisPontos + 1)
+      .slice(indexIgual + 1)
       .trim()
       .replace(/^["']|["']$/g, "");
     process.env[chave] = valor;
@@ -33,75 +46,6 @@ const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
 if (!apiKey) {
   console.error("GEMINI_API_KEY não encontrada no .env");
   process.exit(1);
-}
-
-// lamejs
-const lameCode = fs.readFileSync(
-  path.join(raiz, "node_modules/lamejs/lame.min.js"),
-  "utf8",
-);
-const sandbox = {
-  window: {},
-  global: {},
-  exports: {},
-  module: { exports: {} },
-};
-vm.createContext(sandbox);
-vm.runInContext(lameCode, sandbox);
-const { Mp3Encoder } = sandbox.lamejs;
-
-function limparEmojis(texto) {
-  if (!texto) return "";
-  return texto
-    .replace(
-      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F0F5}\u{2600}-\u{26FF}\u{2300}-\u{23FF}\u{2B50}\uFE00-\uFE0F]/gu,
-      "",
-    )
-    .trim();
-}
-
-function limparMarkdownParaLeitura(markdown) {
-  if (!markdown) return "";
-  let texto = markdown;
-  texto = texto.replace(
-    /<!-- audio-skip-start -->[\s\S]*?<!-- audio-skip-end -->/g,
-    "",
-  );
-  texto = texto.replace(/```[\s\S]*?```/g, " ");
-  texto = texto.replace(/`([^`]+)`/g, "$1");
-  texto = texto.replace(/!\[([^\]]*)\]\([^)]+\)/g, "");
-  texto = texto.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-  texto = texto.replace(/^#+\s+(.+)$/gm, "$1");
-  texto = texto.replace(/\*\*([^*]+)\*\*/g, "$1");
-  texto = texto.replace(/\*([^*]+)\*/g, "$1");
-  texto = texto.replace(/^[\s]*[*+-]\s+/gm, "");
-  texto = texto.replace(/^[\s]*\d+\.\s+/gm, "");
-  texto = texto.replace(/^[\s]*>\s+/gm, "");
-  texto = texto.replace(/\n+/g, " ");
-  texto = texto.replace(/\s+/g, " ");
-  return texto.trim();
-}
-
-function converterPcmParaMp3Buffer(pcmData, sampleRate) {
-  const buffer = pcmData.buffer;
-  const offset = pcmData.byteOffset;
-  const length = pcmData.byteLength / 2;
-  const amostras = new Int16Array(buffer, offset, length);
-  const encoder = new Mp3Encoder(1, sampleRate, 128);
-  const mp3Chunks = [];
-  const tamanhoBloco = 1152;
-  for (let i = 0; i < amostras.length; i += tamanhoBloco) {
-    const bloco = amostras.subarray(i, i + tamanhoBloco);
-    const mp3Buffer = encoder.encodeBuffer(bloco);
-    if (mp3Buffer.length > 0) {
-      mp3Chunks.push(Buffer.from(mp3Buffer));
-    }
-  }
-  const finalBuffer = encoder.flush();
-  if (finalBuffer.length > 0) {
-    mp3Chunks.push(Buffer.from(finalBuffer));
-  }
-  return Buffer.concat(mp3Chunks);
 }
 
 function extrairMetadados(conteudo) {
@@ -123,7 +67,7 @@ function extrairMetadados(conteudo) {
   return metadados;
 }
 
-/** Mapa id -> caminho relativo do markdown */
+/** Mapa id -> caminho absoluto do markdown */
 function mapearLicoesPorId() {
   const dirConteudo = path.join(raiz, "src", "conteudo");
   const mapa = {};
@@ -149,10 +93,16 @@ function mapearLicoesPorId() {
   return mapa;
 }
 
-const idsPedidos = process.argv.slice(2);
+const argsBrutos = process.argv.slice(2);
+const forcarRegeracao =
+  argsBrutos.includes("--forcar") || argsBrutos.includes("--force");
+const idsPedidos = argsBrutos.filter(
+  (arg) => arg !== "--forcar" && arg !== "--force",
+);
+
 if (idsPedidos.length === 0) {
-  console.error("Uso: node tools/sintetizar-ids.js <id> [id...]");
-  console.error("Ex.: node tools/sintetizar-ids.js hierarchy ia ml dl");
+  console.error("Uso: node tools/sintetizar-ids.js [--forcar] <id> [id...]");
+  console.error("Ex.: node tools/sintetizar-ids.js rl_intro rl_components");
   process.exit(1);
 }
 
@@ -176,13 +126,23 @@ for (const id of idsPedidos) {
 
   const conteudo = fs.readFileSync(arquivo, "utf8");
   const meta = extrairMetadados(conteudo) || {};
-  const titulo = limparEmojis(meta.titulo || id);
-  const corpo = limparMarkdownParaLeitura(
-    conteudo.replace(/^---[\s\S]*?---/, "").trim(),
-  );
-  const textoSintese = `${titulo}. \n\n ${corpo}`;
+  const tituloLimpo = limparEmojis(meta.titulo || id);
+  const corpoMarkdown = conteudo.replace(/^---[\s\S]*?---/, "").trim();
 
-  console.log(`\n== ${id} (${textoSintese.length} chars) ==`);
+  let partesNarracao;
+  let totalChars;
+  try {
+    const montagem = montarPartesNarracao(tituloLimpo, corpoMarkdown);
+    partesNarracao = montagem.partes;
+    totalChars = montagem.totalChars;
+  } catch (erroMontagem) {
+    console.error(`✖ Erro ao preparar ${id}: ${erroMontagem.message}`);
+    continue;
+  }
+
+  console.log(
+    `\n== ${id} (${totalChars} chars limpos · ${partesNarracao.length} parte(s)) ==`,
+  );
   console.log(`   arquivo: ${path.relative(raiz, arquivo)}`);
 
   for (const voz of vozes) {
@@ -190,8 +150,8 @@ for (const id of idsPedidos) {
     fs.mkdirSync(dirVoz, { recursive: true });
     const saida = path.join(dirVoz, `${id}.mp3`);
 
-    if (fs.existsSync(saida) && fs.statSync(saida).size > 0) {
-      console.log(`  skip ${voz} (já existe)`);
+    if (!forcarRegeracao && fs.existsSync(saida) && fs.statSync(saida).size > 0) {
+      console.log(`  skip ${voz} (já existe; use --forcar para regerar)`);
       if (!mapaSintese[id]) mapaSintese[id] = {};
       mapaSintese[id][voz] = true;
       continue;
@@ -199,28 +159,43 @@ for (const id of idsPedidos) {
 
     process.stdout.write(`  gerando ${voz}... `);
     try {
-      const resposta = await ai.interactions.create({
-        model: "gemini-3.1-flash-tts-preview",
-        input: `Leia em voz alta, com tom calmo, profissional, didático e natural de professor de computação, o seguinte texto em português do Brasil (leia o texto de forma limpa, direta, sem introduções ou comentários de metadados): ${textoSintese}`,
-        response_format: { type: "audio" },
-        generation_config: {
-          speech_config: [{ voice: voz }],
-        },
-      });
+      const pcmPartes = [];
+      for (let indice = 0; indice < partesNarracao.length; indice += 1) {
+        const pcm = await requisitarPcmDaApi(
+          ai,
+          partesNarracao[indice],
+          voz,
+          indice,
+          partesNarracao.length,
+        );
+        pcmPartes.push(pcm);
 
-      const audioBase64 = resposta.output_audio?.data;
-      if (!audioBase64) {
-        throw new Error("API retornou áudio nulo");
+        if (indice < partesNarracao.length - 1) {
+          process.stdout.write(
+            `(parte ${indice + 1}/${partesNarracao.length} ok, aguardando 30s...) `,
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, INTERVALO_RATE_LIMIT_MS),
+          );
+        }
       }
 
-      const pcmData = Buffer.from(audioBase64, "base64");
-      const mp3Buffer = converterPcmParaMp3Buffer(pcmData, 24000);
+      const pcmEqualizado = unirPartesPcmNormalizadas(
+        pcmPartes,
+        TAXA_AMOSTRAGEM_PCM,
+      );
+      const mp3Buffer = converterPcmParaMp3Buffer(
+        pcmEqualizado,
+        TAXA_AMOSTRAGEM_PCM,
+      );
       fs.writeFileSync(saida, mp3Buffer);
 
       if (!mapaSintese[id]) mapaSintese[id] = {};
       mapaSintese[id][voz] = true;
 
-      console.log(`ok (${(mp3Buffer.length / 1024).toFixed(1)} KB)`);
+      console.log(
+        `ok -> public/audios/${voz}/${id}.mp3 (${(mp3Buffer.length / 1024).toFixed(1)} KB)`,
+      );
     } catch (erro) {
       console.log(`ERRO: ${erro.message || erro}`);
     }

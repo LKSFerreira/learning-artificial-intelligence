@@ -2,8 +2,17 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
-import vm from "vm";
 import readline from "readline/promises";
+import {
+  MODELO_TTS,
+  TAXA_AMOSTRAGEM_PCM,
+  LIMITE_CARACTERES_POR_PARTE,
+  limparEmojis,
+  montarPartesNarracao,
+  requisitarPcmDaApi,
+  unirPartesPcmNormalizadas,
+  converterPcmParaMp3Buffer,
+} from "./motorSintese.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,24 +35,9 @@ const FG_DARK_GRAY = "\x1b[38;5;238m";
 const BG_VIOLET = "\x1b[48;5;99m\x1b[38;5;255m";
 const BG_DARK = "\x1b[48;5;234m";
 
-/** Pausa entre requisições Gemini TTS (evita rate limit). */
-const INTERVALO_RATE_LIMIT_MS = 30_000;
+/** Pausa adaptativa entre requisições Gemini TTS (motor já possui retry automático em 429). */
+const INTERVALO_RATE_LIMIT_MS = 12_000;
 const INTERVALO_RATE_LIMIT_SEGUNDOS = INTERVALO_RATE_LIMIT_MS / 1000;
-
-/**
- * Acima desse limite a qualidade do TTS cai.
- * O autor marca cortes no .md com `<!-- cut -->` (ignorado na leitura).
- * Cada fatia é sintetizada e o PCM é unido num único MP3 (sem arquivos extras).
- */
-const LIMITE_CARACTERES_POR_PARTE = 2500;
-/** Tag de corte manual no Markdown da lição (não é falada; só divide a narração). */
-const PADRAO_TAG_CUT = "<!--\\s*cut\\s*-->";
-const PADRAO_AUDIO_SKIP =
-  "<!--\\s*audio-skip-start\\s*-->[\\s\\S]*?<!--\\s*audio-skip-end\\s*-->";
-const TAXA_AMOSTRAGEM_PCM = 24000;
-const MODELO_TTS = "gemini-3.1-flash-tts-preview";
-const PREFIXO_PROMPT_TTS =
-  "Leia em voz alta, com tom calmo, profissional, didático e natural de professor de computação, o seguinte texto em português do Brasil (leia o texto de forma limpa, direta, sem introduções ou comentários de metadados): ";
 
 // 1. Carrega manualmente o arquivo .env da raiz do projeto para compatibilidade universal
 const envPath = path.join(__dirname, "../.env");
@@ -68,249 +62,6 @@ if (fs.existsSync(envPath)) {
 // Inicializa a chave do Gemini a partir do .env
 const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
 
-// 2. Carrega o lame.min.js em uma sandbox isolada
-const lamePath = path.join(__dirname, "../node_modules/lamejs/lame.min.js");
-if (!fs.existsSync(lamePath)) {
-  console.error(
-    `${FG_RED}${C_BOLD}✖ ERRO: O pacote lamejs não está instalado no node_modules. Rode npm install primeiro.${C_RESET}`,
-  );
-  process.exit(1);
-}
-const lameCode = fs.readFileSync(lamePath, "utf-8");
-const sandbox = {
-  window: {},
-  global: {},
-  exports: {},
-  module: { exports: {} },
-};
-vm.createContext(sandbox);
-vm.runInContext(lameCode, sandbox);
-const { Mp3Encoder } = sandbox.lamejs;
-
-// Função para remover emojis e caracteres especiais do título
-function limparEmojis(texto) {
-  if (!texto) return "";
-  return texto
-    .replace(
-      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F0F5}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}\u{2B50}\u{2B06}\u{2192}\uFE00-\uFE0F]/gu,
-      "",
-    )
-    .trim();
-}
-
-/**
- * Linha de tabela GFM (| célula | célula |).
- * A renderização web continua intacta; isto só afeta o texto enviado ao TTS.
- */
-function ehLinhaTabelaMarkdown(linha) {
-  const texto = linha.trim();
-  if (!texto.includes("|")) return false;
-  return texto.startsWith("|") || /\|.+\|/.test(texto);
-}
-
-function ehSeparadorTabelaMarkdown(linha) {
-  const texto = linha.trim();
-  // Ex.: | --- | :---: | ---: |  ou  |:---|:---:|---:|
-  if (!texto.includes("|") || !/-{3,}/.test(texto)) return false;
-  return /^[\s|:\-]+$/.test(texto);
-}
-
-function extrairCelulasTabela(linha) {
-  let texto = linha.trim();
-  if (texto.startsWith("|")) texto = texto.slice(1);
-  if (texto.endsWith("|")) texto = texto.slice(0, -1);
-  return texto.split("|").map((celula) => celula.trim());
-}
-
-/**
- * Converte blocos de tabela Markdown em frases faláveis.
- * Remove pipes, traços de alinhamento e a “forma” da tabela no áudio.
- */
-function converterTabelasMarkdownParaLeitura(markdown) {
-  const linhas = markdown.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
-  const resultado = [];
-  let indice = 0;
-
-  while (indice < linhas.length) {
-    const linhaAtual = linhas[indice];
-    const proxima = linhas[indice + 1];
-
-    // Início de tabela: linha com | e (opcionalmente) separador na linha seguinte
-    const pareceInicioTabela =
-      ehLinhaTabelaMarkdown(linhaAtual) &&
-      !ehSeparadorTabelaMarkdown(linhaAtual) &&
-      proxima !== undefined &&
-      ehSeparadorTabelaMarkdown(proxima);
-
-    if (!pareceInicioTabela) {
-      resultado.push(linhaAtual);
-      indice += 1;
-      continue;
-    }
-
-    const bloco = [];
-    while (indice < linhas.length && ehLinhaTabelaMarkdown(linhas[indice])) {
-      bloco.push(linhas[indice]);
-      indice += 1;
-    }
-
-    const linhasDados = bloco.filter((linha) => !ehSeparadorTabelaMarkdown(linha));
-    if (linhasDados.length === 0) continue;
-
-    const cabecalhos = extrairCelulasTabela(linhasDados[0]);
-    const linhasCorpo = linhasDados.slice(1).map(extrairCelulasTabela);
-
-    if (linhasCorpo.length === 0) {
-      // Só cabeçalho: lê as células em sequência
-      resultado.push(cabecalhos.filter(Boolean).join(". ") + ".");
-      continue;
-    }
-
-    const frases = [];
-    for (const celulas of linhasCorpo) {
-      const partes = [];
-      for (let coluna = 0; coluna < Math.max(cabecalhos.length, celulas.length); coluna += 1) {
-        const titulo = (cabecalhos[coluna] || "").trim();
-        const valor = (celulas[coluna] || "").trim();
-        if (!valor && !titulo) continue;
-        if (titulo && valor) {
-          partes.push(`${titulo}: ${valor}`);
-        } else if (valor) {
-          partes.push(valor);
-        }
-      }
-      if (partes.length > 0) {
-        frases.push(partes.join(". ") + ".");
-      }
-    }
-
-    if (frases.length > 0) {
-      resultado.push(frases.join(" "));
-    }
-  }
-
-  return resultado.join("\n");
-}
-
-// Função para limpar marcações markdown do texto (TTS; não altera o .md da web)
-function limparMarkdownParaLeitura(markdown) {
-  if (!markdown) return "";
-  let texto = markdown;
-  // Remove blocos marcados para serem ignorados no áudio (ex: referências)
-  texto = texto.replace(new RegExp(PADRAO_AUDIO_SKIP, "gi"), "");
-  // Tags de corte: nunca são lidas (o fatiamento já as usou antes)
-  texto = texto.replace(new RegExp(PADRAO_TAG_CUT, "gi"), " ");
-  // Tabelas: na web ficam GFM; no áudio viram frases (sem | nem ---)
-  texto = converterTabelasMarkdownParaLeitura(texto);
-  texto = texto.replace(/```[\s\S]*?```/g, " (exemplo de código omitido) ");
-  texto = texto.replace(/`([^`]+)`/g, "$1");
-  texto = texto.replace(/!\[([^\]]*)\]\([^)]+\)/g, "");
-  texto = texto.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-  texto = texto.replace(/^#+\s+(.+)$/gm, "$1");
-  texto = texto.replace(/\*\*([^*]+)\*\*/g, "$1");
-  texto = texto.replace(/\*([^*]+)\*/g, "$1");
-  texto = texto.replace(/__([^_]+)__/g, "$1");
-  texto = texto.replace(/_([^_]+)_/g, "$1");
-  texto = texto.replace(/^[\s]*[*+-]\s+/gm, "");
-  texto = texto.replace(/^[\s]*\d+\.\s+/gm, "");
-  texto = texto.replace(/^[\s]*>\s+/gm, "");
-  texto = texto.replace(/\n+/g, " ");
-  texto = texto.replace(/\s+/g, " ");
-  return texto.trim();
-}
-
-// Converte bytes PCM para Buffer MP3
-function converterPcmParaMp3Buffer(pcmData, sampleRate) {
-  const length = Math.floor(pcmData.byteLength / 2);
-  const amostras = new Int16Array(
-    pcmData.buffer,
-    pcmData.byteOffset,
-    length,
-  );
-
-  const encoder = new Mp3Encoder(1, sampleRate, 128); // 1 canal, 24000Hz, 128kbps
-  const mp3Chunks = [];
-
-  const tamanhoBloco = 1152;
-  for (let i = 0; i < amostras.length; i += tamanhoBloco) {
-    const bloco = amostras.subarray(i, i + tamanhoBloco);
-    const mp3Buffer = encoder.encodeBuffer(bloco);
-    if (mp3Buffer.length > 0) {
-      mp3Chunks.push(Buffer.from(mp3Buffer));
-    }
-  }
-
-  const finalBuffer = encoder.flush();
-  if (finalBuffer.length > 0) {
-    mp3Chunks.push(Buffer.from(finalBuffer));
-  }
-
-  return Buffer.concat(mp3Chunks);
-}
-
-/**
- * Monta as partes da narração a partir do Markdown da lição.
- *
- * - `<!-- audio-skip-start/end -->`: bloco inteiro fora do áudio
- * - `<!-- cut -->`: ponto de corte entre partes (tag não é falada)
- * - Não há corte no meio do texto por pontuação ou limite cego
- * - Se alguma parte limpa passar de LIMITE_CARACTERES_POR_PARTE → erro pedindo mais cuts
- */
-function montarPartesNarracao(tituloLimpo, corpoMarkdown) {
-  const corpoBruto = corpoMarkdown || "";
-  const temTagCut = new RegExp(PADRAO_TAG_CUT, "i").test(corpoBruto);
-
-  // 1) Remove skip de áudio antes de fatiar
-  const semSkip = corpoBruto.replace(new RegExp(PADRAO_AUDIO_SKIP, "gi"), "\n");
-
-  // 2) Fatia só nas tags <!-- cut -->
-  const segmentosBrutos = semSkip.split(new RegExp(PADRAO_TAG_CUT, "i"));
-
-  const partes = [];
-  let tituloJaAplicado = false;
-
-  for (const segmento of segmentosBrutos) {
-    let texto = limparMarkdownParaLeitura(segmento);
-    if (!tituloJaAplicado && tituloLimpo) {
-      texto = texto ? `${tituloLimpo}. ${texto}` : `${tituloLimpo}.`;
-      tituloJaAplicado = true;
-    }
-    if (texto) partes.push(texto);
-  }
-
-  if (partes.length === 0) {
-    throw new Error(
-      "Nada para sintetizar após limpar o Markdown (corpo vazio ou só em audio-skip).",
-    );
-  }
-
-  const totalChars = partes.reduce((soma, parte) => soma + parte.length, 0);
-  const partesEstouradas = partes
-    .map((parte, indice) => ({
-      indice: indice + 1,
-      caracteres: parte.length,
-    }))
-    .filter((item) => item.caracteres > LIMITE_CARACTERES_POR_PARTE);
-
-  if (partesEstouradas.length > 0) {
-    const detalhe = partesEstouradas
-      .map((item) => `parte ${item.indice}: ${item.caracteres} chars`)
-      .join("; ");
-    const dica = temTagCut
-      ? `Insira mais <!-- cut --> no .md entre seções naturais (a tag não é lida no áudio).`
-      : `O texto tem ${totalChars} chars (limite ${LIMITE_CARACTERES_POR_PARTE} por parte). Insira <!-- cut --> no .md nos pontos em que a narração pode pausar/continuar. A tag não aparece na web nem é falada.`;
-    throw new Error(
-      `Parte(s) acima de ${LIMITE_CARACTERES_POR_PARTE} caracteres (${detalhe}). ${dica}`,
-    );
-  }
-
-  return {
-    partes,
-    totalChars,
-    temTagCut,
-  };
-}
-
 async function aguardarRateLimit(mensagemOpcional) {
   const msg =
     mensagemOpcional ||
@@ -320,28 +71,8 @@ async function aguardarRateLimit(mensagemOpcional) {
 }
 
 /**
- * Uma chamada TTS: devolve PCM bruto (Buffer).
- */
-async function requisitarPcmDaApi(ai, texto, voz) {
-  const resposta = await ai.interactions.create({
-    model: MODELO_TTS,
-    input: `${PREFIXO_PROMPT_TTS}${texto}`,
-    response_format: { type: "audio" },
-    generation_config: {
-      speech_config: [{ voice: voz }],
-    },
-  });
-
-  const audioBase64 = resposta.output_audio?.data;
-  if (!audioBase64) {
-    throw new Error(`Áudio retornado nulo para a voz ${voz}.`);
-  }
-  return Buffer.from(audioBase64, "base64");
-}
-
-/**
  * Sintetiza uma lista de partes já montadas (via <!-- cut -->).
- * PCM concatenado → um único MP3.
+ * Cada parte passa por normalização RMS (-18 dBFS) e pausa natural antes de virar MP3.
  */
 async function sintetizarPartesParaMp3(ai, partes, voz, opcoes = {}) {
   const { rotuloBase = voz } = opcoes;
@@ -375,11 +106,17 @@ async function sintetizarPartesParaMp3(ai, partes, voz, opcoes = {}) {
     );
 
     try {
-      const pcm = await requisitarPcmDaApi(ai, parte, voz);
+      const pcm = await requisitarPcmDaApi(
+        ai,
+        parte,
+        voz,
+        indice,
+        partes.length,
+      );
       spinner.parar(true);
       pcmPartes.push(pcm);
       console.log(
-        `  ${FG_GREEN}✔ PCM recebido${partes.length > 1 ? ` (parte ${indice + 1}/${partes.length})` : ""}: ${(pcm.length / 1024).toFixed(1)} KB${C_RESET}`,
+        `  ${FG_GREEN}✔ PCM recebido e equalizado${partes.length > 1 ? ` (parte ${indice + 1}/${partes.length})` : ""}: ${(pcm.length / 1024).toFixed(1)} KB${C_RESET}`,
       );
     } catch (erro) {
       spinner.parar(false);
@@ -393,7 +130,7 @@ async function sintetizarPartesParaMp3(ai, partes, voz, opcoes = {}) {
     }
   }
 
-  const pcmTotal = Buffer.concat(pcmPartes);
+  const pcmTotal = unirPartesPcmNormalizadas(pcmPartes, TAXA_AMOSTRAGEM_PCM);
   const mp3Buffer = converterPcmParaMp3Buffer(pcmTotal, TAXA_AMOSTRAGEM_PCM);
   return {
     mp3Buffer,
@@ -679,6 +416,7 @@ async function main() {
     // Varre e mapeia os arquivos de conteúdo
     const todosArquivos = buscarArquivosMarkdown(dirConteudo);
     const licoesComVozesFaltantes = [];
+    const todasLicoesMapeadas = [];
     let totalLicoesMapeadas = 0;
 
     todosArquivos.forEach((arqPath) => {
@@ -692,6 +430,9 @@ async function main() {
         const corpoMarkdown = conteudo.replace(/^---[\s\S]*?---/, "").trim();
 
         const vozesFaltantes = [];
+        const todasVozesLicao = [];
+        const statusPorVoz = {};
+
         ["Aoede", "Kore"].forEach((voz) => {
           const dirVoz = path.join(dirPublicAudios, voz);
           const nomeArquivoNovo = `${id}.mp3`;
@@ -716,15 +457,28 @@ async function main() {
             }
           }
 
-          const jaSintetizado = jaExisteFisico;
+          statusPorVoz[voz] = jaExisteFisico;
+          todasVozesLicao.push({
+            voz,
+            nomeArquivoFinal: nomeArquivoNovo,
+            caminhoArquivoFinal: caminhoArquivoNovo,
+          });
 
-          if (!jaSintetizado) {
+          if (!jaExisteFisico) {
             vozesFaltantes.push({
               voz,
               nomeArquivoFinal: nomeArquivoNovo,
               caminhoArquivoFinal: caminhoArquivoNovo,
             });
           }
+        });
+
+        todasLicoesMapeadas.push({
+          id,
+          titulo,
+          corpoMarkdown,
+          vozes: todasVozesLicao,
+          statusPorVoz,
         });
 
         if (vozesFaltantes.length > 0) {
@@ -754,6 +508,9 @@ async function main() {
     console.log(`\n  ${C_BOLD}📊 STATUS DA PLATAFORMA:${C_RESET}`);
     console.log(`  ┌${"─".repeat(58)}┐`);
     console.log(
+      `  │  • Motor Ativo:      ${FG_VIOLET}${MODELO_TTS.padEnd(36)}${C_RESET}│`,
+    );
+    console.log(
       `  │  • Lições Mapeadas:  ${FG_CYAN}${totalLicoesMapeadas.toString().padEnd(36)}${C_RESET}│`,
     );
     console.log(
@@ -775,16 +532,22 @@ async function main() {
       `      ${FG_GRAY}Sintetiza as vozes para as primeiras lições pendentes.${C_RESET}\n`,
     );
     console.log(
-      `  [${FG_CYAN}2${C_RESET}] 🎯 ${C_BOLD}Selecionar Lições Específicas${C_RESET}`,
+      `  [${FG_CYAN}2${C_RESET}] 🎯 ${C_BOLD}Selecionar Lições Pendentes${C_RESET}`,
     );
     console.log(
-      `      ${FG_GRAY}Escolha manualmente quais lições e vozes deseja gerar.${C_RESET}\n`,
+      `      ${FG_GRAY}Escolha manualmente quais lições pendentes deseja gerar.${C_RESET}\n`,
     );
     console.log(
       `  [${FG_CYAN}3${C_RESET}] 🧪 ${C_BOLD}Modo Teste Avulso${C_RESET}`,
     );
     console.log(
       `      ${FG_GRAY}Sintetiza um arquivo markdown customizado para teste.${C_RESET}\n`,
+    );
+    console.log(
+      `  [${FG_CYAN}4${C_RESET}] 🔄 ${C_BOLD}Catálogo Completo / Regerar Áudios Prontos${C_RESET}`,
+    );
+    console.log(
+      `      ${FG_GRAY}Exibe todas as ${totalLicoesMapeadas} lições (prontas e pendentes) para regerar.${C_RESET}\n`,
     );
     console.log(
       `  [${FG_CYAN}0${C_RESET}] 🚪 ${C_BOLD}Sair do Programa${C_RESET}`,
@@ -796,7 +559,7 @@ async function main() {
     const opcaoMenu = await perguntarOpcaoNumerica(
       rl,
       `\n  ${C_BOLD}Digite a opção desejada [Padrão: 1]: ${C_RESET}`,
-      3,
+      4,
       1,
     );
 
@@ -838,7 +601,7 @@ async function main() {
         licoesParaProcessar,
       );
     } else if (opcaoMenu === 2) {
-      // SELECIONAR LIÇÕES ESPECÍFICAS
+      // SELECIONAR LIÇÕES PENDENTES
       if (licoesComVozesFaltantes.length === 0) {
         console.log(
           `\n  ${FG_GREEN}✔ Excelente! Todas as lições já possuem áudios completos.${C_RESET}`,
@@ -847,7 +610,7 @@ async function main() {
         continue;
       }
 
-      console.log(`\n  ${C_BOLD}📝 LIÇÕES PENDENTES DE ÁUDIO:${C_RESET}`);
+      console.log(`\n  ${C_BOLD}📝 LIÇÕES PENDENTES DE ÁUDIO (${licoesCompletasCount} lições já estão 100% prontas — veja na Opção 4):${C_RESET}`);
       console.log(
         `  ${FG_DARK_GRAY}──────────────────────────────────────────────────────────────────────────────${C_RESET}`,
       );
@@ -874,6 +637,46 @@ async function main() {
         rl,
         licoesComVozesFaltantes.length,
         licoesComVozesFaltantes,
+      );
+      licoesParaProcessar = licoesSelecionadas;
+      vozesEscolhidas = await perguntarVozesPendentesParaGerar(
+        rl,
+        licoesParaProcessar,
+      );
+    } else if (opcaoMenu === 4) {
+      // CATÁLOGO COMPLETO / REGERAR LIÇÕES PRONTAS OU PENDENTES
+      console.log(`\n  ${C_BOLD}📚 CATÁLOGO COMPLETO DE LIÇÕES (${totalLicoesMapeadas} aulas):${C_RESET}`);
+      console.log(
+        `  ${FG_DARK_GRAY}──────────────────────────────────────────────────────────────────────────────${C_RESET}`,
+      );
+      console.log(
+        `    ${C_BOLD}Nº  | ID                 | TÍTULO                       | STATUS DAS VOZES${C_RESET}`,
+      );
+      console.log(
+        `  ${FG_DARK_GRAY}──────────────────────────────────────────────────────────────────────────────${C_RESET}`,
+      );
+      todasLicoesMapeadas.forEach((lic, index) => {
+        const numStr = (index + 1).toString().padStart(2, " ");
+        const idStr = lic.id.padEnd(18);
+        const titStr = limparEmojis(lic.titulo).substring(0, 28).padEnd(28);
+        const stAoede = lic.statusPorVoz.Aoede
+          ? `${FG_GREEN}✔ Aoede${C_RESET}`
+          : `${FG_YELLOW}⏳ Aoede${C_RESET}`;
+        const stKore = lic.statusPorVoz.Kore
+          ? `${FG_GREEN}✔ Kore${C_RESET}`
+          : `${FG_YELLOW}⏳ Kore${C_RESET}`;
+        console.log(
+          `   [${FG_CYAN}${numStr}${C_RESET}] | ${FG_CYAN}${idStr}${C_RESET} | ${titStr} | ${stAoede}  ${stKore}`,
+        );
+      });
+      console.log(
+        `  ${FG_DARK_GRAY}──────────────────────────────────────────────────────────────────────────────${C_RESET}`,
+      );
+
+      const licoesSelecionadas = await perguntarEscolhaLicoes(
+        rl,
+        todasLicoesMapeadas.length,
+        todasLicoesMapeadas,
       );
       licoesParaProcessar = licoesSelecionadas;
       vozesEscolhidas = await perguntarVozesPendentesParaGerar(
@@ -979,8 +782,11 @@ async function main() {
         );
         fs.writeFileSync(caminhoSaida, mp3Buffer);
 
+        const caminhoTesteClicavel = path
+          .relative(path.join(__dirname, ".."), caminhoSaida)
+          .replace(/\\/g, "/");
         console.log(
-          `\n  ${FG_GREEN}✔ Sucesso! MP3 de teste gerado em: ${caminhoSaida} (${(mp3Buffer.length / 1024).toFixed(1)} KB)${quantidadePartes > 1 ? ` · ${quantidadePartes} partes unidas` : ""}${C_RESET}`,
+          `\n  ${FG_GREEN}✔ Sucesso! MP3 de teste gerado em:${C_RESET} ${FG_CYAN}${C_UNDERLINE}${caminhoTesteClicavel}${C_RESET} ${FG_GREEN}(${(mp3Buffer.length / 1024).toFixed(1)} KB)${quantidadePartes > 1 ? ` · ${quantidadePartes} partes unidas` : ""}${C_RESET}`,
         );
       } catch (err) {
         console.error(
@@ -1051,8 +857,9 @@ async function main() {
             recursive: true,
           });
           fs.writeFileSync(itemVoz.caminhoArquivoFinal, mp3Buffer);
+          const caminhoClicavel = `public/audios/${itemVoz.voz}/${itemVoz.nomeArquivoFinal}`;
           console.log(
-            `  ${FG_GREEN}✔ Áudio MP3 gravado: ${itemVoz.voz}/${itemVoz.nomeArquivoFinal} (${(mp3Buffer.length / 1024).toFixed(1)} KB)${quantidadePartes > 1 ? ` · ${quantidadePartes} partes unidas` : ""}${C_RESET}`,
+            `  ${FG_GREEN}✔ Áudio MP3 gravado:${C_RESET} ${FG_CYAN}${C_UNDERLINE}${caminhoClicavel}${C_RESET} ${FG_GREEN}(${(mp3Buffer.length / 1024).toFixed(1)} KB)${quantidadePartes > 1 ? ` · ${quantidadePartes} partes unidas` : ""}${C_RESET}`,
           );
 
           if (!mapa[licao.id]) mapa[licao.id] = {};

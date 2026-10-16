@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "sintetizar": "node sintetizar/sintetizar.js",
     "lint:travessoes": "node tools/analisar-travessoes.js"
   },
   "dependencies": {

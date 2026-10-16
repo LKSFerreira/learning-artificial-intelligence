@@ -84,7 +84,10 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
     return () => document.removeEventListener('mousedown', tratarCliqueFora);
   }, []);
 
-  // Atualiza a URL do áudio sempre que o licaoId ou voz muda e verifica se o arquivo existe
+  // Mapa de URLs resolvidas por voz na lição atual (permite fallback inteligente entre Aoede e Kore)
+  const [urlsPorVoz, setUrlsPorVoz] = useState<Record<string, string>>({});
+
+  // Atualiza a URL do áudio sempre que o licaoId ou voz muda e verifica quais vozes existem
   // (CDN/Supabase primeiro; se faltar, tenta public/audios local)
   useEffect(() => {
     let cancelado = false;
@@ -99,33 +102,56 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
       audioRef.current = null;
     }
 
-    const candidatos = obterCandidatosUrlAudio(licaoId, voz);
-
-    async function resolverUrlDisponivel() {
+    async function testarCandidatosVoz(idVoz: string): Promise<string | null> {
+      const candidatos = obterCandidatosUrlAudio(licaoId, idVoz);
       for (const url of candidatos) {
         try {
           const resposta = await fetch(url, { method: 'HEAD' });
-          if (cancelado) {
-            return;
-          }
-          if (resposta.ok) {
-            setAudioUrl(url);
-            setDisponivel(true);
-            return;
+          const contentType = resposta.headers.get('content-type') || '';
+          // Evita falso-positivo do SPA fallback do Vite (que retorna index.html text/html com 200)
+          if (resposta.ok && !contentType.includes('text/html')) {
+            return url;
           }
         } catch {
           // tenta o próximo candidato (ex.: remoto falhou, sobra local)
         }
       }
-
-      if (cancelado) {
-        return;
-      }
-      setDisponivel(false);
-      setErro('Áudio indisponível para esta lição (não gerado).');
+      return null;
     }
 
-    void resolverUrlDisponivel();
+    async function resolverUrlsDaLicao() {
+      const mapaResolvido: Record<string, string> = {};
+      await Promise.all(
+        vozesDisponiveis.map(async (itemVoz) => {
+          const urlEncontrada = await testarCandidatosVoz(itemVoz.id);
+          if (urlEncontrada) {
+            mapaResolvido[itemVoz.id] = urlEncontrada;
+          }
+        })
+      );
+
+      if (cancelado) return;
+      setUrlsPorVoz(mapaResolvido);
+
+      if (mapaResolvido[voz]) {
+        setAudioUrl(mapaResolvido[voz]);
+        setDisponivel(true);
+        return;
+      }
+
+      // Fallback automático: se a voz preferida ainda não foi gerada nesta aula, mas outra voz já existe
+      const primeiraVozDisponivel = Object.keys(mapaResolvido)[0];
+      if (primeiraVozDisponivel) {
+        setVoz(primeiraVozDisponivel);
+        setAudioUrl(mapaResolvido[primeiraVozDisponivel]);
+        setDisponivel(true);
+        return;
+      }
+
+      setDisponivel(false);
+    }
+
+    void resolverUrlsDaLicao();
 
     return () => {
       cancelado = true;
@@ -421,29 +447,43 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
                 <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider px-2 py-1 mb-1 border-b border-slate-800/60 select-none">
                   Vozes Gemini
                 </p>
-                {vozesDisponiveis.map(v => (
-                  <button
-                    key={v.id}
-                    onClick={() => { setVoz(v.id); setVozesAberto(false); }}
-                    className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all flex flex-col gap-0.5 ${
-                      voz === v.id 
-                        ? 'bg-indigo-600/10 text-indigo-400 font-bold' 
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span className="truncate">{v.nome}</span>
-                      {voz === v.id && <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0"></span>}
-                    </div>
-                    {v.descricao && (
-                      <span className={`text-[9px] font-normal leading-normal truncate ${
-                        voz === v.id ? 'text-indigo-400/65' : 'text-slate-500'
-                      }`}>
-                        {v.descricao}
-                      </span>
-                    )}
-                  </button>
-                ))}
+                {vozesDisponiveis.map(itemVoz => {
+                  const vozTemAudio = Boolean(urlsPorVoz[itemVoz.id]);
+                  return (
+                    <button
+                      key={itemVoz.id}
+                      onClick={() => { setVoz(itemVoz.id); setVozesAberto(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg transition-all flex flex-col gap-0.5 ${
+                        voz === itemVoz.id 
+                          ? 'bg-indigo-600/10 text-indigo-400 font-bold' 
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <span className="truncate">{itemVoz.nome}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+                              vozTemAudio
+                                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-slate-800 text-slate-500'
+                            }`}
+                          >
+                            {vozTemAudio ? 'Pronta' : 'Em breve'}
+                          </span>
+                          {voz === itemVoz.id && <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0"></span>}
+                        </div>
+                      </div>
+                      {itemVoz.descricao && (
+                        <span className={`text-[9px] font-normal leading-normal truncate ${
+                          voz === itemVoz.id ? 'text-indigo-400/65' : 'text-slate-500'
+                        }`}>
+                          {itemVoz.descricao}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -457,7 +497,7 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
                 ? 'bg-slate-900/40 border-slate-800/50 text-slate-600 cursor-not-allowed shadow-none'
                 : 'bg-slate-900/80 hover:bg-slate-800 border border-slate-800/80 text-slate-400 hover:text-white active:scale-95 shadow-md'
             }`}
-            title={disponivel !== true ? 'Download indisponível (áudio não gerado)' : 'Baixar MP3'}
+            title={disponivel !== true ? 'Download indisponível (áudio ainda em preparação)' : 'Baixar MP3'}
           >
             <Download size={16} />
           </button>
@@ -574,12 +614,21 @@ export function PlayerAudioIA({ licaoId, faseId, passoIndice, titulo }: Propried
         </span>
       </div>
 
-      {/* Box de Erros Elegante */}
+      {/* Status Amigável (Quando ainda não gerado) ou Alerta de Falha de Reprodução */}
+      {disponivel === false && !erro && (
+        <div className="mt-1 px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-800/80 text-slate-400 text-xs flex items-center justify-between gap-2 animate-[fadeIn_0.2s_ease-out] relative z-10">
+          <span>Narração em áudio desta lição em preparação.</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+            Em breve
+          </span>
+        </div>
+      )}
+
       {erro && (
         <div className="mt-1 p-3 rounded-xl bg-rose-950/20 border border-rose-900/30 text-rose-300 text-xs flex items-start gap-2 animate-[fadeIn_0.2s_ease-out] relative z-10">
           <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-400" />
           <div>
-            <p className="font-semibold">Áudio Estático</p>
+            <p className="font-semibold">Falha na reprodução do áudio</p>
             <p className="mt-0.5 opacity-90">{erro}</p>
           </div>
         </div>
