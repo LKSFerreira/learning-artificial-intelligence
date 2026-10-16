@@ -791,8 +791,8 @@ export function ExemploAngelingCerebro(): React.ReactElement {
           <div className="shrink-0 border-t border-slate-800 bg-slate-950/80 px-3 py-2 flex items-center justify-between gap-3">
             <p className="text-xs text-slate-400 leading-snug min-w-0 flex-1 text-left">
               Cada entrada acende neurônios na{" "}
-              <span className="text-amber-300/90">mesma cor do botão</span>
-              — a rede monta a classificação feature a feature.
+              <span className="text-amber-300/90">mesma cor do botão </span>
+              , a imagem é montada em camadas de profundidade.
             </p>
             <div className="text-right shrink-0">
               {qtd === 0 && (

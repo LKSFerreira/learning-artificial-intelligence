@@ -1,6 +1,6 @@
 ---
 id: "rl_intro"
-titulo: "Aprender Errando: a Origem do Reforço 🧪"
+titulo: "Aprender Errando 🧪"
 estadoVisual: "rl_dog_training"
 tipo: "content"
 ordem: 5
