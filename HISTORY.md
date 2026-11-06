@@ -4,6 +4,15 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 
 ## Entradas
 
+### 2026-10-16 — Reconstrução do Loop Infinito de RL (`CicloRL.tsx`) ✅
+
+- **Continuidade visual:** a lição 07 agora reutiliza a sala e a persona Bibi sem alterar a implementação de `PilaresRL`, conectando os cinco pilares à dinâmica temporal do aprendizado.
+- **Máquina de estados explícita:** observação, escolha, reação do ambiente, feedback e atualização foram separadas em microetapas controláveis, com execução manual e automática.
+- **Rigor acadêmico:** cada volta constrói visualmente a quádrupla $(s_t, a_t, r_t, s_{t+1})$, distingue ações do agente de respostas do ambiente e evita simular um Q-Learning inexistente.
+- **Experiência pedagógica:** adicionados palco ilustrado, hipótese manual de ação, caderno de experiência progressivo, memória das últimas transições, retorno do episódio e condições terminais.
+- **Acessibilidade:** controles com foco visível, estados desabilitados claros, regiões vivas para mudanças de etapa e suporte a `prefers-reduced-motion`.
+- **Validação:** `npx tsc --noEmit`, `npm run build`, `npm run lint:travessoes`, `git diff --check` e inspeções headless em 1920x1080, 1366x768 e largura estreita aprovados.
+
 ### 2026-08-17 — Elevação Didática de Os 5 Pilares do RL (`PilaresRL.tsx`) ✅
 
 - **Doc detalhada:** [.metadocs/implemented/pilares_rl_interativos.md](.metadocs/implemented/pilares_rl_interativos.md)
@@ -193,4 +202,3 @@ Registre aqui entregas concluídas, decisões importantes e links para `.metadoc
 - `docs/fase_*.md` marcados como apoio (fonte de verdade = `src/conteudo/`).
 - `.metadocs/escopo.md` e registro R atualizados para a mesma verdade.
 - `servicoGemini.ts`: leitura prioritária de `GEMINI_API_KEY` (alinhada ao `vite.config.ts`).
-

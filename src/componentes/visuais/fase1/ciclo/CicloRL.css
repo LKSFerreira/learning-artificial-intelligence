@@ -1,0 +1,86 @@
+.ciclo-rl-raiz {
+  color-scheme: dark;
+  container-type: inline-size;
+}
+
+.ciclo-layout-principal {
+  display: grid;
+  flex: none !important;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: auto !important;
+}
+
+.ciclo-indicador-etapa {
+  justify-content: center;
+}
+
+.ciclo-etapa-texto {
+  display: none;
+}
+
+.ciclo-controles {
+  display: grid !important;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  width: 100%;
+}
+
+.ciclo-botao-avancar {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+@container (min-width: 28rem) {
+  .ciclo-controles {
+    display: flex !important;
+    width: auto;
+  }
+
+  .ciclo-botao-avancar {
+    width: auto;
+  }
+}
+
+@container (min-width: 46rem) {
+  .ciclo-layout-principal {
+    flex: 1 1 0% !important;
+    grid-template-columns: minmax(0, 1fr) 18rem;
+    min-height: 0 !important;
+  }
+
+  .ciclo-indicador-etapa {
+    justify-content: flex-start;
+  }
+
+  .ciclo-etapa-texto {
+    display: block;
+  }
+}
+
+.ciclo-bibi-persona {
+  transition: left 680ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ciclo-recompensa-entrada {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.88);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.ciclo-recompensa-flutuante {
+  animation: ciclo-recompensa-entrada 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ciclo-bibi-persona {
+    transition: none;
+  }
+
+  .ciclo-recompensa-flutuante {
+    animation: none;
+  }
+}

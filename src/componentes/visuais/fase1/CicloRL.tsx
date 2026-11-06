@@ -1,430 +1,299 @@
 /**
  * Visual: O Loop Infinito do Aprendizado por Reforço.
  *
- * Apresentação fluida, animada e didática do ciclo de 5 etapas:
- * Observar Estado -> Escolher Ação -> Reação do Ambiente -> Feedback -> Atualizar Conhecimento.
+ * Transforma cada volta do loop em uma experiência observável:
+ * estado, ação, recompensa e próximo estado.
  *
  * **Estado Visual:** ``rl_cycle_animation``
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useReducer, useState } from "react";
 import {
-  Eye,
-  Brain,
-  Globe,
-  Trophy,
-  RefreshCw,
-  Play,
+  Bot,
+  ChevronRight,
+  CircleStop,
   Pause,
-  SkipForward,
+  Play,
   RotateCcw,
-  Zap,
-  CheckCircle2,
+  StepForward,
 } from "lucide-react";
 
-type EtapaCiclo = 1 | 2 | 3 | 4 | 5;
-type TipoAcao = "frente" | "pegar" | "voltar";
+import { CadernoExperiencia } from "./ciclo/CadernoExperiencia";
+import { CenaCicloBibi } from "./ciclo/CenaCicloBibi";
+import {
+  ETAPAS_CICLO,
+  criarEstadoInicialCiclo,
+  reduzirEstadoCiclo,
+  type EtapaCiclo,
+} from "./ciclo/motorCicloRL";
+import type { TipoAcaoBibi } from "./pilares/dadosPilares";
+import "./ciclo/CicloRL.css";
 
-interface EtapaInfo {
-  numero: EtapaCiclo;
-  titulo: string;
-  subtitulo: string;
-  icone: React.ReactNode;
-  corTexto: string;
-  corBg: string;
-  corBorder: string;
-  explicacao: string;
-}
+const INTERVALO_MODO_AUTOMATICO = 1_450;
 
-const ETAPAS_INFO: Record<EtapaCiclo, EtapaInfo> = {
-  1: {
-    numero: 1,
-    titulo: "1. Observar",
-    subtitulo: "Ler Estado (s_t)",
-    icone: <Eye size={16} className="text-cyan-400" />,
-    corTexto: "text-cyan-300",
-    corBg: "bg-cyan-500/10",
-    corBorder: "border-cyan-500/50",
-    explicacao: "O Agente lê o estado atual do ambiente antes de agir.",
-  },
-  2: {
-    numero: 2,
-    titulo: "2. Escolher",
-    subtitulo: "Política Seleciona Ação (a_t)",
-    icone: <Brain size={16} className="text-fuchsia-400" />,
-    corTexto: "text-fuchsia-300",
-    corBg: "bg-fuchsia-500/10",
-    corBorder: "border-fuchsia-500/50",
-    explicacao: "O cérebro da IA escolhe a ação com base no conhecimento acumulado.",
-  },
-  3: {
-    numero: 3,
-    titulo: "3. Reagir",
-    subtitulo: "Ambiente Processa",
-    icone: <Globe size={16} className="text-emerald-400" />,
-    corTexto: "text-emerald-300",
-    corBg: "bg-emerald-500/10",
-    corBorder: "border-emerald-500/50",
-    explicacao: "O mundo executa a física da ação e altera o estado.",
-  },
-  4: {
-    numero: 4,
-    titulo: "4. Feedback",
-    subtitulo: "Recompensa (r_t) + Novo Estado",
-    icone: <Trophy size={16} className="text-rose-400" />,
-    corTexto: "text-rose-300",
-    corBg: "bg-rose-500/10",
-    corBorder: "border-rose-500/50",
-    explicacao: "O Ambiente devolve o sinal de recompensa e o novo estado.",
-  },
-  5: {
-    numero: 5,
-    titulo: "5. Atualizar",
-    subtitulo: "Ajustar Política",
-    icone: <RefreshCw size={16} className="text-amber-400" />,
-    corTexto: "text-amber-300",
-    corBg: "bg-amber-500/10",
-    corBorder: "border-amber-500/50",
-    explicacao: "O Agente ajusta suas preferências internas para a próxima volta.",
-  },
+const ROTULOS_ACAO: Record<TipoAcaoBibi, string> = {
+  recuar: "Esquerda",
+  avancar: "Direita",
+  conectar: "Plugar",
 };
 
-const ROTULOS_ACAO: Record<TipoAcao, string> = {
-  frente: "Mover p/ Frente ➡️",
-  pegar: "Abrir Baú 📦",
-  voltar: "Recuar ⬅️",
-};
-
-export function CicloRL(): React.ReactElement {
-  const [etapaAtiva, setEtapaAtiva] = useState<EtapaCiclo>(1);
-  const [posicao, setPosicao] = useState<number>(0); // 0: Sala, 1: Corredor, 2: Baú
-  const [bauAberto, setBauAberto] = useState<boolean>(false);
-  const [acaoAtual, setAcaoAtual] = useState<TipoAcao | null>(null);
-  const [recompensaAtual, setRecompensaAtual] = useState<number | null>(null);
-  const [acaoForcada, setAcaoForcada] = useState<TipoAcao | null>(null);
-  const [rodandoAuto, setRodandoAuto] = useState<boolean>(false);
-  const [ciclosConcluidos, setCiclosConcluidos] = useState<number>(0);
-  const [episodiosConcluidos, setEpisodiosConcluidos] = useState<number>(0);
-  const [preferenciaAcoes, setPreferenciaAcoes] = useState<Record<TipoAcao, number>>({
-    frente: 50,
-    pegar: 30,
-    voltar: 20,
-  });
-
-  const avancarPasso = useCallback(() => {
-    setEtapaAtiva((etapaAtual) => {
-      const proxima = (etapaAtual === 5 ? 1 : etapaAtual + 1) as EtapaCiclo;
-
-      if (etapaAtual === 1) {
-        // Passo 2: Escolher ação
-        let acao: TipoAcao = acaoForcada || "frente";
-        if (!acaoForcada) {
-          if (posicao === 2 && !bauAberto) acao = "pegar";
-          else if (posicao === 0) acao = "frente";
-          else acao = Math.random() > 0.3 ? "frente" : "voltar";
-        }
-        setAcaoAtual(acao);
-        setAcaoForcada(null);
-      } else if (etapaAtual === 2) {
-        // Passo 3: Reagir no ambiente
-        let r = -0.5;
-        let nPos = posicao;
-
-        if (acaoAtual === "frente") {
-          if (posicao < 2) nPos = posicao + 1;
-          r = -0.5;
-        } else if (acaoAtual === "voltar") {
-          if (posicao > 0) nPos = posicao - 1;
-          r = -1.0;
-        } else if (acaoAtual === "pegar") {
-          if (posicao === 2 && !bauAberto) {
-            setBauAberto(true);
-            r = +10.0;
-          } else {
-            r = -2.0;
-          }
-        }
-
-        setPosicao(nPos);
-        setRecompensaAtual(r);
-      } else if (etapaAtual === 4) {
-        // Passo 5: Atualizar conhecimento
-        setCiclosConcluidos((c) => c + 1);
-        if (acaoAtual && recompensaAtual !== null) {
-          setPreferenciaAcoes((ant) => {
-            const delta = recompensaAtual > 0 ? 12 : -4;
-            const val = Math.max(10, Math.min(80, ant[acaoAtual] + delta));
-            return { ...ant, [acaoAtual]: val };
-          });
-        }
-        if (bauAberto) {
-          setEpisodiosConcluidos((e) => e + 1);
-        }
-      } else if (etapaAtual === 5 && bauAberto) {
-        // Reinício automático para novo episódio
-        setPosicao(0);
-        setBauAberto(false);
-        setAcaoAtual(null);
-        setRecompensaAtual(null);
-      }
-
-      return proxima;
-    });
-  }, [acaoAtual, acaoForcada, bauAberto, posicao, recompensaAtual]);
-
-  useEffect(() => {
-    if (!rodandoAuto) return;
-    const timer = setInterval(() => {
-      avancarPasso();
-    }, 800);
-    return () => clearInterval(timer);
-  }, [rodandoAuto, avancarPasso]);
-
-  const resetar = () => {
-    setEtapaAtiva(1);
-    setPosicao(0);
-    setBauAberto(false);
-    setAcaoAtual(null);
-    setRecompensaAtual(null);
-    setAcaoForcada(null);
-    setCiclosConcluidos(0);
-    setEpisodiosConcluidos(0);
-    setPreferenciaAcoes({ frente: 50, pegar: 30, voltar: 20 });
-    setRodandoAuto(false);
-  };
-
-  const infoEtapa = ETAPAS_INFO[etapaAtiva];
+function IndicadorEtapa({
+  etapa,
+  etapaAtiva,
+}: {
+  etapa: EtapaCiclo;
+  etapaAtiva: EtapaCiclo;
+}): React.ReactElement {
+  const informacoes = ETAPAS_CICLO[etapa];
+  const ativa = etapa === etapaAtiva;
+  const concluida = etapa < etapaAtiva;
 
   return (
-    <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 p-3 md:p-4 overflow-hidden rounded-xl border border-slate-800">
-      {/* 1. O Diagrama das 5 Etapas do Ciclo (Topo) */}
-      <div className="shrink-0 mb-3">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <RefreshCw size={13} className="text-amber-400 animate-spin" />
-            Fluxo Contínuo do Loop de RL:
-          </p>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400">Ciclos: <strong className="text-slate-200 font-mono">{ciclosConcluidos}</strong></span>
-            <span className="text-slate-600">•</span>
-            <span className="text-slate-400">Episódios: <strong className="text-emerald-400 font-mono">{episodiosConcluidos}</strong></span>
+    <li
+      className={`ciclo-indicador-etapa relative flex min-w-0 items-center gap-2 rounded-xl border px-2.5 py-2 transition-all duration-300 sm:px-3 ${
+        ativa
+          ? "border-cyan-300 bg-cyan-400 text-slate-950 shadow-[0_8px_24px_rgba(34,211,238,0.18)]"
+          : concluida
+            ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-100"
+            : "border-slate-700/80 bg-slate-900/85 text-slate-500"
+      }`}
+      aria-current={ativa ? "step" : undefined}
+    >
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[11px] font-black ${
+          ativa
+            ? "border-slate-900/20 bg-slate-950 text-cyan-300"
+            : concluida
+              ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"
+              : "border-slate-700 bg-slate-950 text-slate-500"
+        }`}
+      >
+        {etapa}
+      </span>
+      <span className="ciclo-etapa-texto min-w-0">
+        <strong className="block truncate text-[11px] font-extrabold sm:text-xs">
+          {informacoes.verbo}
+        </strong>
+        <span
+          className={`hidden truncate text-[10px] lg:block ${
+            ativa ? "text-slate-800" : "text-slate-500"
+          }`}
+        >
+          {informacoes.notacao}
+        </span>
+      </span>
+      {etapa < 5 && (
+        <ChevronRight
+          size={14}
+          className="absolute -right-3 z-10 hidden text-slate-600 xl:block"
+          aria-hidden="true"
+        />
+      )}
+    </li>
+  );
+}
+
+export function CicloRL(): React.ReactElement {
+  const [estadoCiclo, despachar] = useReducer(
+    reduzirEstadoCiclo,
+    undefined,
+    criarEstadoInicialCiclo,
+  );
+  const [modoAutomatico, setModoAutomatico] = useState<boolean>(false);
+
+  const avancarMicroPasso = useCallback((): void => {
+    despachar({ tipo: "avancar" });
+  }, []);
+
+  useEffect(() => {
+    if (!modoAutomatico) {
+      return;
+    }
+
+    const temporizador = window.setInterval(
+      avancarMicroPasso,
+      INTERVALO_MODO_AUTOMATICO,
+    );
+
+    return () => window.clearInterval(temporizador);
+  }, [avancarMicroPasso, modoAutomatico]);
+
+  function selecionarAcao(acao: TipoAcaoBibi): void {
+    setModoAutomatico(false);
+    despachar({ tipo: "selecionar_acao", acao });
+  }
+
+  function reiniciarSimulacao(): void {
+    setModoAutomatico(false);
+    despachar({ tipo: "reiniciar" });
+  }
+
+  const informacoesEtapa = ETAPAS_CICLO[estadoCiclo.etapaAtiva];
+  const podeEscolherAcao = estadoCiclo.etapaAtiva === 1 && !modoAutomatico;
+
+  return (
+    <section className="ciclo-rl-raiz flex h-full w-full flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-700/80 bg-slate-950 p-3 text-slate-100 select-none sm:p-4">
+      <header className="shrink-0 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-3 shadow-lg shadow-slate-950/30">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
+              <Bot size={22} strokeWidth={1.8} aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-black tracking-tight text-white sm:text-base">
+                Uma volta completa com Bibi
+              </h3>
+              <p className="text-xs leading-relaxed text-slate-400">
+                Acompanhe quem controla cada etapa e monte uma experiência de RL.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 text-[11px]">
+            <span className="rounded-lg border border-slate-700 bg-slate-950/80 px-2.5 py-1.5 text-slate-400">
+              Experiências{" "}
+              <strong className="font-mono text-white">
+                {estadoCiclo.experienciasConcluidas}
+              </strong>
+            </span>
+            <span className="rounded-lg border border-slate-700 bg-slate-950/80 px-2.5 py-1.5 text-slate-400">
+              Episódio{" "}
+              <strong className="font-mono text-cyan-300">
+                {estadoCiclo.episodioAtual}
+              </strong>
+            </span>
           </div>
         </div>
 
-        {/* 5 Botões do Diagrama */}
-        <div className="grid grid-cols-5 gap-1 md:gap-1.5">
-          {(Object.keys(ETAPAS_INFO) as unknown as EtapaCiclo[]).map((num) => {
-            const item = ETAPAS_INFO[num];
-            const ativa = etapaAtiva === num;
-            return (
-              <div
-                key={num}
-                className={`p-1.5 md:p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all ${
-                  ativa
-                    ? `${item.corBg} ${item.corBorder} ${item.corTexto} ring-2 ring-white/20 scale-[1.03] shadow-lg`
-                    : "bg-slate-900 border-slate-800 text-slate-500 opacity-60"
-                }`}
-              >
-                <div className="flex items-center gap-1">
-                  {item.icone}
-                  <span className="text-[10px] md:text-xs font-bold truncate">{item.titulo.split(". ")[1]}</span>
-                </div>
+        <ol
+          className="mt-3 grid grid-cols-5 gap-1.5"
+          aria-label="Etapas do ciclo de aprendizado por reforço"
+        >
+          {([1, 2, 3, 4, 5] as const).map((etapa) => (
+            <IndicadorEtapa
+              key={etapa}
+              etapa={etapa}
+              etapaAtiva={estadoCiclo.etapaAtiva}
+            />
+          ))}
+        </ol>
+      </header>
+
+      <div className="ciclo-layout-principal min-h-0 flex-1 gap-3">
+        <div className="flex min-h-[470px] min-w-0 flex-col gap-3">
+          <div
+            className="flex min-h-[72px] shrink-0 items-center gap-3 rounded-2xl border border-cyan-400/35 bg-cyan-400/10 px-3.5 py-3"
+            aria-live="polite"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-300 text-sm font-black text-slate-950">
+              {estadoCiclo.etapaAtiva}
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-cyan-300">
+                {informacoesEtapa.titulo}
+              </p>
+              <p className="mt-0.5 text-xs leading-relaxed text-slate-200 sm:text-sm">
+                {informacoesEtapa.explicacao}
+              </p>
+            </div>
+          </div>
+
+          <CenaCicloBibi estadoCiclo={estadoCiclo} />
+
+          <div className="shrink-0 rounded-2xl border border-slate-700/80 bg-slate-900/90 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+                  Sua hipótese para a próxima decisão
+                </p>
+                <p className="mt-0.5 text-xs text-slate-300">
+                  Escolha antes de avançar ou deixe a política demonstrativa decidir.
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* 2. Destaque da Etapa Ativa */}
-      <div className={`shrink-0 mb-3 p-3 rounded-xl border ${infoEtapa.corBorder} ${infoEtapa.corBg} transition-all`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-700">
-              {infoEtapa.icone}
-            </div>
-            <div>
-              <h4 className={`text-xs md:text-sm font-bold ${infoEtapa.corTexto}`}>
-                Etapa {infoEtapa.numero}: {infoEtapa.titulo.split(". ")[1]} — <span className="font-normal opacity-90">{infoEtapa.subtitulo}</span>
-              </h4>
-              <p className="text-xs text-slate-300 mt-0.5">{infoEtapa.explicacao}</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {(["recuar", "avancar", "conectar"] as const).map((acao) => {
+                  const selecionada = estadoCiclo.acaoPlanejada === acao;
+
+                  return (
+                    <button
+                      key={acao}
+                      type="button"
+                      onClick={() => selecionarAcao(acao)}
+                      disabled={!podeEscolherAcao}
+                      className={`min-w-[4.5rem] rounded-lg border px-2.5 py-2 text-[11px] font-extrabold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 ${
+                        selecionada
+                          ? "border-cyan-300 bg-cyan-300 text-slate-950"
+                          : "border-slate-700 bg-slate-950 text-slate-300 hover:border-cyan-400/60 hover:text-white"
+                      }`}
+                    >
+                      {ROTULOS_ACAO[acao]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
+
+        <CadernoExperiencia estadoCiclo={estadoCiclo} />
       </div>
 
-      {/* 3. Palco do Agente no Mundo 2D */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[1fr_14rem] gap-3 overflow-hidden">
-        {/* Mapa do Labirinto/Caminho */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/90 p-3 flex flex-col justify-between overflow-hidden">
-          <div className="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800/80 pb-2">
-            <span>O Mundo do Agente (Sala ➔ Baú)</span>
-            <span className="font-mono text-emerald-400 font-semibold">
-              {bauAberto ? "🎉 Baú Aberto!" : "Em busca do Baú"}
+      <footer className="shrink-0 rounded-2xl border border-slate-700/80 bg-slate-900/95 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2 text-xs text-slate-400">
+            {modoAutomatico ? (
+              <Play size={15} className="shrink-0 text-emerald-400" aria-hidden="true" />
+            ) : (
+              <CircleStop size={15} className="shrink-0 text-cyan-300" aria-hidden="true" />
+            )}
+            <span className="truncate">
+              {modoAutomatico
+                ? "A política demonstrativa está conduzindo o ciclo."
+                : `Próximo: ${informacoesEtapa.proximaInstrucao}`}
             </span>
           </div>
 
-          {/* Trilho Visual */}
-          <div className="my-auto py-6 flex items-center justify-around bg-slate-950/60 rounded-xl border border-slate-800 relative px-4">
-            <div className="absolute top-1/2 left-8 right-8 h-1 bg-slate-800 -translate-y-1/2 rounded-full" />
+          <div className="ciclo-controles flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={reiniciarSimulacao}
+              title="Reiniciar simulação"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-950 text-slate-400 transition-all hover:border-slate-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:scale-[0.98]"
+            >
+              <RotateCcw size={15} strokeWidth={1.8} aria-hidden="true" />
+              <span className="sr-only">Reiniciar simulação</span>
+            </button>
 
-            {/* Sala Inicial (0) */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                  posicao === 0
-                    ? "bg-indigo-500/20 border-indigo-400 shadow-lg shadow-indigo-500/20 scale-110"
-                    : "bg-slate-900 border-slate-800 opacity-60"
-                }`}
-              >
-                {posicao === 0 ? <span className="text-2xl animate-pulse">🤖</span> : <span className="text-xs text-slate-600">🚪</span>}
-              </div>
-              <span className="text-[10px] text-slate-400 font-semibold">Sala</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setModoAutomatico((valorAtual) => !valorAtual)}
+              className={`flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-3 text-xs font-extrabold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:scale-[0.98] ${
+                modoAutomatico
+                  ? "border-amber-300/60 bg-amber-300/10 text-amber-200 hover:bg-amber-300/20"
+                  : "border-emerald-400/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+              }`}
+            >
+              {modoAutomatico ? (
+                <Pause size={15} aria-hidden="true" />
+              ) : (
+                <Play size={15} aria-hidden="true" />
+              )}
+              {modoAutomatico ? "Pausar" : "Executar sozinho"}
+            </button>
 
-            {/* Corredor (1) */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                  posicao === 1
-                    ? "bg-indigo-500/20 border-indigo-400 shadow-lg shadow-indigo-500/20 scale-110"
-                    : "bg-slate-900 border-slate-800 opacity-60"
-                }`}
-              >
-                {posicao === 1 ? <span className="text-2xl animate-pulse">🤖</span> : <span className="text-xs text-slate-600">🧱</span>}
-              </div>
-              <span className="text-[10px] text-slate-400 font-semibold">Corredor</span>
-            </div>
-
-            {/* Baú (2) */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
-                  posicao === 2
-                    ? "bg-amber-500/20 border-amber-400 shadow-lg shadow-amber-500/20 scale-110"
-                    : "bg-slate-900 border-slate-800 opacity-60"
-                }`}
-              >
-                {posicao === 2 && !bauAberto ? (
-                  <span className="text-2xl">🤖</span>
-                ) : bauAberto ? (
-                  <span className="text-2xl">✨📦</span>
-                ) : (
-                  <span className="text-xl">📦</span>
-                )}
-              </div>
-              <span className="text-[10px] text-amber-400 font-bold">Baú 📦</span>
-            </div>
-          </div>
-
-          {/* Estado de Transição Atual */}
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
-              <span className="text-[10px] text-slate-500 block">Ação Escolhida:</span>
-              <strong className="text-fuchsia-300 font-mono">{acaoAtual ? ROTULOS_ACAO[acaoAtual] : "—"}</strong>
-            </div>
-
-            <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
-              <span className="text-[10px] text-slate-500 block">Recompensa (r):</span>
-              <strong className={`font-mono ${recompensaAtual === null ? "text-slate-500" : recompensaAtual > 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                {recompensaAtual === null ? "—" : recompensaAtual > 0 ? `+${recompensaAtual.toFixed(1)}` : recompensaAtual.toFixed(1)}
-              </strong>
-            </div>
-
-            <div className="bg-slate-950 p-2 rounded-lg border border-slate-800">
-              <span className="text-[10px] text-slate-500 block">Status da Política:</span>
-              <strong className="text-amber-300 font-mono">{etapaAtiva === 5 ? "Atualizada! ✓" : "Aguardando"}</strong>
-            </div>
+            <button
+              type="button"
+              onClick={avancarMicroPasso}
+              disabled={modoAutomatico}
+              className="ciclo-botao-avancar flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-cyan-300 px-3.5 text-xs font-black text-slate-950 shadow-[0_8px_20px_rgba(34,211,238,0.16)] transition-all hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <StepForward size={15} aria-hidden="true" />
+              Avançar uma etapa
+            </button>
           </div>
         </div>
-
-        {/* Painel Lateral de Controle & Intervenção */}
-        <div className="flex flex-col gap-2.5">
-          {/* Botões de Avanço do Ciclo */}
-          <div className="p-3 rounded-xl border border-slate-800 bg-slate-900/90 space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Controles do Loop:</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={avancarPasso}
-                disabled={rodandoAuto}
-                className="flex-1 py-2 px-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"
-              >
-                <SkipForward size={14} />
-                <span>1 Micro-Passo</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRodandoAuto(!rodandoAuto)}
-                className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 text-white transition-all ${
-                  rodandoAuto ? "bg-amber-600 hover:bg-amber-500" : "bg-emerald-600 hover:bg-emerald-500"
-                }`}
-              >
-                {rodandoAuto ? <Pause size={14} /> : <Play size={14} />}
-                <span>{rodandoAuto ? "Pausar" : "Auto"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={resetar}
-                title="Zerar"
-                className="p-2 rounded-lg border border-slate-700 bg-slate-950 text-slate-400 hover:bg-slate-800 transition-all"
-              >
-                <RotateCcw size={14} />
-              </button>
-            </div>
-          </div>
-
-          {/* Intervir na Política */}
-          <div className="p-3 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/5 space-y-1.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-300 flex items-center gap-1">
-              <Zap size={13} />
-              Intervir (Forçar Próxima Ação):
-            </p>
-            <div className="grid grid-cols-3 gap-1">
-              {(["frente", "pegar", "voltar"] as TipoAcao[]).map((act) => (
-                <button
-                  key={act}
-                  type="button"
-                  onClick={() => setAcaoForcada(act)}
-                  className={`py-1.5 px-1 rounded text-[10px] font-bold transition-all border ${
-                    acaoForcada === act
-                      ? "bg-fuchsia-500 text-white border-fuchsia-400"
-                      : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
-                  }`}
-                >
-                  {act === "frente" ? "Frente" : act === "pegar" ? "Baú" : "Voltar"}
-                </button>
-              ))}
-            </div>
-            {acaoForcada && (
-              <p className="text-[10px] text-fuchsia-400 flex items-center gap-1 mt-1">
-                <CheckCircle2 size={11} />
-                Próxima escolha será: <strong>{ROTULOS_ACAO[acaoForcada]}</strong>
-              </p>
-            )}
-          </div>
-
-          {/* Preferências Aprendidas */}
-          <div className="p-3 rounded-xl border border-slate-800 bg-slate-900/90 flex-1 space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Preferências na Memória:</p>
-            {(["frente", "pegar", "voltar"] as TipoAcao[]).map((act) => (
-              <div key={act} className="space-y-0.5">
-                <div className="flex justify-between text-[10px] text-slate-400 font-medium">
-                  <span>{ROTULOS_ACAO[act]}</span>
-                  <span className="font-mono text-slate-200">{preferenciaAcoes[act]}%</span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                  <div
-                    className="h-full bg-amber-400 transition-all duration-300"
-                    style={{ width: `${preferenciaAcoes[act]}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      </footer>
+    </section>
   );
 }

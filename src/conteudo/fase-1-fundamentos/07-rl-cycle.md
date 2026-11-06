@@ -7,82 +7,106 @@ ordem: 7
 urlVideo: ""
 ---
 
-Em **Os 5 Pilares do RL**, você conheceu os cinco componentes essenciais: Agente, Ambiente, Estado, Ação e Recompensa. Agora, é hora de colocá-los em movimento dinâmico.
+Em **Os 5 Pilares do RL**, você identificou Agente, Ambiente, Estado, Ação e Recompensa. Agora essas peças deixam de ser uma fotografia e passam a funcionar como um processo no tempo.
 
-O Aprendizado por Reforço **não** acontece em uma única decisão estática. Ele ocorre através de um **ciclo contínuo de feedback** que se repete milhares ou milhões de vezes.
+O Aprendizado por Reforço acontece por meio de um **ciclo contínuo de interação**. O agente observa, decide e age. O ambiente reage e devolve informação. Então o agente usa essa experiência para melhorar decisões futuras.
 
 ---
 
-### 🔄 As 5 Etapas do Ciclo de RL
+### 🔄 Uma volta, cinco responsabilidades
 
-A cada instante discreto de tempo $t$, o sistema executa rigorosamente estas cinco etapas em sequência:
+A cada instante discreto $t$, o ciclo percorre cinco responsabilidades em ordem:
 
 ```mermaid
 graph TD
-    subgraph O Loop do Aprendizado por Reforço
-        E1["1. Observar Estado (s_t)"] --> E2["2. Escolher Ação (a_t)"]
-        E2 --> E3["3. Reação do Ambiente"]
-        E3 --> E4["4. Receber Recompensa (r_t) + Novo Estado (s_t+1)"]
-        E4 --> E5["5. Atualizar Conhecimento / Política"]
-        E5 -->|Próximo Passo| E1
-    end
+    E1["Observar o estado s_t"] --> E2["Escolher a ação a_t"]
+    E2 --> E3["Ambiente executa a transição"]
+    E3 --> E4["Receber recompensa r_t e estado s_t+1"]
+    E4 --> E5["Atualizar o conhecimento"]
+    E5 -->|Próxima interação| E1
 ```
 
-#### 1. Observar ($s_t$)
-O agente lê os dados disponíveis do ambiente no instante $t$ (ex: o robô detecta a distância da parede e o nível de bateria).
+#### 1. Observar o estado ($s_t$)
 
-#### 2. Escolher ($a_t$)
-Com base no seu conhecimento atual (sua **Política**), o agente seleciona a ação que julga ser mais promissora.
+O agente recebe a informação disponível antes de agir. Para Bibi, o estado inclui sua posição na sala e o nível de bateria. O subscrito $t$ indica que essa é a situação no instante atual.
 
-#### 3. Reagir
-O ambiente recebe a ação $a_t$, processa as regras de física e calcula a transição do mundo.
+#### 2. Escolher uma ação ($a_t$)
 
-#### 4. Feedback ($r_t$, $s_{t+1}$)
-O ambiente devolve dois sinais vitais para o agente:
-- A **Recompensa ($r_t$)**: quão boa ou ruim foi a ação tomada.
-- O **Novo Estado ($s_{t+1}$)**: a nova fotografia do mundo após a ação.
+Uma **política**, representada por $pi$, define como o agente escolhe ações em cada estado. A ação é fixada antes de o ambiente mudar. Isso permite distinguir com clareza a decisão do agente da reação do mundo.
 
-#### 5. Atualizar
-O agente compara o que esperava com a recompensa real que recebeu e ajusta sua memória interna (seus pesos ou valores na tabela). Na próxima vez que estiver no estado $s_t$, sua escolha será mais inteligente.
+#### 3. O ambiente reage
+
+Depois que recebe $a_t$, o ambiente aplica suas regras de transição. Paredes bloqueiam movimento, passos consomem bateria e a base permite recarga. O agente não escolhe o resultado diretamente.
+
+#### 4. Receber o feedback ($r_t$, $s_{t+1}$)
+
+O ambiente devolve dois sinais:
+
+- **Recompensa $r_t$:** avaliação numérica imediata da transição.
+- **Próximo estado $s_{t+1}$:** a nova situação depois da ação.
+
+Uma recompensa informa o que aconteceu naquela transição. Ela não é, sozinha, uma instrução pronta dizendo qual será a próxima ação.
+
+#### 5. Atualizar o conhecimento
+
+Agora existe uma amostra completa da interação. Um algoritmo de aprendizagem pode usar essa amostra para ajustar valores, uma política ou parâmetros internos. A forma exata dessa atualização depende do método. Na Fase 2, você construirá esse mecanismo com **Q-Learning**.
 
 ---
 
-### ⌛ Episódios e a Noção de Experiência
+### 🧠 A unidade de experiência
 
-Uma sequência completa desse ciclo, do início até um ponto final natural, é chamada de **Episódio**.
-
-* Em um jogo de xadrez: um episódio vai da primeira jogada até o *xeque-mate* ou empate.
-* Em um robô aprendendo a andar: um episódio vai do momento em que ele fica em pé até o momento em que ele cai no chão.
-
-Cada volta completa no ciclo gera uma unidade fundamental de aprendizado chamada **Quádrupla de Experiência**:
+Os quatro sinais essenciais de uma transição formam a quádrupla:
 
 $$\text{Experiência} = (s_t, a_t, r_t, s_{t+1})$$
 
-A inteligência da máquina não surge de uma fórmula pronta digitada por um programador, mas da **acumulação massiva dessas quádruplas de experiência**.
+Ela responde a quatro perguntas objetivas:
+
+1. Onde o agente estava?
+2. O que ele fez?
+3. Qual feedback recebeu?
+4. Onde terminou?
+
+Separar esses campos evita uma confusão comum: a ação pertence ao agente, enquanto a recompensa e o próximo estado são produzidos pelo ambiente.
 
 ---
 
-### 🧪 Oficina Prática: O Motor do Ciclo (Painel ao Lado)
+### ⌛ Interação, trajetória e episódio
 
-No painel interativo à direita, você conta com um **Simulador de Ciclo Animado**:
+Uma quádrupla representa **uma interação**. Várias interações em sequência formam uma **trajetória**. Quando essa trajetória alcança uma condição terminal, temos um **episódio** completo.
 
-1. **Passo a Passo Guiado:** Clique no botão **1 Micro-Passo ⏭️**. Veja o pulso luminoso avançar exatamente por cada uma das 5 etapas no diagrama circular.
-2. **Acompanhe a Transição:** Note como o robô no palco visual executa a ação, a luz do estado acende e a barra da ação escolhida sofre um micro-ajuste na etapa de atualização.
-3. **Intervenção Manual:** Experimente clicar em um botão de ação forçada (ex: **Forçar Recuar ⬅️**). Você assumirá temporariamente o controle do agente e verá a reação imediata do ciclo!
-4. **Modo Automático:** Ative o botão **Rodar Ciclo ▶️** para assistir ao loop girando continuamente em alta velocidade.
+- Em uma partida de xadrez, o episódio termina em xeque-mate, empate ou desistência.
+- Para Bibi, o episódio termina quando ele recarrega a bateria ou quando a energia se esgota.
+
+O termo "loop infinito" descreve o processo de treinamento: um episódio termina, outro começa e novas experiências continuam alimentando o aprendizado.
+
+---
+
+### 🧪 Oficina prática: construa o loop
+
+No painel interativo à direita:
+
+1. Escolha uma hipótese de ação ou deixe a política demonstrativa decidir.
+2. Use **Avançar uma etapa** para separar observação, decisão, reação, feedback e atualização.
+3. Observe quando cada campo de $(s_t, a_t, r_t, s_{t+1})$ se torna conhecido.
+4. Compare experiências recentes e identifique o encerramento de um episódio.
+5. Ative **Executar sozinho** somente depois de entender o modo passo a passo.
+
+> O simulador demonstra a interface agente-ambiente e o registro de experiências. Ele não finge executar Q-Learning antes de esse algoritmo ser apresentado.
 
 ---
 
 ### 💡 O que levar desta lição
 
-* RL é um **processo cíclico**: Observar $\to$ Escolher $\to$ Reagir $\to$ Receber Feedback $\to$ Atualizar.
-* **Episódio:** o bloco de tempo da partida inicial até o encerramento.
-* A cada ciclo, o agente armazena a quádrupla $(s_t, a_t, r_t, s_{t+1})$ para refinar sua tomada de decisão futura.
+- O agente controla a escolha de $a_t$; o ambiente controla $r_t$ e $s_{t+1}$.
+- Cada volta produz uma experiência $(s_t, a_t, r_t, s_{t+1})$.
+- Uma sequência de interações forma uma trajetória; uma trajetória até um estado terminal forma um episódio.
+- Aprender significa usar experiências para alterar decisões futuras, não apenas repetir animações.
 
-Na próxima lição, enfrentaremos o maior conflito filosófico e prático do RL: **devo arriscar algo novo ou repetir o que já sei que funciona?**
+Na próxima lição, você enfrentará uma escolha central em RL: experimentar uma ação desconhecida ou explorar o que já parece funcionar?
+
 <!-- audio-skip-start -->
 ### 📚 Referências Científicas & Leituras Recomendadas
 
-* **Sutton, R. S., & Barto, A. G. (2018):** *Reinforcement Learning: An Introduction* (2ª ed., Cap. 3.1: *The Agent-Environment Interface*). MIT Press.
+* **Sutton, R. S., & Barto, A. G. (2018):** *Reinforcement Learning: An Introduction* (2ª ed., seções 3.1 a 3.3). MIT Press.
 * **Watkins, C. J. C. H. (1989):** *Learning from Delayed Rewards*. Tese de Doutorado, King's College, Cambridge.
 <!-- audio-skip-end -->
